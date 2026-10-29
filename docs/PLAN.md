@@ -158,7 +158,7 @@ conversational-forms/
 │   ├── Feature/ (Conversation, Questions/*, InteractsWithConversation, ConversationPage, Columns/Entries)
 │   ├── Browser/ (keyboard, focus, transitions, a11y, mobile viewport)
 │   ├── Fixtures/ (Livewire components, models, enums)
-│   ├── fixtures/logic/*.json   shared PHP↔JS parity cases
+│   ├── Fixtures/logic/*.json   shared PHP↔JS parity cases
 │   └── js/ (Vitest: keyboard guard, evaluator parity, buffered digit typing)
 ├── composer.json · package.json · phpstan.neon.dist · phpunit.xml.dist · pint.json · rector.php · vitest.config.js
 └── README.md · CHANGELOG.md · LICENSE.md
@@ -239,7 +239,7 @@ Completion is **declared by the field, not guessed from state**:
 
 - Rules are **data**, not closures: `Rule { conditions: ConditionGroup, actions: Action[] }`, and they serialize to JSON. This one choice gives us builder storage, the logic map, JS evaluation and safety (no user JS is ever `eval`ed).
 - **PHP evaluator is authoritative**: `advance()`, `isStepOnPath()`, submit, scores.
-- **JS evaluator** (v0.3) mirrors it for instant UI: progress prediction while typing, client-side show/hide inside a `QuestionGroup` (compiled to Filament's own `visibleJs()` with values encoded via `Js::from()`), and piping preview. Parity is guaranteed by **shared JSON fixtures** in `tests/fixtures/logic/*.json`, run by Pest and by Vitest.
+- **JS evaluator** (v0.3) mirrors it for instant UI: progress prediction while typing, client-side show/hide inside a `QuestionGroup` (compiled to Filament's own `visibleJs()` with values encoded via `Js::from()`), and piping preview. Parity is guaranteed by **shared JSON fixtures** in `tests/Fixtures/logic/*.json`, run by Pest and by Vitest.
 - Rule semantics (Typeform-compatible): rules attach to the question they follow. After a question is answered, its rules are evaluated in order: **all matching calculation actions apply; the first matching jump/end action wins**. `Logic::always()` is the explicit fallback. With no jump, flow continues to the next step in order.
 - **Loop safety by construction:** jumps may only target a *later* step or an ending. `LogicGraph` throws `InvalidLogicException` at build time for backward jumps, unknown targets or unreachable endings. `PathResolver` also has a hard visit cap (`count(steps) + 1`) as belt-and-braces.
 - Escape hatch: `Logic::whenUsing(fn (Get $get) => …)` for PHP-only conditions, which marks the rule `serverOnly`. It isn't serialized, isn't usable in the builder, and isn't evaluated client-side (documented trade-off).
@@ -640,7 +640,7 @@ Deprecations removed, README complete, external accessibility review (or at leas
 |---|---|---|
 | Unit | Pest 4 | `Evaluator` (dataset per operator × type, incl. nulls/arrays/dates/timezones), `PathResolver`, `LogicGraph`, `Piping` (escaping), `Operator::appliesTo`, definitions round-trip. |
 | Feature (Livewire) | Pest + `Livewire\Livewire::test()` + Testbench (no `pest-plugin-livewire`: it can't install with Livewire 4 on PHP 8.2), fixture `TestConversation` component (radio-deck's `TestForm::$components` pattern) | Rendering + ARIA per field, state casts, `advance()` validation, path visibility, submit recompute, tamper cases (calling `advance` with an off-path key, injecting answers for skipped steps, forging variables), `ConversationPage` routing/layout, columns/entries output, `TestsConversations` mixin itself. Filament helpers: `fillForm`, `assertHasFormErrors`, `assertSchemaComponentHidden`, `assertSchemaStateSet`. |
-| JS unit | Vitest (jsdom) | keyboard guard, buffered digit typing, focus helpers, the JS evaluator against `tests/fixtures/logic/*.json`. |
+| JS unit | Vitest (jsdom) | keyboard guard, buffered digit typing, focus helpers, the JS evaluator against `tests/Fixtures/logic/*.json`. |
 | Browser | Pest 4 browser plugin (Playwright) **[verify the plugin's accessibility assertion API]**, run against Testbench's `serve` | Keyboard-only flows, focus after transition, auto-advance timing, transitions with `prefers-reduced-motion`, mobile viewport, dark mode, hidden-step JS fields, axe scans per screen. |
 | Architecture | `pest-plugin-arch` | No `dd/dump/ray`; every class in `Questions\` extends `Question` and implements `ConversationAware` and `FormatsAnswer`; `Logic\` has no `Filament\` dependency (except `Get` for server-only closures); strict types where used. |
 | Static | Larastan (level 6, raising toward 8), Rector dry-run, Pint `--test` | |

@@ -3,7 +3,7 @@
 use JaOcero\ConversationalForms\Logic\ConditionGroup;
 use JaOcero\ConversationalForms\Logic\Enums\Operator;
 
-$cases = json_decode(file_get_contents(__DIR__ . '/../../fixtures/logic/cases.json'), associative: true);
+$cases = json_decode(file_get_contents(__DIR__ . '/../../Fixtures/logic/cases.json'), associative: true);
 
 dataset('operator cases', array_combine(
     array_map(fn (array $case): string => "{$case['op']}: {$case['note']}", $cases['operators']),

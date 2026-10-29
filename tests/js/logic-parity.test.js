@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { evaluateOperator, matches } from '../../resources/js/logic/evaluate.js'
-import cases from '../fixtures/logic/cases.json'
+import cases from '../Fixtures/logic/cases.json'
 
 const { operators, groups } = cases
 

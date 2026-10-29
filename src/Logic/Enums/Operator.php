@@ -9,7 +9,7 @@ use JaOcero\ConversationalForms\Logic\Values;
  * Comparison operators for logic conditions.
  *
  * The semantics are mirrored exactly by `resources/js/logic/evaluate.js`; both
- * implementations run the shared cases in `tests/fixtures/logic/operators.json`.
+ * implementations run the shared cases in `tests/Fixtures/logic/operators.json`.
  */
 enum Operator: string
 {

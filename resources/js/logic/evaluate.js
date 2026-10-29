@@ -1,7 +1,7 @@
 /**
  * Condition evaluation in the browser, used for show / hide conditions
  * (`visibleWhen()`). Every rule here mirrors `src/Logic/Values.php`; both run
- * the shared cases in `tests/fixtures/logic/cases.json`.
+ * the shared cases in `tests/Fixtures/logic/cases.json`.
  */
 
 const NUMBER = /^\s*[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*$/
