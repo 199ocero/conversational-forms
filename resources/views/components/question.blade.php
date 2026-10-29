@@ -1,6 +1,7 @@
 @props([
     'field',
     'labelTarget' => true,
+    'showsNestedErrors' => true,
 ])
 
 @php
@@ -14,7 +15,7 @@
     $media = $field->getMedia();
     $number = $field->getQuestionNumber();
     $isRequired = $field->isMarkedAsRequired() && $field->isRequired();
-    $errorMessage = $errors->first($statePath) ?: $errors->first("{$statePath}.*");
+    $errorMessage = $errors->first($statePath) ?: ($showsNestedErrors ? $errors->first("{$statePath}.*") : null);
     $labelTag = $labelTarget ? 'label' : 'div';
 @endphp
 

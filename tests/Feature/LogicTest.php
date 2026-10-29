@@ -190,6 +190,17 @@ describe('visibility', function () {
         expect(TestConversation::$submissions[0]['data'])->not->toHaveKey('company');
     });
 
+    it('renders a conditional question that starts off the path, so it can appear later', function () {
+        conversation(Conversation::make([
+            MultipleChoice::make('plan')->options(['team' => 'Team', 'solo' => 'Solo']),
+            Number::make('seats')->visibleWhen(Logic::condition('plan', 'is', 'team')),
+            Email::make('email'),
+        ]))
+            ->assertConversationPath(['plan', 'email'])
+            ->assertSeeHtml('data-cf-question="data.seats"')
+            ->assertSeeHtml('wire:model="data.seats"');
+    });
+
     it('skips whole steps whose conditions do not match', function () {
         conversation(Conversation::make([
             MultipleChoice::make('plan')->options(['team' => 'Team', 'solo' => 'Solo']),

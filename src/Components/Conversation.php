@@ -12,13 +12,13 @@ use Filament\Support\Components\Attributes\Exposed;
 use Filament\Support\Livewire\Partials\PartialsComponentHook;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Validation\ValidationException;
+use JaOcero\ConversationalForms\Contracts\ConversationQuestion;
 use JaOcero\ConversationalForms\Contracts\FormatsAnswer;
 use JaOcero\ConversationalForms\Logic\ConversationPath;
 use JaOcero\ConversationalForms\Logic\LogicGraph;
 use JaOcero\ConversationalForms\Logic\PathResolver;
 use JaOcero\ConversationalForms\Logic\Rule;
 use JaOcero\ConversationalForms\Questions\HiddenField;
-use JaOcero\ConversationalForms\Questions\Question;
 use JaOcero\ConversationalForms\Screens\EndScreen;
 use JaOcero\ConversationalForms\Screens\WelcomeScreen;
 use JaOcero\ConversationalForms\Support\Answer;
@@ -298,7 +298,7 @@ class Conversation extends Component
     public function resolvePath(): ConversationPath
     {
         $answers = $this->getAnswers();
-        $cacheKey = md5(serialize($answers));
+        $cacheKey = md5((string) json_encode(static::toCacheableAnswers($answers)));
 
         if (isset($this->resolvedPaths[$cacheKey])) {
             return $this->resolvedPaths[$cacheKey];
@@ -334,6 +334,19 @@ class Conversation extends Component
             variables: $this->getInitialVariables(),
             defaultEnding: $endings[0] ?? static::DEFAULT_ENDING,
         );
+    }
+
+    /**
+     * Answers can contain objects such as uploaded files, which cannot be
+     * serialized, so they are described by their class and identity instead.
+     */
+    protected static function toCacheableAnswers(mixed $value): mixed
+    {
+        return match (true) {
+            is_array($value) => array_map(static::toCacheableAnswers(...), $value),
+            is_object($value) => $value::class . '#' . spl_object_id($value),
+            default => $value,
+        };
     }
 
     public function isStepOnPath(string $name): bool
@@ -464,7 +477,7 @@ class Conversation extends Component
     {
         $field = $this->getField($name);
 
-        return ($field instanceof Question) ? $field->getAnswerLabels() : null;
+        return ($field instanceof ConversationQuestion) ? $field->getAnswerLabels() : null;
     }
 
     public function formatAnswer(string $name): string

@@ -58,6 +58,10 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
             AlpineComponent::make('conversation', __DIR__ . '/../resources/dist/components/conversation.js'),
             AlpineComponent::make('choice-question', __DIR__ . '/../resources/dist/components/choice-question.js'),
             AlpineComponent::make('dropdown-question', __DIR__ . '/../resources/dist/components/dropdown-question.js'),
+            AlpineComponent::make('segments-question', __DIR__ . '/../resources/dist/components/segments-question.js'),
+            AlpineComponent::make('ranking-question', __DIR__ . '/../resources/dist/components/ranking-question.js'),
+            AlpineComponent::make('file-upload-question', __DIR__ . '/../resources/dist/components/file-upload-question.js'),
+            AlpineComponent::make('signature-question', __DIR__ . '/../resources/dist/components/signature-question.js'),
             Css::make('conversational-forms', __DIR__ . '/../resources/dist/conversational-forms.css')->loadedOnRequest(),
         ];
     }

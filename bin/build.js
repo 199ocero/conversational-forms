@@ -87,6 +87,10 @@ const alpineComponents = [
     'conversation',
     'choice-question',
     'dropdown-question',
+    'segments-question',
+    'ranking-question',
+    'file-upload-question',
+    'signature-question',
 ]
 
 await Promise.all([

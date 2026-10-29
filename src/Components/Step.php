@@ -4,9 +4,9 @@ namespace JaOcero\ConversationalForms\Components;
 
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
+use JaOcero\ConversationalForms\Contracts\ConversationQuestion;
 use JaOcero\ConversationalForms\Logic\ConditionGroup;
 use JaOcero\ConversationalForms\Logic\Rule;
-use JaOcero\ConversationalForms\Questions\Question;
 use LogicException;
 
 /**
@@ -96,7 +96,7 @@ abstract class Step extends Component
         $rules = [];
 
         foreach ($this->getFields() as $field) {
-            if ($field instanceof Question) {
+            if ($field instanceof ConversationQuestion) {
                 $rules = [...$rules, ...$field->getLogic()];
             }
         }
@@ -109,7 +109,7 @@ abstract class Step extends Component
      */
     public function isNumbered(): bool
     {
-        return $this->getQuestion() instanceof Question;
+        return $this->getQuestion() instanceof ConversationQuestion;
     }
 
     /**
@@ -128,13 +128,13 @@ abstract class Step extends Component
     {
         $question = $this->getQuestion();
 
-        return (($question instanceof Question) && (count($this->getFields()) === 1)) ? $question->getVisibilityConditions() : null;
+        return (($question instanceof ConversationQuestion) && (count($this->getFields()) === 1)) ? $question->getVisibilityConditions() : null;
     }
 
-    public function getQuestion(): ?Question
+    public function getQuestion(): ?ConversationQuestion
     {
         foreach ($this->getFields() as $field) {
-            if ($field instanceof Question) {
+            if ($field instanceof ConversationQuestion) {
                 return $field;
             }
         }

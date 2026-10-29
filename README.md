@@ -185,6 +185,14 @@ Questions are numbered automatically by their position in the conversation. Labe
 | [`OpinionScale`](#opinionscale-and-nps) | integer | 0–9 |
 | [`Nps`](#opinionscale-and-nps) | integer from 0 to 10 | 0–9 |
 | [`Rating`](#rating) | integer from 1 | 1–9, 0 for 10 |
+| [`Matrix`](#matrix) | `['row' => 'answer']` | arrows within a row, Tab between rows |
+| [`Ranking`](#ranking) | values in order | Space to pick up, ↑ ↓ to move |
+| [`DateQuestion`](#datequestion-and-timequestion) | `YYYY-MM-DD` | digits, moves between boxes |
+| [`TimeQuestion`](#datequestion-and-timequestion) | `HH:MM` | digits, moves between boxes |
+| [`ContactInfo`](#contactinfo-and-address) | `['first_name' => …, 'email' => …]` | |
+| [`Address`](#contactinfo-and-address) | `['line1' => …, 'city' => …]` | |
+| [`FileUpload`](#fileupload) | stored file path(s) | |
+| [`Signature`](#signature) | stored PNG path | |
 
 ### ShortText, Email, Website and Phone
 
@@ -373,6 +381,104 @@ Rating::make('rating')
     ->shape('heart'); // star (default), heart or thumb
 ```
 
+### Matrix
+
+Several statements rated on the same answers, as a grid on wide screens and stacked on small ones. Uses native radio buttons (or checkboxes with `multiple()`), so arrows move between answers in a row and Tab between rows. When required, every row must be answered.
+
+```php
+use JaOcero\ConversationalForms\Questions\Matrix;
+
+Matrix::make('importance')
+    ->label('How important are these features?')
+    ->rows(['reports' => 'Reports', 'automation' => 'Automation'])
+    ->answers(['low' => 'Nice to have', 'medium' => 'Important', 'high' => 'Essential'])
+    ->required();
+```
+
+Saved as `['reports' => 'high', 'automation' => 'medium']`, or a list of answers per row with `multiple()`.
+
+### Ranking
+
+Put the options in order by dragging (mouse, pen or touch), with the move buttons, or with the keyboard: Space picks an item up, ↑ and ↓ move it, Space drops it and Escape cancels. Every move is announced to screen readers. Saved as the values in order; the options start in the given order.
+
+```php
+use JaOcero\ConversationalForms\Questions\Ranking;
+
+Ranking::make('priorities')
+    ->label('Put these in order of importance')
+    ->options(['price' => 'Price', 'speed' => 'Speed', 'support' => 'Support']);
+```
+
+### DateQuestion and TimeQuestion
+
+Dates are typed into day, month and year boxes; focus moves to the next box as each one fills up, and Backspace in an empty box moves back. A calendar button opens the browser's date picker. Dates that don't exist (31 February) are rejected. Saved as `YYYY-MM-DD` (and `HH:MM` for times, on a 24-hour clock), so date logic operators work on them.
+
+```php
+use JaOcero\ConversationalForms\Questions\DateQuestion;
+use JaOcero\ConversationalForms\Questions\TimeQuestion;
+
+DateQuestion::make('start_date')
+    ->label('When would you like to start?')
+    ->format('MDY')      // order of the boxes: DMY (default), MDY or YMD
+    ->minDate(today())
+    ->maxDate(today()->addYear())
+    ->calendar(false);   // hide the calendar button
+
+TimeQuestion::make('call_time')->label("What's the best time to call?");
+```
+
+### ContactInfo and Address
+
+Several inputs on one screen, saved together as an array. Each part has the right autocomplete hint and is validated on its own.
+
+```php
+use JaOcero\ConversationalForms\Questions\Address;
+use JaOcero\ConversationalForms\Questions\ContactInfo;
+
+ContactInfo::make('contact')
+    ->label('How can we reach you?')
+    ->parts(['first_name', 'last_name', 'email'])  // default: first_name, last_name, email, phone, company
+    ->requiredParts(['first_name', 'email'])       // the default
+    ->required();
+
+Address::make('office')
+    ->label('Where is your office?')
+    ->required();                                  // requires line1, city, postal_code and country
+```
+
+`Address` parts are `line1`, `line2`, `city`, `state`, `postal_code` and `country`. Parts are only required when the question is required.
+
+### FileUpload
+
+Filament's file upload with a conversational drop zone: choose files or drag them in, see their progress, and remove them. Everything Filament's `FileUpload` supports works the same way, including disks, directories, accepted file types, size limits and multiple files.
+
+```php
+use JaOcero\ConversationalForms\Questions\FileUpload;
+
+FileUpload::make('cv')
+    ->label('Upload your CV')
+    ->acceptedFileTypes(['application/pdf'])
+    ->maxSize(5120)
+    ->disk('s3')
+    ->directory('applications');
+```
+
+### Signature
+
+Draw a signature with a mouse, pen or finger, or choose "Type your name instead", which is the keyboard and screen reader friendly way to sign. The browser sends a PNG; the server checks that it really is a PNG within the size limit and stores it. Saved as the stored file's path.
+
+```php
+use JaOcero\ConversationalForms\Questions\Signature;
+
+Signature::make('signature')
+    ->label('Please sign to confirm')
+    ->disk('local')          // default: Filament's default disk
+    ->directory('signatures')
+    ->maxSize(1024)          // kilobytes
+    ->typing(false)          // drawing only
+    ->required();
+```
+
 ## Structuring a conversation
 
 ### Statement
@@ -545,7 +651,7 @@ QuestionGroup::make('work', [
 Statement::make('team_tips')->visibleWhen(Logic::any([...]));
 ```
 
-Inside a group, the question appears or disappears as soon as the earlier answer changes, without a request to the server. A hidden question is never required and its answer is not saved. A whole step (a single question, statement or group) whose conditions don't match is skipped. Visibility can only depend on answers, not on variables.
+The question appears or disappears as soon as the earlier answer changes, without a request to the server. A hidden question is never required and its answer is not saved. A whole step (a single question, statement or group) whose conditions don't match is skipped. Visibility can only depend on answers, not on variables.
 
 ### Safety
 
@@ -674,6 +780,8 @@ RatingColumn::make('rating')->steps(5);        // ★★★★☆
 | 0–9 | Pick a value on an opinion scale, NPS or rating (type `1` `0` for 10 on a 0–10 scale) |
 | Space | Tick a checkbox |
 | ↑ ↓, Enter, Esc | Move through, choose from, or close a dropdown's list |
+| Space, then ↑ ↓, then Space | Pick up, move and drop a ranking item (Esc cancels) |
+| digits | Fill in date and time boxes; focus moves on as each box fills up |
 | ↑ ↓ ← → | Move between answers |
 | Space | Toggle the focused answer |
 | Tab / Shift + Tab | Move between controls on the current question |

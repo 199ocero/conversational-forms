@@ -596,6 +596,14 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 
 **Definition of done:** each field has keyboard-only and screen-reader paths documented and tested; uploads tested with `UploadedFile::fake()`; Signature and Ranking browser-tested on touch emulation.
 
+**Status (2026-10-29):** implemented and verified, not yet tagged. All eight questions, with 612 Pest and 244 Vitest tests (uploads with `UploadedFile::fake()`, signatures stored on a fake disk and checked to be real PNGs). Verified in real Chrome: typing dates and times (auto-tab, Backspace back, invalid dates rejected), matrix and ranking by keyboard, ranking by touch drag (CDP touch events), a real file upload, drawn and typed signatures, and a complete 24-step run in the panel that stores the logo and signature.
+
+**Changed from the original design:**
+- `FileUpload` extends Filament's own `FileUpload` (rather than reimplementing its pipeline), so question behaviour moved into an `IsConversationQuestion` trait and a `ConversationQuestion` interface.
+- Conditional questions are no longer hidden on the server: Filament renders nothing for a schema whose components are all hidden, which left an empty screen when a single conditional question's conditions matched later. They are now always rendered, toggled by `visibleJs`, and skip validation and saving while their conditions don't match.
+- `Matrix` uses `answers()` for its columns, because `columns()` is Filament's grid layout API.
+- Times use a 24-hour clock; a 12-hour option is deferred.
+
 ### Phase 5: v0.5.0 "Builder"
 
 **Scope:** `ConversationalFormsPlugin`; migrations (stubs) + models; `QuestionRegistry`, `toDefinition()/fromDefinition()` for every type; a Forms resource with: list, create, a **builder editor** (Filament `Builder` field with one block per question type, reorderable, with per-block settings), a **visual logic panel** (per-question rule repeater with a field/operator/value picker filtered by `Operator::appliesTo()`), live preview (renders the definition in an iframe of the public page), publish → immutable version, and a **logic map** page (graph from `LogicGraph`, laid out with lazily loaded ELK.js as an `AlpineComponent`, with nodes = steps/endings and edges = jumps/default flow, warnings highlighted). Public route `/f/{slug}` served by `PanelConversationPage` (a `SimplePage` under the panel's theme).

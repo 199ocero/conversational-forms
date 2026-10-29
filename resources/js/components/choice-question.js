@@ -213,6 +213,10 @@ export default function choiceQuestionComponent({
 
             event.preventDefault()
             this.choose(choice.value, { isExplicit: true })
+
+            if (root.contains(document.activeElement)) {
+                this.focusChoice(choice.value)
+            }
         },
 
         /**
@@ -250,20 +254,61 @@ export default function choiceQuestionComponent({
             }, DIGIT_BUFFER_TIMEOUT)
         },
 
+        buttons() {
+            return Array.from(root.querySelectorAll('[data-cf-choice]'))
+        },
+
+        hasSelection() {
+            return isMultiple
+                ? (this.state ?? []).length > 0
+                : this.isOtherSelected || isKnownValue(this.state)
+        },
+
+        /**
+         * Move focus to the answer a shortcut chose, so selection and focus
+         * stay together (as in a native radio group).
+         */
+        focusChoice(value) {
+            const index = choices.findIndex((choice) =>
+                isSameValue(choice.value, value),
+            )
+
+            this.$nextTick(() => this.buttons()[index]?.focus())
+        },
+
         handleChoiceKeydown(event) {
             if (event.altKey || event.metaKey || event.ctrlKey) {
                 return
             }
 
-            // In a multiple choice question Space toggles the focused answer and
-            // Enter moves on, instead of the button's native Enter-to-click.
+            // Enter moves on, as everywhere else in a conversation. With a single
+            // answer on its own screen, the button's native Enter-to-click already
+            // does that (choose, then auto-advance). Elsewhere (multiple answers,
+            // or several questions on one screen) Enter must not just toggle the
+            // focused answer: it chooses a single answer if needed, then moves on.
+            const button = event.target.closest?.('[data-cf-choice]')
+            const isOnSharedScreen = root
+                .closest('[data-cf-step]')
+                ?.hasAttribute('data-cf-several-questions')
+
             if (
-                isMultiple &&
                 event.key === 'Enter' &&
                 !event.shiftKey &&
-                event.target.closest?.('[data-cf-choice]')
+                button &&
+                (isMultiple || isOnSharedScreen)
             ) {
                 event.preventDefault()
+
+                // Keep an existing answer; only a screen with nothing chosen yet
+                // takes the focused answer.
+                if (!isMultiple && !this.hasSelection()) {
+                    const index = this.buttons().indexOf(button)
+
+                    if (index !== -1 && index < choices.length) {
+                        this.choose(choices[index].value)
+                    }
+                }
+
                 this.next()
 
                 return
