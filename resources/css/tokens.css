@@ -1,0 +1,36 @@
+/*
+ * Design tokens. Every visual decision reads from a `--cf-*` variable so that
+ * conversations can be themed without touching the compiled CSS. Defaults
+ * follow the host Filament panel's palette (`--primary-*`, `--gray-*`) and
+ * fall back to Tailwind's palette when no Filament variables are present.
+ */
+@layer components {
+    .cf-conversation {
+        --cf-accent: var(--primary-600, --theme(--color-indigo-600));
+        --cf-accent-contrast: --theme(--color-white);
+        --cf-bg: transparent;
+        --cf-fg: var(--gray-950, --theme(--color-gray-950));
+        --cf-muted: var(--gray-500, --theme(--color-gray-500));
+        --cf-border: color-mix(in oklab, var(--cf-fg) 12%, transparent);
+        --cf-danger: var(--danger-600, --theme(--color-red-600));
+        --cf-font-family: var(--font-family, ui-sans-serif, system-ui, sans-serif);
+        --cf-question-size: --theme(--text-2xl);
+        --cf-radius: --theme(--radius-lg);
+        --cf-focus-ring: 0 0 0 2px var(--cf-bg), 0 0 0 4px var(--cf-accent);
+        --cf-transition-duration: 400ms;
+        --cf-transition-distance: 2.5rem;
+
+        @variant dark {
+            --cf-accent: var(--primary-400, --theme(--color-indigo-400));
+            --cf-accent-contrast: var(--gray-950, --theme(--color-gray-950));
+            --cf-fg: --theme(--color-white);
+            --cf-muted: var(--gray-400, --theme(--color-gray-400));
+            --cf-danger: var(--danger-400, --theme(--color-red-400));
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            --cf-transition-duration: 0ms;
+            --cf-transition-distance: 0;
+        }
+    }
+}
