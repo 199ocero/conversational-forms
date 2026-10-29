@@ -8,7 +8,7 @@
 | Package | `jaocero/conversational-forms` |
 | Namespace | `JaOcero\ConversationalForms` |
 | License | MIT |
-| Targets | PHP 8.2+, Laravel 12 / 13, Filament ^5.0 (Livewire ^4.0), Tailwind CSS v4, Alpine.js |
+| Targets | PHP 8.2+, Laravel 12 / 13, Filament ^5.11 (Livewire ^4.0), Tailwind CSS v4, Alpine.js |
 | Dev host | `filament-playground/packages/conversational-forms` (symlinked path repository) |
 
 ## 0. Context
@@ -730,6 +730,7 @@ Deprecations removed, README complete, external accessibility review (or at leas
 | 5 | Browser support | Defined below (Jay had no preference; this follows our toolchain's floor). |
 
 | 6 | Laravel 11 | Dropped (2026-10-29). Laravel 11 is out of security support and every 11.x release has unpatched advisories, so Composer refuses to install it. Supported: Laravel 12 and 13. |
+| 7 | Filament version | `^5.11` (2026-10-29). The `#[Exposed]` component methods the conversation relies on first shipped in Filament 5.11.0; older 5.x releases fail CI's prefer-lowest jobs. |
 
 **Browser support (decided default):** the last two major versions of Chrome, Edge, Firefox and Safari (macOS and iOS), with a hard floor of **Safari 16.4, Chrome 111 and Firefox 128**. That floor is what Tailwind CSS v4 (used to build our CSS and by Filament v5) itself requires, so supporting anything older isn't possible without dropping Tailwind v4 features. It also covers `inert`, `:has()`, `dvh` units and `visualViewport`, which the stage relies on. Media answers (Phase 8) additionally require MediaRecorder and fall back to a file upload where it's missing. Browser tests run Chromium + WebKit (+ Firefox from v0.4). The README states this in its Requirements section. **[verify]** the exact Tailwind v4 browser floor against its docs when writing the README.
 

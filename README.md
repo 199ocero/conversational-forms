@@ -34,7 +34,7 @@ Typeform-style conversational forms for Filament. One question at a time, fully 
 
 - PHP 8.2+
 - Laravel 12 or 13
-- Filament 5
+- Filament 5.11+
 - Browsers: the last two versions of Chrome, Edge, Firefox and Safari (Safari 16.4+, Chrome 111+, Firefox 128+)
 
 ## Installation
