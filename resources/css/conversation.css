@@ -1,0 +1,52 @@
+/*
+ * The conversation stage: one step visible at a time. Inactive steps stay in
+ * the DOM (so Livewire can morph them) but are hidden and `inert`.
+ */
+@layer components {
+    .cf-conversation {
+        @apply relative isolate;
+        background-color: var(--cf-bg);
+        color: var(--cf-fg);
+        font-family: var(--cf-font-family);
+    }
+
+    .cf-conversation-stage {
+        @apply relative grid min-h-80;
+    }
+
+    .cf-step {
+        @apply col-start-1 row-start-1 flex flex-col justify-center gap-6 py-8;
+        transition-property: opacity, translate;
+        transition-duration: var(--cf-transition-duration);
+        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+
+        &:not(.cf-active) {
+            @apply pointer-events-none opacity-0;
+            visibility: hidden;
+        }
+
+        &.cf-enter-from-below {
+            translate: 0 var(--cf-transition-distance);
+        }
+
+        &.cf-enter-from-above {
+            translate: 0 calc(var(--cf-transition-distance) * -1);
+        }
+    }
+
+    .cf-progress {
+        @apply h-1 w-full overflow-hidden;
+        background-color: var(--cf-border);
+        border-radius: 9999px;
+    }
+
+    .cf-progress-bar {
+        @apply h-full;
+        background-color: var(--cf-accent);
+        transition: width var(--cf-transition-duration) ease;
+    }
+
+    .cf-sr-only {
+        @apply sr-only;
+    }
+}

@@ -1,0 +1,16 @@
+/*
+ * Conversational Forms: prebuilt stylesheet.
+ *
+ * Compiled by `npm run build` into `resources/dist/conversational-forms.css`.
+ * Only the rules in this directory are emitted: Tailwind's theme values are
+ * inlined (`theme(inline)`), and no preflight or utility classes are generated,
+ * so the output never collides with the host application's or Filament's CSS.
+ */
+@import 'tailwindcss/theme.css' layer(theme) theme(inline);
+
+@source not inline('*');
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@import './tokens.css';
+@import './conversation.css';
