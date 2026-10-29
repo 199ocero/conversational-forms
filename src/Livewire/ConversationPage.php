@@ -53,7 +53,10 @@ abstract class ConversationPage extends Component implements HasSchemas
 
     public function render(): View
     {
-        return view('conversational-forms::livewire.conversation-page')
+        /** @var view-string $view The package's view namespace is only registered once the app boots. */
+        $view = 'conversational-forms::livewire.conversation-page';
+
+        return view($view)
             ->layout(static::$layout, [
                 'title' => $this->getTitle(),
             ]);
