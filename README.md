@@ -20,7 +20,7 @@ Answers flow through Filament's normal form pipeline (validation, state, `$get()
 ## Requirements
 
 - PHP 8.2+
-- Laravel 11.28+
+- Laravel 12+
 - Filament 5
 
 ## Credits

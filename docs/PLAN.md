@@ -8,7 +8,7 @@
 | Package | `jaocero/conversational-forms` |
 | Namespace | `JaOcero\ConversationalForms` |
 | License | MIT |
-| Targets | PHP 8.2+, Laravel 11.28 / 12 / 13, Filament ^5.0 (Livewire ^4.0), Tailwind CSS v4, Alpine.js |
+| Targets | PHP 8.2+, Laravel 12 / 13, Filament ^5.0 (Livewire ^4.0), Tailwind CSS v4, Alpine.js |
 | Dev host | `filament-playground/packages/conversational-forms` (symlinked path repository) |
 
 ## 0. Context
@@ -533,7 +533,7 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 
 **Scope**
 - Generate from `filamentphp/plugin-skeleton@5.x`. Adapt to radio-deck conventions (`spatie/laravel-package-tools`, `PackageServiceProvider`, `$name`/`$viewNamespace` statics, `getAssets()`, `askToStarRepoOnGitHub('199ocero/conversational-forms')`). Remove the skeleton facade/command/migration we don't need yet.
-- `composer.json`: `php ^8.2`, `filament/filament ^5.0`, `illuminate/contracts ^11.28|^12.0|^13.0`, `spatie/laravel-package-tools ^1.15`. Dev: Pest ^3.7|^4|^5 (+arch, laravel plugins; browser plugin added with the first browser tests), Testbench ^9|^10|^11, Larastan ^3, Rector ^2, Pint.
+- `composer.json`: `php ^8.2`, `filament/filament ^5.0`, `illuminate/contracts ^12.0|^13.0`, `spatie/laravel-package-tools ^1.15`. Dev: Pest ^3.7|^4|^5 (+arch, laravel plugins; browser plugin added with the first browser tests), Testbench ^10|^11, Larastan ^3, Rector ^2, Pint.
 - `package.json`: esbuild, `@tailwindcss/cli` v4, Vitest, Prettier.
 - Wire into the playground: path repository `packages/conversational-forms` (symlink), `jaocero/conversational-forms: *@dev`, plus a playground page per spike.
 - CI: tests matrix (skeleton's), phpstan, pint, js (Vitest), dist-is-built check (`npm run build && git diff --exit-code resources/dist`).
@@ -634,7 +634,7 @@ Deprecations removed, README complete, external accessibility review (or at leas
 | Architecture | `pest-plugin-arch` | No `dd/dump/ray`; every class in `Questions\` extends `Question` and implements `ConversationAware` and `FormatsAnswer`; `Logic\` has no `Filament\` dependency (except `Get` for server-only closures); strict types where used. |
 | Static | Larastan (level 6, raising toward 8), Rector dry-run, Pint `--test` | |
 
-**CI matrix** (`tests.yml`, adapted from skeleton 5.x): OS ubuntu + windows × PHP 8.2/8.3/8.4 (8.5 when available on runners) × Laravel 11/12/13 (excluding L13 + PHP 8.2) × prefer-lowest/prefer-stable. Separate jobs: `browser-tests.yml` (ubuntu, PHP 8.4, L13, Chromium + WebKit), `js.yml` (Vitest + `npm run build` + a dist-is-up-to-date diff), `phpstan.yml`, `fix-php-code-style.yml`, `update-changelog.yml`. Coverage target: ≥ 90 % on `src/Logic`, ≥ 80 % overall.
+**CI matrix** (`tests.yml`, adapted from skeleton 5.x): OS ubuntu + windows × PHP 8.2/8.3/8.4 (8.5 when available on runners) × Laravel 12/13 (excluding L13 + PHP 8.2), `fail-fast: false` × prefer-lowest/prefer-stable. Separate jobs: `browser-tests.yml` (ubuntu, PHP 8.4, L13, Chromium + WebKit), `js.yml` (Vitest + `npm run build` + a dist-is-up-to-date diff), `phpstan.yml`, `fix-php-code-style.yml`, `update-changelog.yml`. Coverage target: ≥ 90 % on `src/Logic`, ≥ 80 % overall.
 
 **Performance budget** (checked in a benchmark test from Phase 0): `advance()` p95 < 150 ms server time for a 40-question form on CI hardware; conversation JS < 25 kB gzipped; CSS < 20 kB gzipped.
 
@@ -726,6 +726,8 @@ Deprecations removed, README complete, external accessibility review (or at leas
 | 3 | Payment and Scheduler | Separate add-on packages after 1.0 (`-stripe`, `-scheduler`). |
 | 4 | Docs | README only, no docs site. |
 | 5 | Browser support | Defined below (Jay had no preference; this follows our toolchain's floor). |
+
+| 6 | Laravel 11 | Dropped (2026-10-29). Laravel 11 is out of security support and every 11.x release has unpatched advisories, so Composer refuses to install it. Supported: Laravel 12 and 13. |
 
 **Browser support (decided default):** the last two major versions of Chrome, Edge, Firefox and Safari (macOS and iOS), with a hard floor of **Safari 16.4, Chrome 111 and Firefox 128**. That floor is what Tailwind CSS v4 (used to build our CSS and by Filament v5) itself requires, so supporting anything older isn't possible without dropping Tailwind v4 features. It also covers `inert`, `:has()`, `dvh` units and `visualViewport`, which the stage relies on. Media answers (Phase 8) additionally require MediaRecorder and fall back to a file upload where it's missing. Browser tests run Chromium + WebKit (+ Firefox from v0.4). The README states this in its Requirements section. **[verify]** the exact Tailwind v4 browser floor against its docs when writing the README.
 
