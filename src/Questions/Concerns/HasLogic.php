@@ -30,6 +30,17 @@ trait HasLogic
      */
     public function getLogic(): array
     {
-        return array_values($this->evaluate($this->logic));
+        return [...$this->getScoringRules(), ...array_values($this->evaluate($this->logic))];
+    }
+
+    /**
+     * Rules generated from shorthand such as `correct()` and `points()`. They
+     * run before the question's own rules.
+     *
+     * @return list<Rule>
+     */
+    protected function getScoringRules(): array
+    {
+        return [];
     }
 }

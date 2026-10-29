@@ -22,7 +22,18 @@ trait HasScreens
 
     public function endScreen(EndScreen | Closure $screen): static
     {
-        $this->childComponents([$screen], 'end');
+        return $this->endScreens([$screen]);
+    }
+
+    /**
+     * Several end screens, chosen by logic with `endWith('name')`. The first one
+     * is shown when no rule chooses another.
+     *
+     * @param  array<EndScreen | Closure> | Closure  $screens
+     */
+    public function endScreens(array | Closure $screens): static
+    {
+        $this->childComponents($screens, 'end');
 
         return $this;
     }

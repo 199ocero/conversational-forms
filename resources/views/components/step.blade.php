@@ -6,10 +6,14 @@
     $name = $step->getName();
     $jsName = \Illuminate\Support\Js::from($name);
     $continueLabel = $step->getContinueLabel();
+    // Several questions on one screen: no auto-advance, and answer shortcuts
+    // only apply to the question that has focus.
+    $hasSeveralQuestions = count($step->getFields()) > 1;
 @endphp
 
 <section
     data-cf-step="{{ $name }}"
+    @if ($hasSeveralQuestions) data-cf-several-questions @endif
     x-bind:class="{
         'cf-active': isActive({{ $jsName }}),
         'cf-before': isBefore({{ $jsName }}),

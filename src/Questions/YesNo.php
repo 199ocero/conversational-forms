@@ -4,10 +4,12 @@ namespace JaOcero\ConversationalForms\Questions;
 
 use Closure;
 use JaOcero\ConversationalForms\Questions\Concerns\HasChoices;
+use JaOcero\ConversationalForms\Questions\Concerns\HasCorrectAnswer;
 
 class YesNo extends Question
 {
     use HasChoices;
+    use HasCorrectAnswer;
 
     protected string $view = 'conversational-forms::questions.yes-no';
 

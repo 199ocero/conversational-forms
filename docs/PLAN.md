@@ -583,6 +583,13 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 
 **Definition of done:** ≥ 150 evaluator dataset cases; PHP and JS pass the identical fixture set; a property-style test generates random rule sets and asserts the path always terminates and never visits a step twice; forged `score` in the request payload never changes the result; demo quiz works end to end.
 
+**Status (2026-10-29):** implemented and verified, not yet tagged. All operators from §3.3, and/or groups, calculations, quiz shorthand, named endings, `Redirect`, `visibleWhen()` (server + browser), `{@variable}` piping. 196 shared operator/group cases run by both Pest and Vitest; 200 randomized logic setups prove termination; scores can't be forged. Verified in real Chrome on the playground's onboarding conversation (lead scoring, a conditional question and two endings), public page and panel.
+
+**Changed from the original design:**
+- Logic rules, variables and correct answers are **never sent to the browser** (they would reveal quiz answers). The client-side path prediction is dropped; the progress bar uses the server's path, returned after every step. Only `visibleWhen()` conditions run in the browser.
+- Rules stop at the first matching rule that jumps or ends; calculations of earlier matching rules still apply. This makes `always()` a true fallback.
+- `{@variable}` piping is rendered on the server (meant for end screens), not live.
+
 ### Phase 4: v0.4.0 "Rich inputs"
 
 **Scope:** `Ranking` (drag *and* keyboard reordering: Space to grab, arrows to move, live-region announcements), `Matrix` (single/multiple per row, a `grid` ARIA pattern on desktop, stacked radiogroups on mobile), `DateQuestion` (typed DD/MM/YYYY segmented boxes with locale order, auto-tab, optional calendar popover, min/max), `TimeQuestion`, `ContactInfo` and `Address` (grouped sub-fields stored as an array, with per-part required flags and `autocomplete` tokens), `FileUpload` (wraps Filament's upload pipeline with our drop-zone UI, so Livewire temporary uploads, disk/visibility config and the validation rules are unchanged), `Signature` (canvas + pointer events, keyboard alternative "type your name", stored as PNG on a configured disk).

@@ -10,6 +10,25 @@ class EndScreen extends Screen
 
     protected string | Closure | null $buttonUrl = null;
 
+    protected string $name = 'default';
+
+    /**
+     * Give each end screen a name so logic can choose it with `endWith()`.
+     */
+    public static function make(string $name = 'default'): static
+    {
+        $static = app(static::class);
+        $static->name = $name;
+        $static->configure();
+
+        return $static;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
     public function getTitle(): string
     {
         return parent::getTitle() ?? __('conversational-forms::conversational-forms.end_screen.title');

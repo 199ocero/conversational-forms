@@ -4,6 +4,7 @@ namespace JaOcero\ConversationalForms\Questions;
 
 use Filament\Forms\Components\Concerns\HasOptions;
 use JaOcero\ConversationalForms\Questions\Concerns\HasChoices;
+use JaOcero\ConversationalForms\Questions\Concerns\HasCorrectAnswer;
 use JaOcero\ConversationalForms\Support\KeyboardHint;
 
 /**
@@ -13,6 +14,7 @@ use JaOcero\ConversationalForms\Support\KeyboardHint;
 class Dropdown extends Question
 {
     use HasChoices;
+    use HasCorrectAnswer;
     use HasOptions;
 
     protected string $view = 'conversational-forms::questions.dropdown';

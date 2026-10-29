@@ -1,6 +1,7 @@
 <?php
 
 use JaOcero\ConversationalForms\Components\Conversation;
+use JaOcero\ConversationalForms\Logic\Logic;
 use JaOcero\ConversationalForms\Questions\Checkbox;
 use JaOcero\ConversationalForms\Questions\Dropdown;
 use JaOcero\ConversationalForms\Questions\LegalConsent;
@@ -11,6 +12,7 @@ use JaOcero\ConversationalForms\Questions\PictureChoice;
 use JaOcero\ConversationalForms\Questions\Rating;
 use JaOcero\ConversationalForms\Questions\ShortText;
 use JaOcero\ConversationalForms\Questions\Website;
+use JaOcero\ConversationalForms\Screens\EndScreen;
 use JaOcero\ConversationalForms\Tests\Fixtures\Livewire\TestConversation;
 use Livewire\Features\SupportTesting\Testable;
 
@@ -132,6 +134,7 @@ describe('Checkbox', function () {
         conversation(Conversation::make([Checkbox::make('terms')->accepted(), ShortText::make('next')]))
             ->advanceConversation('terms')
             ->assertHasErrors(['data.terms' => 'accepted'])
+            ->tap(fn ($livewire) => expect($livewire->errors()->first('data.terms'))->toBe('Please accept to continue.'))
             ->set('data.terms', true)
             ->advanceConversation('terms')
             ->assertHasNoErrors();
@@ -139,16 +142,36 @@ describe('Checkbox', function () {
 });
 
 describe('LegalConsent', function () {
-    it('shows the terms and only lets a required consent continue when accepted', function () {
+    it('shows the terms and, when required, accepts either answer', function () {
         conversation(Conversation::make([LegalConsent::make('consent')->terms('By continuing you agree to our terms.')->required(), ShortText::make('next')]))
             ->assertSee(['By continuing you agree to our terms.', 'I accept', "I don't accept"])
             ->assertSeeHtml('class="cf-terms"')
+            ->advanceConversation('consent')
+            ->assertHasErrors(['data.consent' => 'required'])
+            ->set('data.consent', false)
+            ->advanceConversation('consent')
+            ->assertHasNoErrors();
+    });
+
+    it('can insist on acceptance with a clear message', function () {
+        conversation(Conversation::make([LegalConsent::make('consent')->accepted(), ShortText::make('next')]))
             ->set('data.consent', false)
             ->advanceConversation('consent')
             ->assertHasErrors(['data.consent' => 'accepted'])
+            ->tap(fn ($livewire) => expect($livewire->errors()->first('data.consent'))->toBe('Please accept to continue.'))
             ->set('data.consent', true)
             ->advanceConversation('consent')
             ->assertHasNoErrors();
+    });
+
+    it('lets logic handle a declined consent', function () {
+        conversation(Conversation::make([
+            LegalConsent::make('consent')->required()->logic([Logic::when('consent', 'is', false)->endWith('declined')]),
+            ShortText::make('next'),
+        ])->endScreens([EndScreen::make('default'), EndScreen::make('declined')]))
+            ->set('data.consent', false)
+            ->advanceConversation('consent')
+            ->assertReturned(fn (array $response): bool => ($response['next'] === null) && ($response['ending'] === 'declined'));
     });
 });
 

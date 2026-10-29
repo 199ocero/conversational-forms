@@ -5,7 +5,8 @@ namespace JaOcero\ConversationalForms\Logic;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * The ordered list of steps a respondent will see, given their answers so far.
+ * The steps a respondent will see given their answers so far, the end screen
+ * they will reach, and the variables calculated along the way.
  *
  * @implements Arrayable<int, string>
  */
@@ -13,9 +14,12 @@ final readonly class ConversationPath implements Arrayable
 {
     /**
      * @param  list<string>  $steps
+     * @param  array<string, mixed>  $variables
      */
     public function __construct(
         public array $steps,
+        public ?string $ending = null,
+        public array $variables = [],
     ) {}
 
     public function contains(string $step): bool

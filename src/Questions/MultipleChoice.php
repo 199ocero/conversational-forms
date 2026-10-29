@@ -5,12 +5,14 @@ namespace JaOcero\ConversationalForms\Questions;
 use Closure;
 use Filament\Forms\Components\Concerns\HasOptions;
 use JaOcero\ConversationalForms\Questions\Concerns\HasChoices;
+use JaOcero\ConversationalForms\Questions\Concerns\HasCorrectAnswer;
 use Random\Engine\Mt19937;
 use Random\Randomizer;
 
 class MultipleChoice extends Question
 {
     use HasChoices;
+    use HasCorrectAnswer;
     use HasOptions;
 
     protected string $view = 'conversational-forms::questions.multiple-choice';

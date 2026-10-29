@@ -39,6 +39,7 @@ return [
         'dropdown_placeholder' => 'Type or select an option',
         'dropdown_empty' => 'No matching options',
         'accept' => 'I accept',
+        'must_accept' => 'Please accept to continue.',
         'decline' => "I don't accept",
         'rating_value' => '{1} :value star out of :max|[2,*] :value stars out of :max',
         'nps_start' => 'Not likely at all',

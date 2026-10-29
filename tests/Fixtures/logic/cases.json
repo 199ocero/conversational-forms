@@ -1,0 +1,1691 @@
+{
+  "operators": [
+    {
+      "op": "is",
+      "answer": "enterprise",
+      "value": "enterprise",
+      "expected": true,
+      "note": "equal strings"
+    },
+    {
+      "op": "is_not",
+      "answer": "enterprise",
+      "value": "enterprise",
+      "expected": false,
+      "note": "equal strings"
+    },
+    {
+      "op": "is",
+      "answer": "Enterprise",
+      "value": "enterprise",
+      "expected": false,
+      "note": "case-sensitive"
+    },
+    {
+      "op": "is_not",
+      "answer": "Enterprise",
+      "value": "enterprise",
+      "expected": true,
+      "note": "case-sensitive"
+    },
+    {
+      "op": "is",
+      "answer": "starter",
+      "value": "enterprise",
+      "expected": false,
+      "note": "different strings"
+    },
+    {
+      "op": "is_not",
+      "answer": "starter",
+      "value": "enterprise",
+      "expected": true,
+      "note": "different strings"
+    },
+    {
+      "op": "is",
+      "answer": "7",
+      "value": 7,
+      "expected": true,
+      "note": "numeric string and integer"
+    },
+    {
+      "op": "is_not",
+      "answer": "7",
+      "value": 7,
+      "expected": false,
+      "note": "numeric string and integer"
+    },
+    {
+      "op": "is",
+      "answer": 7,
+      "value": 7.0,
+      "expected": true,
+      "note": "integer and float"
+    },
+    {
+      "op": "is_not",
+      "answer": 7,
+      "value": 7.0,
+      "expected": false,
+      "note": "integer and float"
+    },
+    {
+      "op": "is",
+      "answer": "7.50",
+      "value": 7.5,
+      "expected": true,
+      "note": "trailing zero"
+    },
+    {
+      "op": "is_not",
+      "answer": "7.50",
+      "value": 7.5,
+      "expected": false,
+      "note": "trailing zero"
+    },
+    {
+      "op": "is",
+      "answer": " 7 ",
+      "value": 7,
+      "expected": true,
+      "note": "surrounding spaces in a number"
+    },
+    {
+      "op": "is_not",
+      "answer": " 7 ",
+      "value": 7,
+      "expected": false,
+      "note": "surrounding spaces in a number"
+    },
+    {
+      "op": "is",
+      "answer": "1e3",
+      "value": 1000,
+      "expected": true,
+      "note": "exponent"
+    },
+    {
+      "op": "is_not",
+      "answer": "1e3",
+      "value": 1000,
+      "expected": false,
+      "note": "exponent"
+    },
+    {
+      "op": "is",
+      "answer": "0x1A",
+      "value": 26,
+      "expected": false,
+      "note": "hex is not a number"
+    },
+    {
+      "op": "is_not",
+      "answer": "0x1A",
+      "value": 26,
+      "expected": true,
+      "note": "hex is not a number"
+    },
+    {
+      "op": "is",
+      "answer": "07",
+      "value": 7,
+      "expected": true,
+      "note": "leading zero"
+    },
+    {
+      "op": "is_not",
+      "answer": "07",
+      "value": 7,
+      "expected": false,
+      "note": "leading zero"
+    },
+    {
+      "op": "is",
+      "answer": true,
+      "value": true,
+      "expected": true,
+      "note": "true"
+    },
+    {
+      "op": "is_not",
+      "answer": true,
+      "value": true,
+      "expected": false,
+      "note": "true"
+    },
+    {
+      "op": "is",
+      "answer": false,
+      "value": false,
+      "expected": true,
+      "note": "false"
+    },
+    {
+      "op": "is_not",
+      "answer": false,
+      "value": false,
+      "expected": false,
+      "note": "false"
+    },
+    {
+      "op": "is",
+      "answer": false,
+      "value": null,
+      "expected": false,
+      "note": "false is an answer"
+    },
+    {
+      "op": "is_not",
+      "answer": false,
+      "value": null,
+      "expected": true,
+      "note": "false is an answer"
+    },
+    {
+      "op": "is",
+      "answer": 0,
+      "value": null,
+      "expected": false,
+      "note": "zero is an answer"
+    },
+    {
+      "op": "is_not",
+      "answer": 0,
+      "value": null,
+      "expected": true,
+      "note": "zero is an answer"
+    },
+    {
+      "op": "is",
+      "answer": 0,
+      "value": false,
+      "expected": false,
+      "note": "zero is not false"
+    },
+    {
+      "op": "is_not",
+      "answer": 0,
+      "value": false,
+      "expected": true,
+      "note": "zero is not false"
+    },
+    {
+      "op": "is",
+      "answer": 1,
+      "value": true,
+      "expected": false,
+      "note": "one is not true"
+    },
+    {
+      "op": "is_not",
+      "answer": 1,
+      "value": true,
+      "expected": true,
+      "note": "one is not true"
+    },
+    {
+      "op": "is",
+      "answer": "true",
+      "value": true,
+      "expected": false,
+      "note": "string 'true' is not true"
+    },
+    {
+      "op": "is_not",
+      "answer": "true",
+      "value": true,
+      "expected": true,
+      "note": "string 'true' is not true"
+    },
+    {
+      "op": "is",
+      "answer": "",
+      "value": null,
+      "expected": true,
+      "note": "empty string is unanswered"
+    },
+    {
+      "op": "is_not",
+      "answer": "",
+      "value": null,
+      "expected": false,
+      "note": "empty string is unanswered"
+    },
+    {
+      "op": "is",
+      "answer": null,
+      "value": null,
+      "expected": true,
+      "note": "both unanswered"
+    },
+    {
+      "op": "is_not",
+      "answer": null,
+      "value": null,
+      "expected": false,
+      "note": "both unanswered"
+    },
+    {
+      "op": "is",
+      "answer": null,
+      "value": "x",
+      "expected": false,
+      "note": "unanswered vs value"
+    },
+    {
+      "op": "is_not",
+      "answer": null,
+      "value": "x",
+      "expected": true,
+      "note": "unanswered vs value"
+    },
+    {
+      "op": "is",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": "b",
+      "expected": true,
+      "note": "array includes value"
+    },
+    {
+      "op": "is_not",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": "b",
+      "expected": false,
+      "note": "array includes value"
+    },
+    {
+      "op": "is",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": "c",
+      "expected": false,
+      "note": "array lacks value"
+    },
+    {
+      "op": "is_not",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": "c",
+      "expected": true,
+      "note": "array lacks value"
+    },
+    {
+      "op": "is",
+      "answer": [],
+      "value": "a",
+      "expected": false,
+      "note": "empty array"
+    },
+    {
+      "op": "is_not",
+      "answer": [],
+      "value": "a",
+      "expected": true,
+      "note": "empty array"
+    },
+    {
+      "op": "is",
+      "answer": [
+        1,
+        2
+      ],
+      "value": "2",
+      "expected": true,
+      "note": "array of numbers"
+    },
+    {
+      "op": "is_not",
+      "answer": [
+        1,
+        2
+      ],
+      "value": "2",
+      "expected": false,
+      "note": "array of numbers"
+    },
+    {
+      "op": "is_empty",
+      "answer": null,
+      "value": null,
+      "expected": true,
+      "note": "null"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": null,
+      "value": null,
+      "expected": false,
+      "note": "null"
+    },
+    {
+      "op": "is_empty",
+      "answer": "",
+      "value": null,
+      "expected": true,
+      "note": "empty string"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": "",
+      "value": null,
+      "expected": false,
+      "note": "empty string"
+    },
+    {
+      "op": "is_empty",
+      "answer": "   ",
+      "value": null,
+      "expected": true,
+      "note": "whitespace"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": "   ",
+      "value": null,
+      "expected": false,
+      "note": "whitespace"
+    },
+    {
+      "op": "is_empty",
+      "answer": [],
+      "value": null,
+      "expected": true,
+      "note": "empty array"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": [],
+      "value": null,
+      "expected": false,
+      "note": "empty array"
+    },
+    {
+      "op": "is_empty",
+      "answer": "x",
+      "value": null,
+      "expected": false,
+      "note": "text"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": "x",
+      "value": null,
+      "expected": true,
+      "note": "text"
+    },
+    {
+      "op": "is_empty",
+      "answer": 0,
+      "value": null,
+      "expected": false,
+      "note": "zero"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": 0,
+      "value": null,
+      "expected": true,
+      "note": "zero"
+    },
+    {
+      "op": "is_empty",
+      "answer": false,
+      "value": null,
+      "expected": false,
+      "note": "false"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": false,
+      "value": null,
+      "expected": true,
+      "note": "false"
+    },
+    {
+      "op": "is_empty",
+      "answer": [
+        "a"
+      ],
+      "value": null,
+      "expected": false,
+      "note": "array"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": [
+        "a"
+      ],
+      "value": null,
+      "expected": true,
+      "note": "array"
+    },
+    {
+      "op": "is_empty",
+      "answer": "0",
+      "value": null,
+      "expected": false,
+      "note": "string zero"
+    },
+    {
+      "op": "is_not_empty",
+      "answer": "0",
+      "value": null,
+      "expected": true,
+      "note": "string zero"
+    },
+    {
+      "op": "contains",
+      "answer": "Hello World",
+      "value": "world",
+      "expected": true,
+      "note": "case-insensitive"
+    },
+    {
+      "op": "not_contains",
+      "answer": "Hello World",
+      "value": "world",
+      "expected": false,
+      "note": "case-insensitive"
+    },
+    {
+      "op": "contains",
+      "answer": "Hello World",
+      "value": "planet",
+      "expected": false,
+      "note": "missing"
+    },
+    {
+      "op": "not_contains",
+      "answer": "Hello World",
+      "value": "planet",
+      "expected": true,
+      "note": "missing"
+    },
+    {
+      "op": "contains",
+      "answer": "Hello",
+      "value": "",
+      "expected": true,
+      "note": "empty needle"
+    },
+    {
+      "op": "not_contains",
+      "answer": "Hello",
+      "value": "",
+      "expected": false,
+      "note": "empty needle"
+    },
+    {
+      "op": "contains",
+      "answer": null,
+      "value": "x",
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "not_contains",
+      "answer": null,
+      "value": "x",
+      "expected": true,
+      "note": "unanswered"
+    },
+    {
+      "op": "contains",
+      "answer": [
+        "red",
+        "green"
+      ],
+      "value": "ee",
+      "expected": true,
+      "note": "any item contains"
+    },
+    {
+      "op": "not_contains",
+      "answer": [
+        "red",
+        "green"
+      ],
+      "value": "ee",
+      "expected": false,
+      "note": "any item contains"
+    },
+    {
+      "op": "contains",
+      "answer": 12345,
+      "value": "234",
+      "expected": true,
+      "note": "number as text"
+    },
+    {
+      "op": "not_contains",
+      "answer": 12345,
+      "value": "234",
+      "expected": false,
+      "note": "number as text"
+    },
+    {
+      "op": "contains",
+      "answer": "Ümlaut",
+      "value": "üm",
+      "expected": true,
+      "note": "unicode case"
+    },
+    {
+      "op": "not_contains",
+      "answer": "Ümlaut",
+      "value": "üm",
+      "expected": false,
+      "note": "unicode case"
+    },
+    {
+      "op": "starts_with",
+      "answer": "Enterprise",
+      "value": "ent",
+      "expected": true,
+      "note": "prefix"
+    },
+    {
+      "op": "starts_with",
+      "answer": "Enterprise",
+      "value": "prise",
+      "expected": false,
+      "note": "suffix is not prefix"
+    },
+    {
+      "op": "starts_with",
+      "answer": null,
+      "value": "a",
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "starts_with",
+      "answer": [
+        "abc",
+        "xyz"
+      ],
+      "value": "x",
+      "expected": true,
+      "note": "any item"
+    },
+    {
+      "op": "ends_with",
+      "answer": "Enterprise",
+      "value": "PRISE",
+      "expected": true,
+      "note": "suffix, case-insensitive"
+    },
+    {
+      "op": "ends_with",
+      "answer": "Enterprise",
+      "value": "ent",
+      "expected": false,
+      "note": "prefix is not suffix"
+    },
+    {
+      "op": "ends_with",
+      "answer": null,
+      "value": "a",
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "ends_with",
+      "answer": "file.pdf",
+      "value": ".pdf",
+      "expected": true,
+      "note": "extension"
+    },
+    {
+      "op": "includes_any",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": [
+        "b",
+        "c"
+      ],
+      "expected": true,
+      "note": "partial overlap"
+    },
+    {
+      "op": "excludes",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": [
+        "b",
+        "c"
+      ],
+      "expected": false,
+      "note": "partial overlap"
+    },
+    {
+      "op": "includes_all",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": [
+        "b",
+        "c"
+      ],
+      "expected": false,
+      "note": "partial overlap"
+    },
+    {
+      "op": "includes_any",
+      "answer": [
+        "a",
+        "b",
+        "c"
+      ],
+      "value": [
+        "a",
+        "c"
+      ],
+      "expected": true,
+      "note": "all present"
+    },
+    {
+      "op": "excludes",
+      "answer": [
+        "a",
+        "b",
+        "c"
+      ],
+      "value": [
+        "a",
+        "c"
+      ],
+      "expected": false,
+      "note": "all present"
+    },
+    {
+      "op": "includes_all",
+      "answer": [
+        "a",
+        "b",
+        "c"
+      ],
+      "value": [
+        "a",
+        "c"
+      ],
+      "expected": true,
+      "note": "all present"
+    },
+    {
+      "op": "includes_any",
+      "answer": [
+        "a"
+      ],
+      "value": [
+        "x",
+        "y"
+      ],
+      "expected": false,
+      "note": "no overlap"
+    },
+    {
+      "op": "excludes",
+      "answer": [
+        "a"
+      ],
+      "value": [
+        "x",
+        "y"
+      ],
+      "expected": true,
+      "note": "no overlap"
+    },
+    {
+      "op": "includes_all",
+      "answer": [
+        "a"
+      ],
+      "value": [
+        "x",
+        "y"
+      ],
+      "expected": false,
+      "note": "no overlap"
+    },
+    {
+      "op": "includes_any",
+      "answer": "a",
+      "value": [
+        "a",
+        "b"
+      ],
+      "expected": true,
+      "note": "single answer"
+    },
+    {
+      "op": "excludes",
+      "answer": "a",
+      "value": [
+        "a",
+        "b"
+      ],
+      "expected": false,
+      "note": "single answer"
+    },
+    {
+      "op": "includes_all",
+      "answer": "a",
+      "value": [
+        "a",
+        "b"
+      ],
+      "expected": false,
+      "note": "single answer"
+    },
+    {
+      "op": "includes_any",
+      "answer": null,
+      "value": [
+        "a"
+      ],
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "excludes",
+      "answer": null,
+      "value": [
+        "a"
+      ],
+      "expected": true,
+      "note": "unanswered"
+    },
+    {
+      "op": "includes_all",
+      "answer": null,
+      "value": [
+        "a"
+      ],
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "includes_any",
+      "answer": [],
+      "value": [
+        "a"
+      ],
+      "expected": false,
+      "note": "empty answer"
+    },
+    {
+      "op": "excludes",
+      "answer": [],
+      "value": [
+        "a"
+      ],
+      "expected": true,
+      "note": "empty answer"
+    },
+    {
+      "op": "includes_all",
+      "answer": [],
+      "value": [
+        "a"
+      ],
+      "expected": false,
+      "note": "empty answer"
+    },
+    {
+      "op": "includes_any",
+      "answer": [
+        "a"
+      ],
+      "value": [],
+      "expected": false,
+      "note": "empty values"
+    },
+    {
+      "op": "excludes",
+      "answer": [
+        "a"
+      ],
+      "value": [],
+      "expected": true,
+      "note": "empty values"
+    },
+    {
+      "op": "includes_all",
+      "answer": [
+        "a"
+      ],
+      "value": [],
+      "expected": false,
+      "note": "empty values"
+    },
+    {
+      "op": "includes_any",
+      "answer": [
+        1,
+        2
+      ],
+      "value": [
+        "2"
+      ],
+      "expected": true,
+      "note": "numbers loosely"
+    },
+    {
+      "op": "excludes",
+      "answer": [
+        1,
+        2
+      ],
+      "value": [
+        "2"
+      ],
+      "expected": false,
+      "note": "numbers loosely"
+    },
+    {
+      "op": "includes_all",
+      "answer": [
+        1,
+        2
+      ],
+      "value": [
+        "2"
+      ],
+      "expected": true,
+      "note": "numbers loosely"
+    },
+    {
+      "op": "includes_any",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": "b",
+      "expected": true,
+      "note": "single value"
+    },
+    {
+      "op": "excludes",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": "b",
+      "expected": false,
+      "note": "single value"
+    },
+    {
+      "op": "includes_all",
+      "answer": [
+        "a",
+        "b"
+      ],
+      "value": "b",
+      "expected": true,
+      "note": "single value"
+    },
+    {
+      "op": "gt",
+      "answer": 10,
+      "value": 5,
+      "expected": true,
+      "note": "greater"
+    },
+    {
+      "op": "gte",
+      "answer": 10,
+      "value": 5,
+      "expected": true,
+      "note": "greater"
+    },
+    {
+      "op": "lt",
+      "answer": 10,
+      "value": 5,
+      "expected": false,
+      "note": "greater"
+    },
+    {
+      "op": "lte",
+      "answer": 10,
+      "value": 5,
+      "expected": false,
+      "note": "greater"
+    },
+    {
+      "op": "gt",
+      "answer": 5,
+      "value": 10,
+      "expected": false,
+      "note": "smaller"
+    },
+    {
+      "op": "gte",
+      "answer": 5,
+      "value": 10,
+      "expected": false,
+      "note": "smaller"
+    },
+    {
+      "op": "lt",
+      "answer": 5,
+      "value": 10,
+      "expected": true,
+      "note": "smaller"
+    },
+    {
+      "op": "lte",
+      "answer": 5,
+      "value": 10,
+      "expected": true,
+      "note": "smaller"
+    },
+    {
+      "op": "gt",
+      "answer": 5,
+      "value": 5,
+      "expected": false,
+      "note": "equal"
+    },
+    {
+      "op": "gte",
+      "answer": 5,
+      "value": 5,
+      "expected": true,
+      "note": "equal"
+    },
+    {
+      "op": "lt",
+      "answer": 5,
+      "value": 5,
+      "expected": false,
+      "note": "equal"
+    },
+    {
+      "op": "lte",
+      "answer": 5,
+      "value": 5,
+      "expected": true,
+      "note": "equal"
+    },
+    {
+      "op": "gt",
+      "answer": "12.5",
+      "value": 12,
+      "expected": true,
+      "note": "decimal string"
+    },
+    {
+      "op": "gte",
+      "answer": "12.5",
+      "value": 12,
+      "expected": true,
+      "note": "decimal string"
+    },
+    {
+      "op": "lt",
+      "answer": "12.5",
+      "value": 12,
+      "expected": false,
+      "note": "decimal string"
+    },
+    {
+      "op": "lte",
+      "answer": "12.5",
+      "value": 12,
+      "expected": false,
+      "note": "decimal string"
+    },
+    {
+      "op": "gt",
+      "answer": "-3",
+      "value": 0,
+      "expected": false,
+      "note": "negative"
+    },
+    {
+      "op": "gte",
+      "answer": "-3",
+      "value": 0,
+      "expected": false,
+      "note": "negative"
+    },
+    {
+      "op": "lt",
+      "answer": "-3",
+      "value": 0,
+      "expected": true,
+      "note": "negative"
+    },
+    {
+      "op": "lte",
+      "answer": "-3",
+      "value": 0,
+      "expected": true,
+      "note": "negative"
+    },
+    {
+      "op": "gt",
+      "answer": "abc",
+      "value": 5,
+      "expected": false,
+      "note": "not a number"
+    },
+    {
+      "op": "gte",
+      "answer": "abc",
+      "value": 5,
+      "expected": false,
+      "note": "not a number"
+    },
+    {
+      "op": "lt",
+      "answer": "abc",
+      "value": 5,
+      "expected": false,
+      "note": "not a number"
+    },
+    {
+      "op": "lte",
+      "answer": "abc",
+      "value": 5,
+      "expected": false,
+      "note": "not a number"
+    },
+    {
+      "op": "gt",
+      "answer": null,
+      "value": 0,
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "gte",
+      "answer": null,
+      "value": 0,
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "lt",
+      "answer": null,
+      "value": 0,
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "lte",
+      "answer": null,
+      "value": 0,
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "gt",
+      "answer": true,
+      "value": 0,
+      "expected": false,
+      "note": "boolean"
+    },
+    {
+      "op": "gte",
+      "answer": true,
+      "value": 0,
+      "expected": false,
+      "note": "boolean"
+    },
+    {
+      "op": "lt",
+      "answer": true,
+      "value": 0,
+      "expected": false,
+      "note": "boolean"
+    },
+    {
+      "op": "lte",
+      "answer": true,
+      "value": 0,
+      "expected": false,
+      "note": "boolean"
+    },
+    {
+      "op": "gt",
+      "answer": "",
+      "value": 0,
+      "expected": false,
+      "note": "empty string"
+    },
+    {
+      "op": "gte",
+      "answer": "",
+      "value": 0,
+      "expected": false,
+      "note": "empty string"
+    },
+    {
+      "op": "lt",
+      "answer": "",
+      "value": 0,
+      "expected": false,
+      "note": "empty string"
+    },
+    {
+      "op": "lte",
+      "answer": "",
+      "value": 0,
+      "expected": false,
+      "note": "empty string"
+    },
+    {
+      "op": "between",
+      "answer": 5,
+      "value": [
+        1,
+        10
+      ],
+      "expected": true,
+      "note": "inside"
+    },
+    {
+      "op": "between",
+      "answer": 1,
+      "value": [
+        1,
+        10
+      ],
+      "expected": true,
+      "note": "lower bound"
+    },
+    {
+      "op": "between",
+      "answer": 10,
+      "value": [
+        1,
+        10
+      ],
+      "expected": true,
+      "note": "upper bound"
+    },
+    {
+      "op": "between",
+      "answer": 11,
+      "value": [
+        1,
+        10
+      ],
+      "expected": false,
+      "note": "above"
+    },
+    {
+      "op": "between",
+      "answer": "7",
+      "value": [
+        "5",
+        "8"
+      ],
+      "expected": true,
+      "note": "strings"
+    },
+    {
+      "op": "between",
+      "answer": 5,
+      "value": [
+        1
+      ],
+      "expected": false,
+      "note": "bad range"
+    },
+    {
+      "op": "between",
+      "answer": 5,
+      "value": 5,
+      "expected": false,
+      "note": "not a range"
+    },
+    {
+      "op": "between",
+      "answer": null,
+      "value": [
+        1,
+        10
+      ],
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "between",
+      "answer": "2026-06-15",
+      "value": [
+        "2026-06-01",
+        "2026-06-30"
+      ],
+      "expected": true,
+      "note": "date inside"
+    },
+    {
+      "op": "between",
+      "answer": "2026-07-01",
+      "value": [
+        "2026-06-01",
+        "2026-06-30"
+      ],
+      "expected": false,
+      "note": "date outside"
+    },
+    {
+      "op": "before",
+      "answer": "2026-01-10",
+      "value": "2026-01-20",
+      "expected": true,
+      "note": "earlier"
+    },
+    {
+      "op": "after",
+      "answer": "2026-01-10",
+      "value": "2026-01-20",
+      "expected": false,
+      "note": "earlier"
+    },
+    {
+      "op": "on",
+      "answer": "2026-01-10",
+      "value": "2026-01-20",
+      "expected": false,
+      "note": "earlier"
+    },
+    {
+      "op": "not_on",
+      "answer": "2026-01-10",
+      "value": "2026-01-20",
+      "expected": true,
+      "note": "earlier"
+    },
+    {
+      "op": "before",
+      "answer": "2026-01-20",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "later"
+    },
+    {
+      "op": "after",
+      "answer": "2026-01-20",
+      "value": "2026-01-10",
+      "expected": true,
+      "note": "later"
+    },
+    {
+      "op": "on",
+      "answer": "2026-01-20",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "later"
+    },
+    {
+      "op": "not_on",
+      "answer": "2026-01-20",
+      "value": "2026-01-10",
+      "expected": true,
+      "note": "later"
+    },
+    {
+      "op": "before",
+      "answer": "2026-01-10",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "same day"
+    },
+    {
+      "op": "after",
+      "answer": "2026-01-10",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "same day"
+    },
+    {
+      "op": "on",
+      "answer": "2026-01-10",
+      "value": "2026-01-10",
+      "expected": true,
+      "note": "same day"
+    },
+    {
+      "op": "not_on",
+      "answer": "2026-01-10",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "same day"
+    },
+    {
+      "op": "before",
+      "answer": "2026-01-10 14:30:00",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "date and time"
+    },
+    {
+      "op": "after",
+      "answer": "2026-01-10 14:30:00",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "date and time"
+    },
+    {
+      "op": "on",
+      "answer": "2026-01-10 14:30:00",
+      "value": "2026-01-10",
+      "expected": true,
+      "note": "date and time"
+    },
+    {
+      "op": "not_on",
+      "answer": "2026-01-10 14:30:00",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "date and time"
+    },
+    {
+      "op": "before",
+      "answer": "next week",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "not a date"
+    },
+    {
+      "op": "after",
+      "answer": "next week",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "not a date"
+    },
+    {
+      "op": "on",
+      "answer": "next week",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "not a date"
+    },
+    {
+      "op": "not_on",
+      "answer": "next week",
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "not a date"
+    },
+    {
+      "op": "before",
+      "answer": null,
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "after",
+      "answer": null,
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "on",
+      "answer": null,
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "unanswered"
+    },
+    {
+      "op": "not_on",
+      "answer": null,
+      "value": "2026-01-10",
+      "expected": false,
+      "note": "unanswered"
+    }
+  ],
+  "groups": [
+    {
+      "conditions": {
+        "all": [
+          {
+            "field": "plan",
+            "op": "is",
+            "value": "team"
+          },
+          {
+            "field": "seats",
+            "op": "gte",
+            "value": 5
+          }
+        ]
+      },
+      "answers": {
+        "plan": "team",
+        "seats": "8"
+      },
+      "variables": {},
+      "expected": true,
+      "note": "all match"
+    },
+    {
+      "conditions": {
+        "all": [
+          {
+            "field": "plan",
+            "op": "is",
+            "value": "team"
+          },
+          {
+            "field": "seats",
+            "op": "gte",
+            "value": 5
+          }
+        ]
+      },
+      "answers": {
+        "plan": "team",
+        "seats": "2"
+      },
+      "variables": {},
+      "expected": false,
+      "note": "one fails"
+    },
+    {
+      "conditions": {
+        "any": [
+          {
+            "field": "plan",
+            "op": "is",
+            "value": "team"
+          },
+          {
+            "field": "urgent",
+            "op": "is",
+            "value": true
+          }
+        ]
+      },
+      "answers": {
+        "plan": "solo",
+        "urgent": true
+      },
+      "variables": {},
+      "expected": true,
+      "note": "any matches"
+    },
+    {
+      "conditions": {
+        "any": [
+          {
+            "field": "plan",
+            "op": "is",
+            "value": "team"
+          },
+          {
+            "field": "urgent",
+            "op": "is",
+            "value": true
+          }
+        ]
+      },
+      "answers": {
+        "plan": "solo"
+      },
+      "variables": {},
+      "expected": false,
+      "note": "none match"
+    },
+    {
+      "conditions": {
+        "all": [
+          {
+            "field": "country",
+            "op": "is",
+            "value": "ph"
+          },
+          {
+            "any": [
+              {
+                "field": "age",
+                "op": "lt",
+                "value": 18
+              },
+              {
+                "field": "student",
+                "op": "is",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "answers": {
+        "country": "ph",
+        "age": 25,
+        "student": true
+      },
+      "variables": {},
+      "expected": true,
+      "note": "nested any inside all"
+    },
+    {
+      "conditions": {
+        "all": [
+          {
+            "field": "country",
+            "op": "is",
+            "value": "ph"
+          },
+          {
+            "any": [
+              {
+                "field": "age",
+                "op": "lt",
+                "value": 18
+              },
+              {
+                "field": "student",
+                "op": "is",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "answers": {
+        "country": "ph",
+        "age": 25,
+        "student": false
+      },
+      "variables": {},
+      "expected": false,
+      "note": "nested any fails"
+    },
+    {
+      "conditions": {
+        "all": [
+          {
+            "field": "company.size",
+            "op": "gt",
+            "value": 100
+          }
+        ]
+      },
+      "answers": {
+        "company": {
+          "size": 250
+        }
+      },
+      "variables": {},
+      "expected": true,
+      "note": "nested answer path"
+    },
+    {
+      "conditions": {
+        "all": [
+          {
+            "field": "@score",
+            "op": "gte",
+            "value": 70
+          }
+        ]
+      },
+      "answers": {},
+      "variables": {
+        "score": 80
+      },
+      "expected": true,
+      "note": "variable"
+    },
+    {
+      "conditions": {
+        "all": [
+          {
+            "field": "@score",
+            "op": "gte",
+            "value": 70
+          }
+        ]
+      },
+      "answers": {
+        "score": 99
+      },
+      "variables": {},
+      "expected": false,
+      "note": "variables are not answers"
+    },
+    {
+      "conditions": {
+        "any": []
+      },
+      "answers": {},
+      "variables": {},
+      "expected": false,
+      "note": "empty any"
+    },
+    {
+      "conditions": {
+        "all": []
+      },
+      "answers": {},
+      "variables": {},
+      "expected": true,
+      "note": "empty all"
+    }
+  ]
+}

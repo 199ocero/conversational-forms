@@ -7,7 +7,7 @@ Typeform-style conversational forms for Filament. One question at a time, fully 
 
 - **One question per screen**, with smooth transitions, a progress bar, and welcome and end screens.
 - **Keyboard first**: Enter to continue, letter and number shortcuts, auto-advance after a choice.
-- **Logic jumps** that are re-checked on the server, so skipped questions are never required and answers cannot be forged.
+- **Logic**: jumps, and/or conditions, show/hide, multiple endings, redirects, and scores, re-checked on the server so skipped questions are never required and results can't be forged.
 - **Works with any Filament field.** The plugin's own question fields look the part, and every other field (built-in or third-party) still works inside a conversation.
 - **Your data stays yours.** Answers go through Filament's normal validation and state handling, and are handed back to you to save however you like.
 - **Public pages** that work with or without a Filament panel, no login required.
@@ -143,7 +143,8 @@ Conversation::make([...])
 | Method | Description |
 | --- | --- |
 | `welcomeScreen()` | An optional first screen with a start button. |
-| `endScreen()` | The screen shown after submitting. A default "Thanks" screen is shown when none is set. |
+| `endScreen()` / `endScreens()` | The screen shown after submitting, or several chosen by logic. A default "Thanks" screen is shown when none is set. See [Endings](#endings). |
+| `variables()` | Variables and their starting values. See [Variables and scores](#variables-and-scores). |
 | `progressBar()` | Show how far along the respondent is. It follows the actual path, so skipped questions don't count. |
 | `navigationButtons()` | Previous and next arrow buttons. Keyboard shortcuts work either way. |
 | `autoAdvance()` | Move to the next question as soon as a single-choice question is answered. |
@@ -321,7 +322,10 @@ Checkbox::make('updates')
 
 ### LegalConsent
 
-Ask the respondent to accept terms. When it is `required()`, only accepting lets them continue. Pass an `HtmlString` to include links.
+Ask the respondent to accept terms. Saved as `true` (accepted) or `false` (declined). Pass an `HtmlString` to include links.
+
+- `required()` means an answer must be chosen. Declining is a valid answer, so you can handle it with logic, for example by ending the conversation.
+- `accepted()` means only accepting lets the respondent continue. They see "Please accept to continue." otherwise.
 
 ```php
 use Illuminate\Support\HtmlString;
@@ -330,7 +334,8 @@ use JaOcero\ConversationalForms\Questions\LegalConsent;
 LegalConsent::make('consent')
     ->label('Do you accept our terms?')
     ->terms(new HtmlString('Read our <a href="/privacy">privacy policy</a>.'))
-    ->required();
+    ->required()
+    ->logic([Logic::when('consent', 'is', false)->endWith('declined')]);
 ```
 
 ### OpinionScale and Nps
@@ -424,7 +429,7 @@ Choices show their label (`{plan}` → "Enterprise"), yes / no answers show "Yes
 
 ## Logic
 
-Logic decides which question comes next. Rules are attached to a question and evaluated in order after it is answered: the first rule whose conditions match wins. Without a matching rule, the conversation moves to the next question.
+Logic decides what happens after a question is answered: which question comes next, whether the conversation ends early and with which end screen, and how variables such as a score change.
 
 ```php
 use JaOcero\ConversationalForms\Logic\Logic;
@@ -433,22 +438,123 @@ MultipleChoice::make('plan')
     ->options([...])
     ->logic([
         Logic::when('plan', 'is', 'enterprise')->jumpTo('company_size'),
-        Logic::when('plan', 'is', 'none')->end(),          // skip to the end
-        Logic::always()->jumpTo('recommend'),             // fallback
+        Logic::when('plan', 'is', 'none')->end(),                 // finish now
+        Logic::when('plan', 'is', 'student')->endWith('student'), // finish with a specific end screen
+        Logic::always()->jumpTo('recommend'),                    // fallback
     ]);
-
-// Several conditions must all match:
-Logic::when('plan', 'is', 'team')->and('seats', 'is_not', '1')->jumpTo('team_size');
 ```
 
-Questions are referred to by their field name. The operators available in this version are `is` (also `=`) and `is_not` (also `!=`); more operators, and/or groups, scoring and multiple endings are on the [roadmap](docs/PLAN.md).
+Rules are evaluated **in order**. Every matching rule runs its calculations, and the first matching rule that jumps or ends decides where to go; the rules after it are skipped. Without such a rule, the conversation moves to the next question. Questions (and statements and groups) are referred to by their name.
 
-**Logic is safe by design:**
+### Conditions
 
-- Jumps can only move forward, so a conversation can never loop. A rule that jumps backwards, or to a question that doesn't exist, throws an `InvalidLogicException` with a clear message as soon as the conversation is rendered.
+```php
+// All conditions must match (AND):
+Logic::when('plan', 'is', 'team')->and('seats', '>=', 5)->jumpTo('team_size');
+
+// At least one must match (OR):
+Logic::when('plan', 'is', 'enterprise')->or('seats', '>', 100)->jumpTo('sales');
+
+// Nested groups:
+Logic::when(Logic::all([
+    Logic::condition('country', 'is', 'ph'),
+    Logic::any([
+        Logic::condition('age', '<', 18),
+        Logic::condition('student', 'is', true),
+    ]),
+]))->jumpTo('discount');
+```
+
+A single chain can't mix `and()` and `or()`; use `Logic::all()` and `Logic::any()` to group conditions instead.
+
+| Answer | Operators |
+| --- | --- |
+| Any | `is` (`=`), `is_not` (`!=`), `is_empty`, `is_not_empty` |
+| Text | `contains`, `not_contains`, `starts_with`, `ends_with` (case-insensitive) |
+| Multiple answers | `includes_any`, `includes_all`, `excludes` (value: an array); `is` matches any chosen answer |
+| Numbers, scales, ratings | `gt` (`>`), `gte` (`>=`), `lt` (`<`), `lte` (`<=`), `between` (value: `[min, max]`, inclusive) |
+| Dates (`YYYY-MM-DD`) | `before`, `after`, `on`, `not_on`, `between` |
+
+Numbers compare by value (`'7.50'` is `7.5`), `false` and `0` are answers rather than "empty", and an empty string counts as unanswered.
+
+### Variables and scores
+
+Variables are calculated by logic, for example a quiz score or a lead score. They start at 0 unless you give them a starting value:
+
+```php
+Conversation::make([...])
+    ->variables(['score' => 0, 'lives' => 3]);
+
+Logic::when('q1', 'is', 'b')->add('score', 10);
+Logic::always()->subtract('lives', 1);   // also multiply(), divide() and set()
+
+Logic::whenVariable('score', '>=', 70)->endWith('passed');
+```
+
+For quizzes, mark the correct answer and the points it is worth. For a multiple-answer question, every correct answer and no other must be chosen:
+
+```php
+MultipleChoice::make('capital')->options([...])->correct('manila')->points(10);
+MultipleChoice::make('primes')->options([...])->multiple()->correct(['2', '3'])->points(10);
+```
+
+Show a variable with `{@score}` in an end screen, and read it when the conversation is submitted:
+
+```php
+EndScreen::make('passed')->title('You scored {@score} points, {first_name}!');
+
+protected function handleConversationSubmission(array $data, ConversationResult $result): void
+{
+    $result->variable('score'); // also $result->variables and $result->ending
+}
+```
+
+Variables, logic rules and correct answers never leave the server: they are not in the page and not in any response, so a respondent can't read the answers to a quiz or change their score. That is also why `{@variable}` is meant for end screens: it is filled in when the conversation is submitted.
+
+### Endings
+
+Give a conversation several end screens and choose one with logic. The first is shown when no rule chooses another:
+
+```php
+use JaOcero\ConversationalForms\Screens\EndScreen;
+use JaOcero\ConversationalForms\Screens\Redirect;
+
+Conversation::make([...])->endScreens([
+    EndScreen::make('default')->title('Thanks!'),
+    EndScreen::make('not_eligible')->title('Sorry, you need to be 18 or older.'),
+    Redirect::make('book_a_call')->url('https://cal.example.com/acme?email={email}'),
+]);
+
+Number::make('age')->logic([Logic::when('age', '<', 18)->endWith('not_eligible')]);
+```
+
+A `Redirect` ending sends the respondent to a URL after the conversation is submitted. `{field}` and `{@variable}` tokens in the URL are replaced with URL-encoded values.
+
+### Showing and hiding questions
+
+`visibleWhen()` shows a question, statement or group only when its conditions match:
+
+```php
+QuestionGroup::make('work', [
+    MultipleChoice::make('employment')->options(['employed' => 'Employed', 'student' => 'Student']),
+    ShortText::make('company')
+        ->required()
+        ->visibleWhen(Logic::condition('employment', 'is', 'employed')),
+]);
+
+Statement::make('team_tips')->visibleWhen(Logic::any([...]));
+```
+
+Inside a group, the question appears or disappears as soon as the earlier answer changes, without a request to the server. A hidden question is never required and its answer is not saved. A whole step (a single question, statement or group) whose conditions don't match is skipped. Visibility can only depend on answers, not on variables.
+
+### Safety
+
+- Jumps can only move forward, so a conversation can never loop. A rule that jumps backwards, or to a question or end screen that doesn't exist, throws an `InvalidLogicException` with a clear message as soon as the conversation is rendered.
 - Questions that logic skips are not required, and their answers are not saved.
-- The path is worked out again on the server when the conversation is submitted. A modified browser cannot skip a required question or submit answers to questions that were not on its path.
+- The path, the ending and every variable are worked out again on the server when the conversation is submitted. A modified browser can't skip a required question, submit answers to questions that weren't on its path, choose its ending or change a score.
 - Answers to questions that are no longer on the path (for example after the respondent goes back and changes an earlier answer) never influence later rules.
+
+### Logic for other fields
 
 For fields that aren't conversation questions (see [Using other Filament fields](#using-other-filament-fields)), pass logic to the conversation, keyed by the field name:
 

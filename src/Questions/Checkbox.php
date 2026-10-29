@@ -23,6 +23,9 @@ class Checkbox extends Question
 
         $this->default(false);
         $this->rule('boolean');
+        $this->validationMessages([
+            'accepted' => __('conversational-forms::conversational-forms.questions.must_accept'),
+        ]);
     }
 
     /**

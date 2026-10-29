@@ -28,6 +28,16 @@ class InvalidLogicException extends InvalidArgumentException
 
     public static function missingTarget(string $step): self
     {
-        return new self("A logic rule on [{$step}] has conditions but no action. Call [jumpTo()] or [end()] on it.");
+        return new self("A logic rule on [{$step}] has no action. Call [jumpTo()], [end()], [endWith()] or a calculation such as [add()] on it.");
+    }
+
+    public static function unknownEnding(string $step, string $ending): self
+    {
+        return new self("A logic rule on [{$step}] ends with [{$ending}], but no end screen with that name exists in the conversation.");
+    }
+
+    public static function variablesInVisibility(string $field): self
+    {
+        return new self("The visibility conditions of [{$field}] use a variable. Variables are only calculated on the server, so visibility can only depend on answers.");
     }
 }

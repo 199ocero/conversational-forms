@@ -4,6 +4,7 @@ namespace JaOcero\ConversationalForms\Components;
 
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
+use JaOcero\ConversationalForms\Logic\ConditionGroup;
 use JaOcero\ConversationalForms\Logic\Rule;
 use JaOcero\ConversationalForms\Questions\Question;
 use LogicException;
@@ -117,6 +118,17 @@ abstract class Step extends Component
     public function getContinueLabel(): ?string
     {
         return null;
+    }
+
+    /**
+     * A step with a single question is shown only when that question's
+     * visibility conditions match. Statements and groups set their own.
+     */
+    public function getVisibilityConditions(): ?ConditionGroup
+    {
+        $question = $this->getQuestion();
+
+        return (($question instanceof Question) && (count($this->getFields()) === 1)) ? $question->getVisibilityConditions() : null;
     }
 
     public function getQuestion(): ?Question

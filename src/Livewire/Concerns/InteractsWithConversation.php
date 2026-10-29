@@ -6,6 +6,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Validation\ValidationException;
 use JaOcero\ConversationalForms\Components\Conversation;
 use JaOcero\ConversationalForms\Livewire\ConversationResult;
+use JaOcero\ConversationalForms\Screens\Redirect;
 use Livewire\Attributes\Locked;
 use LogicException;
 
@@ -34,15 +35,26 @@ trait InteractsWithConversation
             throw $exception;
         }
 
+        $path = $conversation->resolvePath();
+
         $result = new ConversationResult(
             data: $data,
-            path: $conversation->resolvePath()->toArray(),
-            ending: $conversation->getEnding(),
+            path: $path->toArray(),
+            ending: $path->ending ?? Conversation::DEFAULT_ENDING,
+            variables: $path->variables,
         );
 
         $this->handleConversationSubmission($data, $result);
 
         $this->completedConversationEnding = $result->ending;
+
+        $endScreen = $conversation->getEndScreen($result->ending);
+
+        if (($endScreen instanceof Redirect) && filled($url = $endScreen->getUrlFor($conversation, $result->variables))) {
+            $this->redirect($url);
+
+            return;
+        }
 
         $this->dispatch('cf-conversation-completed', key: $conversation->getKey(), ending: $result->ending);
     }

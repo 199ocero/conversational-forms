@@ -168,6 +168,10 @@ export default function choiceQuestionComponent({
                 return false
             }
 
+            if (step.hasAttribute('data-cf-several-questions')) {
+                return root.contains(document.activeElement)
+            }
+
             return (
                 conversation?.dataset.cfFullScreen === 'true' ||
                 conversation?.contains(document.activeElement)

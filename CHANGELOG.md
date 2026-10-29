@@ -2,6 +2,17 @@
 
 All notable changes to `conversational-forms` will be documented in this file.
 
+## Unreleased (v0.3.0)
+
+- Logic operators for text, multiple answers, numbers and dates, with and/or condition groups.
+- Variables and calculations (`add()`, `subtract()`, `multiply()`, `divide()`, `set()`), and quiz scoring with `correct()` and `points()`.
+- Several end screens chosen with `endWith()`, and `Redirect` endings with answers and variables in the URL.
+- `visibleWhen()` on questions, statements and groups, checked on the server and in the browser.
+- `{@variable}` piping, and variables in `ConversationResult`.
+- Logic rules, variables and correct answers never leave the server.
+- A step with several questions no longer auto-advances, and its answer shortcuts apply to the focused question.
+- The first field of a step gets focus, in document order.
+
 ## Unreleased (v0.2.0)
 
 - Questions: `Website`, `Phone` (normalized numbers), `Number`, `Dropdown` (searchable combobox), `Checkbox`, `LegalConsent`, `PictureChoice`, `Rating` (stars, hearts or thumbs) and `Nps`.

@@ -5,6 +5,7 @@ namespace JaOcero\ConversationalForms\Questions;
 use Closure;
 use InvalidArgumentException;
 use JaOcero\ConversationalForms\Questions\Concerns\HasChoices;
+use JaOcero\ConversationalForms\Questions\Concerns\HasCorrectAnswer;
 use JaOcero\ConversationalForms\Support\KeyboardHint;
 
 /**
@@ -13,6 +14,7 @@ use JaOcero\ConversationalForms\Support\KeyboardHint;
 class Rating extends Question
 {
     use HasChoices;
+    use HasCorrectAnswer;
 
     public const SHAPES = ['star', 'heart', 'thumb'];
 

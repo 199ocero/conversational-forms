@@ -5,6 +5,7 @@ namespace JaOcero\ConversationalForms\Components;
 use Closure;
 use Filament\Schemas\Components\Component;
 use Illuminate\Contracts\Support\Htmlable;
+use JaOcero\ConversationalForms\Concerns\HasVisibilityConditions;
 
 /**
  * Several questions on one screen, validated together, for example a first
@@ -13,6 +14,8 @@ use Illuminate\Contracts\Support\Htmlable;
  */
 class QuestionGroup extends Step
 {
+    use HasVisibilityConditions;
+
     protected string $view = 'conversational-forms::schemas.question-group';
 
     protected string | Htmlable | Closure | null $label = null;

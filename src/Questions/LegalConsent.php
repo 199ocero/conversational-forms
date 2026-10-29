@@ -3,14 +3,18 @@
 namespace JaOcero\ConversationalForms\Questions;
 
 use Closure;
+use Filament\Forms\Components\Concerns\CanBeAccepted;
 use Illuminate\Contracts\Support\Htmlable;
 
 /**
- * Ask the respondent to accept terms. When required, only accepting lets
- * them continue. Saved as `true` (accepted) or `false`.
+ * Ask the respondent to accept terms. Saved as `true` (accepted) or `false`
+ * (declined). `required()` means an answer must be chosen, so declining can be
+ * handled with logic; `accepted()` means only accepting lets them continue.
  */
 class LegalConsent extends YesNo
 {
+    use CanBeAccepted;
+
     protected string $view = 'conversational-forms::questions.yes-no';
 
     protected string | Htmlable | Closure | null $terms = null;
@@ -19,7 +23,9 @@ class LegalConsent extends YesNo
     {
         parent::setUp();
 
-        $this->rule('accepted', fn (LegalConsent $component): bool => $component->isRequired());
+        $this->validationMessages([
+            'accepted' => __('conversational-forms::conversational-forms.questions.must_accept'),
+        ]);
     }
 
     /**

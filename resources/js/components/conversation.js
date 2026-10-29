@@ -1,3 +1,4 @@
+import { matches } from '../logic/evaluate.js'
 import { filterInsertion } from '../support/input-filter.js'
 import {
     getNavigationDirection,
@@ -19,7 +20,7 @@ export default function conversationComponent({
     autoAdvanceDelay = 400,
     hasWelcomeScreen = false,
     isAutoAdvanceEnabled = true,
-    isCompleted = false,
+    completedEnding = null,
     key,
     path = [],
     submitMethod = 'submitConversation',
@@ -37,9 +38,15 @@ export default function conversationComponent({
 
         path,
 
-        progress: isCompleted ? 1 : 0,
+        progress: completedEnding ? 1 : 0,
 
-        phase: isCompleted ? 'ended' : hasWelcomeScreen ? 'welcome' : 'steps',
+        phase: completedEnding
+            ? 'ended'
+            : hasWelcomeScreen
+              ? 'welcome'
+              : 'steps',
+
+        ending: completedEnding,
 
         isAdvancing: false,
 
@@ -206,9 +213,12 @@ export default function conversationComponent({
                 return
             }
 
-            const step = event.target.closest('[data-cf-step]')?.dataset.cfStep
+            const step = event.target.closest('[data-cf-step]')
 
-            if (step !== this.current) {
+            if (
+                step?.dataset.cfStep !== this.current ||
+                step.hasAttribute('data-cf-several-questions')
+            ) {
                 return
             }
 
@@ -224,11 +234,12 @@ export default function conversationComponent({
             clearTimeout(autoAdvanceTimeout)
         },
 
-        handleCompleted({ key }) {
+        handleCompleted({ key, ending }) {
             if (key !== this.conversationKey) {
                 return
             }
 
+            this.ending = ending
             this.phase = 'ended'
             this.progress = 1
             this.announcement = translations.completed ?? ''
@@ -236,7 +247,9 @@ export default function conversationComponent({
             this.$nextTick(() =>
                 requestAnimationFrame(() =>
                     conversation
-                        .querySelector('[data-cf-screen="end"]')
+                        .querySelector(
+                            `[data-cf-ending="${CSS.escape(ending)}"]`,
+                        )
                         ?.focus(),
                 ),
             )
@@ -257,13 +270,24 @@ export default function conversationComponent({
             this.focusFirstInvalidControl()
         },
 
+        /**
+         * Focus the step's first usable control, in document order, so that on
+         * a screen with several questions the first one gets focus. Controls
+         * inside hidden (disabled) conditional questions are skipped.
+         */
         focusStep(element) {
             const control =
-                element.querySelector('[autofocus]') ??
-                element.querySelector('[data-cf-choice][tabindex="0"]') ??
+                element.querySelector('[autofocus]:not(:disabled)') ??
                 element.querySelector(
-                    'input:not([type=hidden]), textarea, select, [contenteditable="true"], [tabindex="0"], button',
-                )
+                    [
+                        'input:not([type=hidden]):not(:disabled)',
+                        'textarea:not(:disabled)',
+                        'select:not(:disabled)',
+                        '[contenteditable="true"]',
+                        '[data-cf-choice][tabindex="0"]:not(:disabled)',
+                    ].join(', '),
+                ) ??
+                element.querySelector('button:not(:disabled)')
 
             ;(control ?? element).focus({ preventScroll: true })
         },
@@ -366,6 +390,16 @@ export default function conversationComponent({
                 'end',
             )
             input.dispatchEvent(new Event('input', { bubbles: true }))
+        },
+
+        /**
+         * Show / hide conditions (`visibleWhen()`), evaluated against Livewire's
+         * client-side state. Mirrors the server's evaluation exactly.
+         */
+        matchesConditions(conditions, statePath = null) {
+            return matches(conditions, (field) =>
+                this.$wire.$get(statePath ? `${statePath}.${field}` : field),
+            )
         },
 
         handleKeydown(event) {

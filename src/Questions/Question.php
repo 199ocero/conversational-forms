@@ -4,10 +4,13 @@ namespace JaOcero\ConversationalForms\Questions;
 
 use Filament\Forms\Components\Field;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Js;
 use JaOcero\ConversationalForms\Components\Conversation;
 use JaOcero\ConversationalForms\Components\Step;
+use JaOcero\ConversationalForms\Concerns\HasVisibilityConditions;
 use JaOcero\ConversationalForms\Contracts\ConversationAware;
 use JaOcero\ConversationalForms\Contracts\FormatsAnswer;
+use JaOcero\ConversationalForms\Logic\ConditionGroup;
 use JaOcero\ConversationalForms\Support\Answer;
 use JaOcero\ConversationalForms\Support\KeyboardHint;
 use JaOcero\ConversationalForms\Support\Piping;
@@ -21,6 +24,7 @@ abstract class Question extends Field implements ConversationAware, FormatsAnswe
     use Concerns\HasDescription;
     use Concerns\HasLogic;
     use Concerns\HasMedia;
+    use HasVisibilityConditions;
 
     protected function setUp(): void
     {
@@ -33,6 +37,50 @@ abstract class Question extends Field implements ConversationAware, FormatsAnswe
         // Question labels are full sentences ("What's your name?"), which read
         // badly inside validation messages, so messages refer to "the answer".
         $this->validationAttribute(__('conversational-forms::conversational-forms.questions.validation_attribute'));
+
+        $this->visible(fn (Question $component): bool => $component->passesVisibilityConditions());
+        $this->visibleJs(fn (Question $component): ?string => $component->getVisibilityConditionsJs());
+    }
+
+    public function passesVisibilityConditions(): bool
+    {
+        $conditions = $this->getVisibilityConditions();
+
+        if (! $conditions instanceof ConditionGroup) {
+            return true;
+        }
+
+        $answers = $this->getConversation()?->getAnswers() ?? (array) $this->getContainer()->getRawState();
+
+        return $conditions->matches($answers);
+    }
+
+    /**
+     * The browser checks the same conditions (`matchesConditions()` on the
+     * conversation), so the question appears or disappears as soon as an
+     * earlier answer changes.
+     */
+    public function getVisibilityConditionsJs(): ?string
+    {
+        $conditions = $this->getVisibilityConditions();
+
+        if (! $conditions instanceof ConditionGroup) {
+            return null;
+        }
+
+        $statePath = $this->getConversation()?->getContainer()->getStatePath() ?? $this->getContainer()->getStatePath();
+
+        return 'matchesConditions(' . Js::from($conditions->toArray()) . ', ' . Js::from($statePath) . ')';
+    }
+
+    /**
+     * A question with visibility conditions is always rendered, and shown or
+     * hidden in the browser, so it can appear without a server round trip.
+     * Whether it is validated and saved still follows the server's decision.
+     */
+    public function toSchemaHtml(?bool $isVisible = null): string
+    {
+        return parent::toSchemaHtml(($this->getVisibilityConditions() instanceof ConditionGroup) ? true : $isVisible);
     }
 
     public function getConversationStep(): ?Step

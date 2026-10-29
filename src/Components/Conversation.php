@@ -53,6 +53,11 @@ class Conversation extends Component
 
     protected bool | Closure $isFullScreen = false;
 
+    /**
+     * @var array<string, mixed> | Closure
+     */
+    protected array | Closure $variables = [];
+
     protected string | Closure $submitMethod = 'submitConversation';
 
     /**
@@ -160,6 +165,28 @@ class Conversation extends Component
         $this->logic = $logic;
 
         return $this;
+    }
+
+    /**
+     * Variables and their starting values, for example `['score' => 0]`.
+     * Variables are changed by logic (`add()`, `set()`, …) and are only ever
+     * calculated on the server. Undeclared variables start at 0.
+     *
+     * @param  array<string, mixed> | Closure  $variables
+     */
+    public function variables(array | Closure $variables): static
+    {
+        $this->variables = $variables;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getInitialVariables(): array
+    {
+        return $this->evaluate($this->variables);
     }
 
     /**
@@ -279,20 +306,34 @@ class Conversation extends Component
 
         $steps = $this->getStepNames();
         $logic = $this->getLogic();
+        $endings = array_keys($this->getEndScreens());
 
         if (! $this->hasValidatedLogic) {
-            app(LogicGraph::class)->validate($steps, $logic);
+            app(LogicGraph::class)->validate($steps, $logic, $endings);
 
             $this->hasValidatedLogic = true;
         }
 
         $stepFields = [];
+        $stepConditions = [];
 
         foreach ($this->getSteps() as $step) {
             $stepFields[$step->getName()] = $step->getFieldStatePaths();
+
+            if ($conditions = $step->getVisibilityConditions()) {
+                $stepConditions[$step->getName()] = $conditions;
+            }
         }
 
-        return $this->resolvedPaths[$cacheKey] = app(PathResolver::class)->resolve($steps, $logic, $stepFields, $answers);
+        return $this->resolvedPaths[$cacheKey] = app(PathResolver::class)->resolve(
+            steps: $steps,
+            rules: $logic,
+            stepFields: $stepFields,
+            answers: $answers,
+            stepConditions: $stepConditions,
+            variables: $this->getInitialVariables(),
+            defaultEnding: $endings[0] ?? static::DEFAULT_ENDING,
+        );
     }
 
     public function isStepOnPath(string $name): bool
@@ -308,9 +349,12 @@ class Conversation extends Component
         return (array) $this->getContainer()->getRawState();
     }
 
+    /**
+     * The end screen the current answers lead to.
+     */
     public function getEnding(): string
     {
-        return static::DEFAULT_ENDING;
+        return $this->resolvePath()->ending ?? static::DEFAULT_ENDING;
     }
 
     /**
@@ -355,7 +399,7 @@ class Conversation extends Component
 
         return [
             'next' => $next,
-            'ending' => ($next === null) ? $this->getEnding() : null,
+            'ending' => ($next === null) ? $path->ending : null,
             'path' => $path->toArray(),
             'progress' => $path->progressAfter($fromStep),
         ];
@@ -436,8 +480,26 @@ class Conversation extends Component
         return $this->getScreen('welcome', WelcomeScreen::class);
     }
 
-    public function getEndScreen(): ?EndScreen
+    /**
+     * @return array<string, EndScreen> End screens keyed by name. The first is the default.
+     */
+    public function getEndScreens(): array
     {
-        return $this->getScreen('end', EndScreen::class);
+        $screens = [];
+
+        foreach ($this->getChildSchema('end')?->getComponents(withActions: false) ?? [] as $component) {
+            if ($component instanceof EndScreen) {
+                $screens[$component->getName()] = $component;
+            }
+        }
+
+        return $screens;
+    }
+
+    public function getEndScreen(?string $name = null): ?EndScreen
+    {
+        $screens = $this->getEndScreens();
+
+        return ($name === null) ? (array_values($screens)[0] ?? null) : ($screens[$name] ?? null);
     }
 }

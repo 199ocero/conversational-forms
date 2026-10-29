@@ -4,6 +4,7 @@ namespace JaOcero\ConversationalForms\Components;
 
 use Closure;
 use Illuminate\Contracts\Support\Htmlable;
+use JaOcero\ConversationalForms\Concerns\HasVisibilityConditions;
 
 /**
  * A screen without a question, for example an introduction to a new section.
@@ -11,6 +12,8 @@ use Illuminate\Contracts\Support\Htmlable;
  */
 class Statement extends Step
 {
+    use HasVisibilityConditions;
+
     protected string $view = 'conversational-forms::schemas.statement';
 
     protected string | Htmlable | Closure | null $title = null;

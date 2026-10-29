@@ -5,11 +5,13 @@ namespace JaOcero\ConversationalForms\Questions;
 use Closure;
 use InvalidArgumentException;
 use JaOcero\ConversationalForms\Questions\Concerns\HasChoices;
+use JaOcero\ConversationalForms\Questions\Concerns\HasCorrectAnswer;
 use JaOcero\ConversationalForms\Support\KeyboardHint;
 
 class OpinionScale extends Question
 {
     use HasChoices;
+    use HasCorrectAnswer;
 
     protected string $view = 'conversational-forms::questions.opinion-scale';
 

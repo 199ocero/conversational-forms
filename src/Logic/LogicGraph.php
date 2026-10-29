@@ -13,10 +13,11 @@ final class LogicGraph
     /**
      * @param  list<string>  $steps
      * @param  array<string, list<Rule>>  $rules
+     * @param  list<string>  $endings  The names of the conversation's end screens.
      *
      * @throws InvalidLogicException
      */
-    public function validate(array $steps, array $rules): void
+    public function validate(array $steps, array $rules, array $endings = []): void
     {
         $positions = array_flip($steps);
 
@@ -26,13 +27,23 @@ final class LogicGraph
             }
 
             foreach ($stepRules as $rule) {
-                $target = $rule->getTarget();
-
-                if ($target === null) {
+                if (! $rule->hasAction()) {
                     throw InvalidLogicException::missingTarget($step);
                 }
 
                 if ($rule->endsConversation()) {
+                    $ending = $rule->getEnding();
+
+                    if (($ending !== null) && (! in_array($ending, $endings, strict: true))) {
+                        throw InvalidLogicException::unknownEnding($step, $ending);
+                    }
+
+                    continue;
+                }
+
+                $target = $rule->getTarget();
+
+                if ($target === null) {
                     continue;
                 }
 

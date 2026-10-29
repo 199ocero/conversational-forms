@@ -7,9 +7,10 @@
     $path = $resolvePath();
     $steps = $getSteps();
     $welcomeScreen = $getWelcomeScreen();
-    $endScreen = $getEndScreen();
+    $endScreens = $getEndScreens();
+    $completedEnding = $getLivewire()->completedConversationEnding ?? null;
     $isFullScreen = $isFullScreen();
-    $isCompleted = filled($getLivewire()->completedConversationEnding ?? null);
+    $isCompleted = filled($completedEnding);
 @endphp
 
 <div
@@ -20,7 +21,7 @@
         autoAdvanceDelay: @js($getAutoAdvanceDelay()),
         hasWelcomeScreen: @js(filled($welcomeScreen)),
         isAutoAdvanceEnabled: @js($isAutoAdvanceEnabled()),
-        isCompleted: @js($isCompleted),
+        completedEnding: @js($completedEnding),
         key: @js($key),
         path: @js($path->toArray()),
         submitMethod: @js($getSubmitMethod()),
@@ -72,11 +73,17 @@
         @endforeach
     </div>
 
-    @if ($endScreen)
-        <div x-show="phase === 'ended'" x-ref="endScreen" tabindex="-1" class="cf-screen-container" data-cf-screen="end">
+    @foreach ($endScreens as $endingName => $endScreen)
+        <div
+            x-show="phase === 'ended' && ending === @js($endingName)"
+            tabindex="-1"
+            class="cf-screen-container"
+            data-cf-screen="end"
+            data-cf-ending="{{ $endingName }}"
+        >
             {{ $endScreen }}
         </div>
-    @endif
+    @endforeach
 
     @if ($hasNavigationButtons())
         <div x-show="phase === 'steps'" class="cf-navigation">
