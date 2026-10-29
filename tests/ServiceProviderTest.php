@@ -23,9 +23,19 @@ it('ships prebuilt assets with the package', function (string $path) {
     expect(__DIR__ . "/../resources/dist/{$path}")->toBeFile();
 })->with([
     'components/conversation.js',
+    'components/choice-question.js',
     'conversational-forms.css',
 ]);
 
 it('loads the package translations', function () {
-    expect(__('conversational-forms::conversational-forms.navigation.next'))->toBe('Next');
+    expect(__('conversational-forms::conversational-forms.navigation.next'))->toBe('Next question');
+});
+
+it('versions asset URLs by their contents, so a rebuilt file is never served from a stale cache', function () {
+    $package = ConversationalFormsServiceProvider::getAssetPackageName();
+    $hash = hash_file('xxh128', __DIR__ . '/../resources/dist/components/conversation.js');
+
+    expect(FilamentAsset::getAlpineComponentSrc('conversation', $package))->toEndWith("?v={$hash}")
+        ->and(FilamentAsset::getStyleHref('conversational-forms', $package))
+        ->toEndWith('?v=' . hash_file('xxh128', __DIR__ . '/../resources/dist/conversational-forms.css'));
 });

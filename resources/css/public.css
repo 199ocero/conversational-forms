@@ -1,0 +1,17 @@
+/*
+ * The panel-less public page (`ConversationPage`).
+ */
+@layer components {
+    .cf-public-body {
+        @apply min-h-dvh antialiased;
+        background-color: var(--gray-50, --theme(--color-gray-50));
+
+        &:where(.dark, .dark *) {
+            background-color: var(--gray-950, --theme(--color-gray-950));
+        }
+    }
+
+    .cf-public-page {
+        @apply min-h-dvh;
+    }
+}

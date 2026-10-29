@@ -13,7 +13,9 @@ use Filament\Schemas\SchemasServiceProvider;
 use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
+use Illuminate\Routing\Router;
 use JaOcero\ConversationalForms\ConversationalFormsServiceProvider;
+use JaOcero\ConversationalForms\Tests\Fixtures\Livewire\TestConversationPage;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
@@ -22,7 +24,9 @@ class TestCase extends Orchestra
 {
     protected function getPackageProviders($app): array
     {
-        return [
+        // Filament must boot before Livewire so that Filament's Livewire component
+        // hooks (such as partial rendering) are attached, as in a real application.
+        $providers = [
             ActionsServiceProvider::class,
             BladeCaptureDirectiveServiceProvider::class,
             BladeHeroiconsServiceProvider::class,
@@ -38,11 +42,23 @@ class TestCase extends Orchestra
             WidgetsServiceProvider::class,
             ConversationalFormsServiceProvider::class,
         ];
+
+        sort($providers);
+
+        return $providers;
     }
 
     protected function defineEnvironment($app): void
     {
         $app['config']->set('database.default', 'testing');
         $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
+    }
+
+    /**
+     * @param  Router  $router
+     */
+    protected function defineRoutes($router): void
+    {
+        $router->livewire('/waitlist', TestConversationPage::class);
     }
 }

@@ -567,6 +567,8 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 - Works inside a Filament panel page and on the panel-less page; verified in the playground in Chrome, Safari and Firefox.
 - Tagged `v0.1.0`, submitted to the Filament plugin directory.
 
+**Status (2026-10-29):** implemented and verified, not yet tagged. 92 Pest + 30 Vitest tests, PHPStan level 6, and a scripted walkthrough in real Chrome (keyboard-only flow, jumps, back navigation, validation focus, dark mode, mobile width, panel and public page). Response sizes measured in the browser: about 1 kB per valid step, about 5.5 kB for a step with errors. Still open before tagging `v0.1.0`: committed browser tests (Pest browser plugin) with axe checks in CI, a manual screen-reader pass, the banner and GIF, and the Filament plugin directory submission.
+
 ### Phase 2: v0.2.0 "More questions"
 
 **Scope:** `Phone` (country selector, E.164 normalisation via optional `propaganistas/laravel-phone` suggest, else regex), `Number` (min/max/step, locale formatting), `Website`, `Dropdown` (searchable combobox, ARIA 1.2 pattern), `Checkbox`, `LegalConsent` (accept/decline, links), `PictureChoice` (image grid, single/multi, letter keys), `Rating` (stars/hearts/custom icon, 1–10), `Nps` (preset of OpinionScale 0–10 with category output), `Statement`, `QuestionGroup`, `HiddenField` (from URL query, allow-list, never rendered). Answer piping `{field}` (server-side; HTML-escaped). `media()` beside or above the question (image/video, layout split on desktop, stacked on mobile). `AnswerColumn`, `AnswerEntry`, `RatingColumn`, `NpsColumn`. Filament page recipe/trait.

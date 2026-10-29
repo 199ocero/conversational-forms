@@ -1,36 +1,120 @@
 /*
- * The conversation stage: one step visible at a time. Inactive steps stay in
- * the DOM (so Livewire can morph them) but are hidden and `inert`.
+ * The conversation stage. Every step stays in the DOM (so Livewire can morph a
+ * single step) and all steps share one grid cell; inactive ones are hidden,
+ * `inert`, and offset above or below so moving between them slides.
  */
 @layer components {
     .cf-conversation {
-        @apply relative isolate;
+        @apply relative isolate flex flex-col gap-6;
         background-color: var(--cf-bg);
         color: var(--cf-fg);
         font-family: var(--cf-font-family);
+
+        & :focus-visible {
+            outline: 2px solid var(--cf-accent);
+            outline-offset: 2px;
+        }
+
+        & kbd {
+            @apply rounded px-1 py-0.5 text-xs font-medium;
+            font-family: inherit;
+            border: 1px solid var(--cf-border);
+        }
     }
 
     .cf-conversation-stage {
-        @apply relative grid min-h-80;
+        @apply grid min-h-96;
+
+        /* Every step (inside Filament's wrapper elements) shares one grid cell.
+           The wrappers must not catch clicks meant for the active step, which
+           sits underneath steps that come later in the DOM. */
+        & > * {
+            grid-area: 1 / 1;
+            min-width: 0;
+            pointer-events: none;
+        }
+
+        & .cf-step.cf-active {
+            pointer-events: auto;
+        }
+
+        /* Stretch Filament's wrapper elements to the full height of the stage,
+           so each step can centre its content vertically. */
+        & > *,
+        & > * > .fi-sc-component {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
     }
 
     .cf-step {
-        @apply col-start-1 row-start-1 flex flex-col justify-center gap-6 py-8;
-        transition-property: opacity, translate;
+        @apply flex grow flex-col justify-center gap-8 py-8;
+        transition-property: opacity, translate, visibility;
         transition-duration: var(--cf-transition-duration);
-        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        transition-timing-function: var(--cf-transition-easing);
+
+        /* The step being shown becomes visible at once (so it can be focused);
+           the step being left stays visible until it has faded out. */
+        &.cf-active {
+            transition-property: opacity, translate;
+        }
 
         &:not(.cf-active) {
             @apply pointer-events-none opacity-0;
             visibility: hidden;
-        }
-
-        &.cf-enter-from-below {
             translate: 0 var(--cf-transition-distance);
         }
 
-        &.cf-enter-from-above {
+        &.cf-before {
             translate: 0 calc(var(--cf-transition-distance) * -1);
+        }
+
+        &.cf-shake {
+            animation: cf-shake 400ms ease-in-out;
+        }
+    }
+
+    .cf-step-content {
+        /* Filament fields used as questions get the same scale as our own. */
+        & .fi-fo-field-label-content {
+            font-size: var(--cf-question-size);
+            line-height: 1.25;
+        }
+    }
+
+    .cf-step-actions {
+        @apply flex flex-wrap items-center gap-3;
+    }
+
+    .cf-button {
+        @apply inline-flex cursor-pointer items-center gap-2 px-4 py-2 text-lg font-semibold shadow-sm;
+        background-color: var(--cf-accent);
+        color: var(--cf-accent-contrast);
+        border-radius: var(--cf-radius);
+        transition: filter 150ms ease;
+
+        &:hover {
+            filter: brightness(1.08);
+        }
+
+        &:disabled {
+            @apply cursor-wait opacity-70;
+        }
+    }
+
+    .cf-button-icon {
+        @apply size-5;
+    }
+
+    .cf-hint {
+        @apply text-sm;
+        color: var(--cf-muted);
+
+        & kbd {
+            @apply font-semibold;
+            border: 0;
+            padding: 0;
         }
     }
 
@@ -43,10 +127,89 @@
     .cf-progress-bar {
         @apply h-full;
         background-color: var(--cf-accent);
-        transition: width var(--cf-transition-duration) ease;
+        transition: width var(--cf-transition-duration) var(--cf-transition-easing);
+    }
+
+    .cf-navigation {
+        @apply flex justify-end gap-1;
+    }
+
+    .cf-navigation-button {
+        @apply grid size-10 cursor-pointer place-items-center;
+        background-color: var(--cf-accent);
+        color: var(--cf-accent-contrast);
+        border-radius: var(--cf-radius);
+
+        & svg {
+            @apply size-6;
+        }
+
+        &:disabled {
+            @apply cursor-not-allowed opacity-40;
+        }
+    }
+
+    .cf-screen-container {
+        @apply flex min-h-96 flex-col justify-center;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .cf-screen {
+        @apply flex flex-col gap-6 py-8;
+    }
+
+    .cf-screen-title {
+        @apply text-3xl font-bold tracking-tight text-balance;
+
+        @media (min-width: 48rem) {
+            @apply text-4xl;
+        }
+    }
+
+    .cf-screen-description {
+        @apply text-lg text-pretty;
+        color: var(--cf-muted);
     }
 
     .cf-sr-only {
         @apply sr-only;
+    }
+
+    /* Full screen: the conversation fills the viewport. */
+    .cf-full-screen {
+        @apply min-h-dvh px-6 py-16;
+
+        & > .cf-progress {
+            @apply fixed inset-x-0 top-0 z-10 rounded-none;
+        }
+
+        & .cf-conversation-stage,
+        & .cf-screen-container {
+            @apply mx-auto w-full;
+            max-width: var(--cf-content-width);
+            min-height: calc(100dvh - 8rem);
+        }
+
+        & > .cf-navigation {
+            @apply fixed right-6 bottom-6 z-10;
+        }
+    }
+
+    @keyframes cf-shake {
+        0%,
+        100% {
+            translate: 0;
+        }
+
+        25% {
+            translate: -0.5rem 0;
+        }
+
+        75% {
+            translate: 0.5rem 0;
+        }
     }
 }

@@ -2,10 +2,13 @@
 
 namespace JaOcero\ConversationalForms;
 
-use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
-use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
+use Illuminate\Support\Facades\Blade;
+use JaOcero\ConversationalForms\Support\Assets\AlpineComponent;
+use JaOcero\ConversationalForms\Support\Assets\Css;
+use JaOcero\ConversationalForms\Testing\TestsConversations;
+use Livewire\Features\SupportTesting\Testable;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -32,6 +35,10 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
             $this->getAssets(),
             static::getAssetPackageName()
         );
+
+        Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', static::$viewNamespace);
+
+        Testable::mixin(new TestsConversations);
     }
 
     public static function getAssetPackageName(): string
@@ -40,8 +47,8 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * Both assets are loaded on request by the conversation root element
-     * (`x-load` and `x-load-css`), so pages without a conversation never download them.
+     * Every asset is loaded on request by the conversation's elements (`x-load`
+     * and `x-load-css`), so pages without a conversation never download them.
      *
      * @return array<Asset>
      */
@@ -49,6 +56,7 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
     {
         return [
             AlpineComponent::make('conversation', __DIR__ . '/../resources/dist/components/conversation.js'),
+            AlpineComponent::make('choice-question', __DIR__ . '/../resources/dist/components/choice-question.js'),
             Css::make('conversational-forms', __DIR__ . '/../resources/dist/conversational-forms.css')->loadedOnRequest(),
         ];
     }

@@ -5,6 +5,9 @@
  * Only the rules in this directory are emitted: Tailwind's theme values are
  * inlined (`theme(inline)`), and no preflight or utility classes are generated,
  * so the output never collides with the host application's or Filament's CSS.
+ *
+ * Every class is a stable hook (`cf-*`) and every visual decision reads from a
+ * `--cf-*` variable, so conversations can be themed without recompiling.
  */
 @import 'tailwindcss/theme.css' layer(theme) theme(inline);
 
@@ -14,3 +17,5 @@
 
 @import './tokens.css';
 @import './conversation.css';
+@import './questions.css';
+@import './public.css';

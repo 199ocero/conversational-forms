@@ -1,8 +1,7 @@
 /*
- * Design tokens. Every visual decision reads from a `--cf-*` variable so that
- * conversations can be themed without touching the compiled CSS. Defaults
- * follow the host Filament panel's palette (`--primary-*`, `--gray-*`) and
- * fall back to Tailwind's palette when no Filament variables are present.
+ * Design tokens. Defaults follow the host Filament palette (`--primary-*`,
+ * `--gray-*`, `--danger-*`) and fall back to Tailwind's palette when no
+ * Filament variables are present.
  */
 @layer components {
     .cf-conversation {
@@ -11,14 +10,22 @@
         --cf-bg: transparent;
         --cf-fg: var(--gray-950, --theme(--color-gray-950));
         --cf-muted: var(--gray-500, --theme(--color-gray-500));
-        --cf-border: color-mix(in oklab, var(--cf-fg) 12%, transparent);
         --cf-danger: var(--danger-600, --theme(--color-red-600));
+        --cf-surface: --theme(--color-white);
+        --cf-answer-color: var(--cf-fg);
+        --cf-border: color-mix(in oklab, var(--cf-fg) 12%, transparent);
+        --cf-choice-bg: color-mix(in oklab, var(--cf-accent) 6%, transparent);
+        --cf-choice-bg-hover: color-mix(in oklab, var(--cf-accent) 12%, transparent);
+        --cf-choice-bg-selected: color-mix(in oklab, var(--cf-accent) 18%, transparent);
+        --cf-choice-border: color-mix(in oklab, var(--cf-accent) 45%, transparent);
         --cf-font-family: var(--font-family, ui-sans-serif, system-ui, sans-serif);
         --cf-question-size: --theme(--text-2xl);
+        --cf-answer-size: --theme(--text-xl);
         --cf-radius: --theme(--radius-lg);
-        --cf-focus-ring: 0 0 0 2px var(--cf-bg), 0 0 0 4px var(--cf-accent);
-        --cf-transition-duration: 400ms;
-        --cf-transition-distance: 2.5rem;
+        --cf-content-width: --theme(--container-2xl);
+        --cf-transition-duration: 450ms;
+        --cf-transition-distance: 3rem;
+        --cf-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
 
         @variant dark {
             --cf-accent: var(--primary-400, --theme(--color-indigo-400));
@@ -26,6 +33,12 @@
             --cf-fg: --theme(--color-white);
             --cf-muted: var(--gray-400, --theme(--color-gray-400));
             --cf-danger: var(--danger-400, --theme(--color-red-400));
+            --cf-surface: var(--gray-900, --theme(--color-gray-900));
+        }
+
+        @media (min-width: 48rem) {
+            --cf-question-size: --theme(--text-3xl);
+            --cf-answer-size: --theme(--text-2xl);
         }
 
         @media (prefers-reduced-motion: reduce) {

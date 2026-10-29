@@ -7,3 +7,11 @@ parameters:
         - src
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
+    ignoreErrors:
+        # Testable::mixin() rebinds each closure's `$this` to the Livewire `Testable`,
+        # which static analysis cannot follow.
+        -
+            path: src/Testing/TestsConversations.php
+            identifiers:
+                - method.notFound
+                - return.type
