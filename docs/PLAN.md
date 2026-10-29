@@ -575,6 +575,8 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 
 **Definition of done:** same bar as v0.1 for every new field (feature + browser + axe); piping XSS tests (`{name}` = `<script>`); README sections and screenshots per field.
 
+**Status (2026-10-29):** implemented and verified, not yet tagged. Every question type, `Statement`, `QuestionGroup`, `HiddenField`, piping (client-side via `x-text`, server-rendered initial value, XSS-tested), `media()` (images; video later) and the display components. Number and phone inputs reject invalid characters as they are typed or pasted. 144 Pest + 34 Vitest tests; keyboard and mouse walkthroughs in real Chrome of the playground's onboarding conversation, on the public page and in the panel. Deferred: a documented recipe for Filament create / edit pages (needs its own tests), locale-aware number formatting, and a country selector for `Phone`.
+
 ### Phase 3: v0.3.0 "Logic engine"
 
 **Scope:** AND/OR condition groups (nested), the full operator matrix (§3.3), show/hide (`visibleWhen` → server visibility + generated `visibleJs`), skip/end early, multiple `EndScreen`s chosen by logic, `Redirect` endings (with piped, URL-encoded query), variables + calculations (`add`, `subtract`, `multiply`, `divide`, `set`), quiz sugar (`correct()`, `points()`), `Score` display in endings, the JS evaluator with shared parity fixtures, client-side progress prediction, `LogicGraph` reachability/unreachable-ending warnings. README grows a dedicated Logic section with a table of contents.

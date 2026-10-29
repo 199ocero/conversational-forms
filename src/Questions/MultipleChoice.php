@@ -134,6 +134,23 @@ class MultipleChoice extends Question
         return $choices;
     }
 
+    /**
+     * Built from the options rather than the (possibly shuffled) choices, so
+     * answers can also be formatted outside of a conversation, in tables.
+     *
+     * @return array<string, string>
+     */
+    public function getAnswerLabels(): array
+    {
+        $labels = [];
+
+        foreach ($this->getOptions() as $value => $label) {
+            $labels[(string) $value] = (string) $label;
+        }
+
+        return $labels;
+    }
+
     public function getOtherKey(): string
     {
         return static::getLetter(count($this->getOptions()));

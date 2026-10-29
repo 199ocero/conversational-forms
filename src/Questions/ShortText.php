@@ -24,6 +24,16 @@ class ShortText extends Question implements CanBeLengthConstrainedContract
         return 'text';
     }
 
+    /**
+     * A JavaScript regular expression the whole value must keep matching while
+     * the respondent types or pastes. Characters that would break it are
+     * never inserted. Validation still runs on the server.
+     */
+    public function getInputFilter(): ?string
+    {
+        return null;
+    }
+
     public function getPlaceholder(): string
     {
         return $this->evaluate($this->placeholder) ?? __('conversational-forms::conversational-forms.questions.placeholder');

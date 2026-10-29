@@ -1,7 +1,13 @@
-<div class="cf-screen cf-end-screen">
-    <h2 class="cf-screen-title">{{ $getTitle() }}</h2>
+@php
+    use JaOcero\ConversationalForms\Support\Piping;
 
-    @if (filled($description = $getDescription()))
+    $conversation = $getContainer()->getParentComponent();
+@endphp
+
+<div class="cf-screen cf-end-screen">
+    <h2 class="cf-screen-title">{{ Piping::render($getTitle(), $conversation) }}</h2>
+
+    @if (filled($description = Piping::render($getDescription(), $conversation)))
         <p class="cf-screen-description">{{ $description }}</p>
     @endif
 

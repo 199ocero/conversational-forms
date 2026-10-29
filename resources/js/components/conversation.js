@@ -1,3 +1,4 @@
+import { filterInsertion } from '../support/input-filter.js'
 import {
     getNavigationDirection,
     isAdvanceKey,
@@ -286,6 +287,85 @@ export default function conversationComponent({
             return conversation?.querySelector(
                 `[data-cf-step="${CSS.escape(step ?? '')}"]`,
             )
+        },
+
+        /**
+         * The text of an answer, for `{field}` tokens in labels. Read from
+         * Livewire's client-side state, so it updates while the respondent types.
+         */
+        pipe(statePath, labels = null) {
+            const format = (value) => {
+                const key =
+                    typeof value === 'boolean'
+                        ? value
+                            ? '1'
+                            : '0'
+                        : String(value)
+
+                if (labels && labels[key] !== undefined) {
+                    return labels[key]
+                }
+
+                if (typeof value === 'boolean') {
+                    return value ? translations.yes : translations.no
+                }
+
+                return key
+            }
+
+            const answer = this.$wire.$get(statePath)
+
+            if (Array.isArray(answer)) {
+                return answer
+                    .filter((value) => value !== null && value !== '')
+                    .map(format)
+                    .join(', ')
+            }
+
+            return [null, undefined, ''].includes(answer) ? '' : format(answer)
+        },
+
+        /**
+         * Keep an input's value matching `pattern` while the respondent types,
+         * pastes or drops text (used by number and phone questions).
+         */
+        filterInput(event, pattern) {
+            const input = event.target
+            const text = event.data ?? event.dataTransfer?.getData('text')
+
+            if (event.isComposing || !text) {
+                return
+            }
+
+            const isPaste = ['insertFromPaste', 'insertFromDrop'].includes(
+                event.inputType,
+            )
+            const allowed = filterInsertion({
+                value: input.value,
+                selectionStart: input.selectionStart ?? input.value.length,
+                selectionEnd: input.selectionEnd ?? input.value.length,
+                text,
+                pattern,
+                isPaste,
+            })
+
+            if (allowed === text) {
+                return
+            }
+
+            event.preventDefault()
+
+            if (allowed === null) {
+                return
+            }
+
+            input.setRangeText(
+                allowed,
+                input.selectionStart,
+                input.selectionEnd,
+                'end',
+            )
+            input.dispatchEvent(new Event('input', { bubbles: true }))
         },
 
         handleKeydown(event) {

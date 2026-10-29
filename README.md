@@ -20,10 +20,12 @@ Typeform-style conversational forms for Filament. One question at a time, fully 
 - [Quick start](#quick-start)
 - [The conversation](#the-conversation)
 - [Questions](#questions)
+- [Structuring a conversation](#structuring-a-conversation)
 - [Logic](#logic)
 - [Saving answers](#saving-answers)
 - [Public pages](#public-pages)
 - [Using other Filament fields](#using-other-filament-fields)
+- [Displaying answers](#displaying-answers)
 - [Keyboard shortcuts](#keyboard-shortcuts)
 - [Theming](#theming)
 - [Testing](#testing)
@@ -159,12 +161,31 @@ All questions share these options:
 | --- | --- |
 | `label()` | The question. |
 | `description()` | Supporting text under the question. |
+| `media()` | An image shown with the question: beside it on wide screens, above the answer on small ones. `->media($url, alt: 'Our new dashboard')` |
 | `logic()` | Rules deciding where to go after this question. See [Logic](#logic). |
 | `validationAttribute()` | The name used in validation messages. Defaults to "answer", since question labels are full sentences. |
 
-Questions are numbered automatically by their position in the conversation.
+Questions are numbered automatically by their position in the conversation. Labels and descriptions can include answers to earlier questions, see [Answer piping](#answer-piping).
 
-### ShortText and Email
+| Question | Answer | Keys |
+| --- | --- | --- |
+| [`ShortText`](#shorttext-email-website-and-phone) | text | |
+| [`Email`](#shorttext-email-website-and-phone) | email address | |
+| [`Website`](#shorttext-email-website-and-phone) | URL | |
+| [`Phone`](#shorttext-email-website-and-phone) | phone number | |
+| [`Number`](#number) | integer or float | |
+| [`LongText`](#longtext) | multi-line text | Shift + Enter for a line break |
+| [`MultipleChoice`](#multiplechoice) | value, or a list of values | A–Z |
+| [`PictureChoice`](#picturechoice) | value, or a list of values | A–Z |
+| [`Dropdown`](#dropdown) | value | type to filter, ↑ ↓, Enter |
+| [`YesNo`](#yesno) | `true` / `false` | Y / N |
+| [`Checkbox`](#checkbox) | `true` / `false` | Space |
+| [`LegalConsent`](#legalconsent) | `true` / `false` | Y / N |
+| [`OpinionScale`](#opinionscale-and-nps) | integer | 0–9 |
+| [`Nps`](#opinionscale-and-nps) | integer from 0 to 10 | 0–9 |
+| [`Rating`](#rating) | integer from 1 | 1–9, 0 for 10 |
+
+### ShortText, Email, Website and Phone
 
 A single-line answer. Press Enter to continue.
 
@@ -179,9 +200,29 @@ ShortText::make('name')
     ->autocomplete('name');
 
 Email::make('email')->label('Where can we reach you?'); // validates the address
+
+Website::make('website')->label("What's your website?"); // validates the URL
+
+Phone::make('phone')->label("What's your number?");
 ```
 
-`ShortText` supports `placeholder()`, `minLength()`, `maxLength()`, `length()`, `autocomplete()`, `inputMode()` and `extraInputAttributes()`.
+All four support `placeholder()`, `minLength()`, `maxLength()`, `length()`, `autocomplete()`, `inputMode()` and `extraInputAttributes()`.
+
+`Phone` accepts common formats such as `+63 917 123 4567` or `(02) 8123-4567` and saves the number without spaces, dashes and brackets (`+639171234567`). Call `->normalize(false)` to save it as typed. For per-country validation, install [`propaganistas/laravel-phone`](https://github.com/Propaganistas/Laravel-Phone) and add its rule: `->rule('phone:PH')`.
+
+### Number
+
+A number, saved as an integer or a float.
+
+```php
+use JaOcero\ConversationalForms\Questions\Number;
+
+Number::make('team_size')
+    ->label('How many people are on your team?')
+    ->integer()
+    ->minValue(1)
+    ->maxValue(10000);
+```
 
 ### LongText
 
@@ -224,6 +265,35 @@ MultipleChoice::make('channels')
 
 `options()` accepts an array, a closure or an enum, like Filament's `Select`. Only the given options (or a typed "Other" answer) pass validation. A multiple choice question stores an array.
 
+### PictureChoice
+
+Like `MultipleChoice`, with an image for each answer. It supports the same options, including `multiple()`.
+
+```php
+use JaOcero\ConversationalForms\Questions\PictureChoice;
+
+PictureChoice::make('style')
+    ->label('Which style do you prefer?')
+    ->options(['modern' => 'Modern', 'classic' => 'Classic'])
+    ->images([
+        'modern' => asset('images/modern.jpg'),
+        'classic' => asset('images/classic.jpg'),
+    ])
+    ->hiddenLabels(); // optional: show only the images (labels stay available to screen readers)
+```
+
+### Dropdown
+
+A searchable list for questions with many answers. Type to filter, use ↑ and ↓ to move, and Enter to choose. While the list is open, Enter picks an answer instead of continuing.
+
+```php
+use JaOcero\ConversationalForms\Questions\Dropdown;
+
+Dropdown::make('country')
+    ->label('Where are you based?')
+    ->options(Country::class); // an array, a closure or an enum
+```
+
 ### YesNo
 
 Two answers, picked with Y or N. Stores `true` or `false`.
@@ -237,7 +307,33 @@ YesNo::make('newsletter')
     ->noLabel('No, thanks');
 ```
 
-### OpinionScale
+### Checkbox
+
+A single tick box. Space ticks it and Enter continues. Use `accepted()` when it must be ticked.
+
+```php
+use JaOcero\ConversationalForms\Questions\Checkbox;
+
+Checkbox::make('updates')
+    ->label('Product updates')
+    ->checkboxLabel('Send me occasional product updates');
+```
+
+### LegalConsent
+
+Ask the respondent to accept terms. When it is `required()`, only accepting lets them continue. Pass an `HtmlString` to include links.
+
+```php
+use Illuminate\Support\HtmlString;
+use JaOcero\ConversationalForms\Questions\LegalConsent;
+
+LegalConsent::make('consent')
+    ->label('Do you accept our terms?')
+    ->terms(new HtmlString('Read our <a href="/privacy">privacy policy</a>.'))
+    ->required();
+```
+
+### OpinionScale and Nps
 
 A row of numbers, picked by typing the number. On a 0–10 scale, type `1` then `0` to pick 10. Stores an integer.
 
@@ -250,6 +346,81 @@ OpinionScale::make('recommend')
     ->startLabel('Not likely')
     ->endLabel('Very likely');
 ```
+
+`Nps` is a 0–10 scale with Net Promoter Score labels. `Nps::getCategory($score)` returns `'detractor'` (0–6), `'passive'` (7–8) or `'promoter'` (9–10).
+
+```php
+use JaOcero\ConversationalForms\Questions\Nps;
+
+Nps::make('nps')->label('How likely are you to recommend us to a friend?');
+```
+
+### Rating
+
+Stars, hearts or thumbs, picked by typing the number. Stores an integer from 1.
+
+```php
+use JaOcero\ConversationalForms\Questions\Rating;
+
+Rating::make('rating')
+    ->label('How would you rate your experience?')
+    ->steps(5)        // 3 to 10, default 5
+    ->shape('heart'); // star (default), heart or thumb
+```
+
+## Structuring a conversation
+
+### Statement
+
+A screen without a question, for example an introduction to a new section. It isn't numbered, and logic can jump to it.
+
+```php
+use JaOcero\ConversationalForms\Components\Statement;
+
+Statement::make('about_you')
+    ->title('Great! Now a few questions about your team.')
+    ->description('This takes about a minute.')
+    ->buttonLabel('Continue');
+```
+
+### QuestionGroup
+
+Several questions on one screen, validated together. Logic attached to a question in the group runs after the whole group is answered.
+
+```php
+use JaOcero\ConversationalForms\Components\QuestionGroup;
+
+QuestionGroup::make('full_name', [
+    ShortText::make('first_name')->label('First name')->required(),
+    ShortText::make('last_name')->label('Last name'),
+])->label("What's your name?");
+```
+
+### Hidden fields
+
+A value that is never shown, for example a campaign source passed in the URL (`/apply?utm_source=newsletter`). It is saved with the other answers and can be used in logic and piping. Only parameters you declare are read, and values are cut to 255 characters (`->maxLength()`).
+
+```php
+use JaOcero\ConversationalForms\Questions\HiddenField;
+
+HiddenField::make('utm_source')->fromQuery();
+HiddenField::make('referrer')->fromQuery('ref'); // read ?ref=...
+```
+
+> [!WARNING]
+> Like any form state, a hidden field's value can be changed by the respondent. Treat it as untrusted input.
+
+### Answer piping
+
+Use `{field}` in a label, description, statement or welcome / end screen to show an earlier answer:
+
+```php
+Email::make('email')->label('Nice to meet you, {first_name}! Where can we reach you?');
+
+EndScreen::make()->title('Thanks, {first_name}! 🎉');
+```
+
+Choices show their label (`{plan}` → "Enterprise"), yes / no answers show "Yes" or "No", and multiple answers are joined with commas. Answers are inserted as plain text, so they can never inject HTML, and they update while the respondent types, without a request to the server.
 
 ## Logic
 
@@ -364,6 +535,26 @@ Field authors can opt in to auto-advance and keyboard hints by implementing `JaO
 
 When a step becomes visible, the conversation dispatches a `cf-step-shown` window event (with `{ conversation, step, element }`) and a `resize` event, so JavaScript-heavy fields that were initialised while hidden can measure themselves again.
 
+## Displaying answers
+
+Show stored answers the way their questions describe them, in tables and infolists:
+
+```php
+use JaOcero\ConversationalForms\Infolists\Components\AnswerEntry;
+use JaOcero\ConversationalForms\Tables\Columns\AnswerColumn;
+use JaOcero\ConversationalForms\Tables\Columns\NpsColumn;
+use JaOcero\ConversationalForms\Tables\Columns\RatingColumn;
+
+$plan = MultipleChoice::make('plan')->options($plans); // the question from your conversation
+
+AnswerColumn::make('plan')->question($plan);   // "Enterprise" instead of "enterprise"
+AnswerEntry::make('plan')->question($plan);    // the same, in an infolist
+NpsColumn::make('nps');                        // red, amber or green badge by category
+RatingColumn::make('rating')->steps(5);        // ★★★★☆
+```
+
+`AnswerColumn` and `AnswerEntry` are regular `TextColumn` and `TextEntry` components, so every other option (sorting, searching, badges, …) still works.
+
 ## Keyboard shortcuts
 
 | Keys | Action |
@@ -372,9 +563,11 @@ When a step becomes visible, the conversation dispatches a `cf-step-shown` windo
 | Ctrl / Cmd + Enter | Continue from anywhere, including a long text answer |
 | Shift + Enter | Line break in a long text answer |
 | Alt + ↓ / Alt + ↑ | Next / previous question |
-| A–Z | Pick a multiple choice answer |
+| A–Z | Pick a multiple choice or picture choice answer |
 | Y / N | Answer a yes / no question |
-| 0–9 | Pick a value on an opinion scale (type `1` `0` for 10) |
+| 0–9 | Pick a value on an opinion scale, NPS or rating (type `1` `0` for 10 on a 0–10 scale) |
+| Space | Tick a checkbox |
+| ↑ ↓, Enter, Esc | Move through, choose from, or close a dropdown's list |
 | ↑ ↓ ← → | Move between answers |
 | Space | Toggle the focused answer |
 | Tab / Shift + Tab | Move between controls on the current question |

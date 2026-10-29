@@ -83,7 +83,11 @@ const defaultOptions = {
     ],
 }
 
-const alpineComponents = ['conversation', 'choice-question']
+const alpineComponents = [
+    'conversation',
+    'choice-question',
+    'dropdown-question',
+]
 
 await Promise.all([
     ...alpineComponents.map((component) =>

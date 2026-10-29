@@ -3,19 +3,24 @@
 namespace JaOcero\ConversationalForms\Questions;
 
 use Filament\Forms\Components\Field;
+use Illuminate\Contracts\Support\Htmlable;
 use JaOcero\ConversationalForms\Components\Conversation;
-use JaOcero\ConversationalForms\Components\ConversationStep;
+use JaOcero\ConversationalForms\Components\Step;
 use JaOcero\ConversationalForms\Contracts\ConversationAware;
+use JaOcero\ConversationalForms\Contracts\FormatsAnswer;
+use JaOcero\ConversationalForms\Support\Answer;
 use JaOcero\ConversationalForms\Support\KeyboardHint;
+use JaOcero\ConversationalForms\Support\Piping;
 
 /**
  * Base class for the plugin's own question fields. Questions render their own
  * markup, but state, validation and saving are handled by Filament as usual.
  */
-abstract class Question extends Field implements ConversationAware
+abstract class Question extends Field implements ConversationAware, FormatsAnswer
 {
     use Concerns\HasDescription;
     use Concerns\HasLogic;
+    use Concerns\HasMedia;
 
     protected function setUp(): void
     {
@@ -30,18 +35,18 @@ abstract class Question extends Field implements ConversationAware
         $this->validationAttribute(__('conversational-forms::conversational-forms.questions.validation_attribute'));
     }
 
-    public function getConversationStep(): ?ConversationStep
+    public function getConversationStep(): ?Step
     {
         $step = $this->getContainer()->getParentComponent();
 
-        return ($step instanceof ConversationStep) ? $step : null;
+        return ($step instanceof Step) ? $step : null;
     }
 
     public function getConversation(): ?Conversation
     {
         $step = $this->getConversationStep();
 
-        if (! $step instanceof ConversationStep) {
+        if (! $step instanceof Step) {
             return null;
         }
 
@@ -57,7 +62,7 @@ abstract class Question extends Field implements ConversationAware
     {
         $step = $this->getConversationStep();
 
-        if ((! $step instanceof ConversationStep) || ($step->getQuestion() !== $this)) {
+        if ((! $step instanceof Step) || ($step->getQuestion() !== $this)) {
             return null;
         }
 
@@ -67,6 +72,35 @@ abstract class Question extends Field implements ConversationAware
     public function shouldAutoAdvance(): bool
     {
         return false;
+    }
+
+    public function formatAnswer(mixed $answer): string
+    {
+        return Answer::format($answer);
+    }
+
+    /**
+     * Labels for this question's possible answers, keyed by value. Used by
+     * piping in the browser.
+     *
+     * @return array<string, string>|null
+     */
+    public function getAnswerLabels(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * The label with `{field}` tokens replaced by answers.
+     */
+    public function getPipedLabel(): string | Htmlable | null
+    {
+        return Piping::render($this->getLabel(), $this->getConversation());
+    }
+
+    public function getPipedDescription(): string | Htmlable | null
+    {
+        return Piping::render($this->getDescription(), $this->getConversation());
     }
 
     /**

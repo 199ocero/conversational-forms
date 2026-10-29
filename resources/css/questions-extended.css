@@ -1,0 +1,212 @@
+/*
+ * Phase 2 questions and layouts.
+ */
+@layer components {
+    /* Media beside the question on wide screens, above the answer on small ones. */
+    .cf-question-media {
+        @apply m-0 overflow-hidden;
+        border-radius: var(--cf-radius);
+
+        & img {
+            @apply block h-auto max-h-80 w-full object-cover;
+        }
+    }
+
+    @media (min-width: 64rem) {
+        .cf-full-screen .cf-question-with-media {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-areas:
+                'header media'
+                'control media'
+                'error media';
+            column-gap: 3rem;
+            align-items: start;
+
+            & > .cf-question-header {
+                grid-area: header;
+            }
+
+            & > .cf-question-media {
+                grid-area: media;
+            }
+
+            & > .cf-question-control {
+                grid-area: control;
+            }
+
+            & > .cf-question-error {
+                grid-area: error;
+            }
+        }
+    }
+
+    /* Statements and question groups */
+    .cf-statement .cf-question-label {
+        font-size: var(--cf-question-size);
+    }
+
+    .cf-question-group-fields {
+        & > .fi-sc {
+            @apply gap-8;
+        }
+
+        & .cf-question-number {
+            display: none;
+        }
+
+        & .cf-question-label {
+            font-size: var(--cf-answer-size);
+        }
+    }
+
+    /* Piped answers */
+    .cf-pipe {
+        @apply font-semibold;
+    }
+
+    /* Checkbox */
+    .cf-checkbox-box {
+        @apply grid size-6 shrink-0 place-items-center;
+        border: 1px solid var(--cf-choice-border);
+        border-radius: calc(var(--cf-radius) - 0.25rem);
+        background-color: var(--cf-surface);
+
+        :where(.cf-selected) & {
+            background-color: var(--cf-accent);
+            border-color: var(--cf-accent);
+            color: var(--cf-accent-contrast);
+        }
+    }
+
+    .cf-checkbox-check {
+        @apply size-4 opacity-0;
+
+        :where(.cf-selected) & {
+            @apply opacity-100;
+        }
+    }
+
+    /* Legal consent */
+    .cf-terms {
+        @apply max-h-48 max-w-2xl overflow-y-auto px-4 py-3 text-sm text-pretty;
+        color: var(--cf-muted);
+        background-color: var(--cf-surface);
+        border: 1px solid var(--cf-border);
+        border-radius: var(--cf-radius);
+
+        & a {
+            @apply underline;
+            color: var(--cf-accent);
+        }
+    }
+
+    /* Picture choice */
+    .cf-pictures {
+        @apply grid w-full gap-3;
+        grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+
+        @media (min-width: 40rem) {
+            grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+        }
+    }
+
+    .cf-picture {
+        @apply relative flex-col items-stretch gap-0 overflow-hidden p-2;
+
+        & .cf-choice-check {
+            @apply absolute top-3 right-3 size-6 rounded-full p-0.5;
+            background-color: var(--cf-accent);
+            color: var(--cf-accent-contrast);
+        }
+    }
+
+    .cf-picture-image {
+        @apply aspect-square w-full object-cover;
+        border-radius: calc(var(--cf-radius) - 0.25rem);
+        background-color: var(--cf-surface);
+    }
+
+    .cf-picture-footer {
+        @apply flex items-center gap-2 px-1 pt-2;
+    }
+
+    /* Rating */
+    .cf-rating {
+        @apply flex flex-wrap gap-1;
+
+        @media (min-width: 40rem) {
+            @apply gap-3;
+        }
+    }
+
+    .cf-rating-option {
+        @apply flex cursor-pointer flex-col items-center gap-1 p-1;
+        color: var(--cf-choice-border);
+        border-radius: var(--cf-radius);
+        transition: color 150ms ease, transform 150ms ease;
+
+        & svg {
+            @apply size-10;
+
+            @media (min-width: 40rem) {
+                @apply size-12;
+            }
+        }
+
+        &.cf-filled,
+        &:hover,
+        &:has(~ .cf-rating-option:hover) {
+            color: var(--cf-accent);
+        }
+
+        &:hover {
+            transform: scale(1.08);
+        }
+    }
+
+    .cf-rating-number {
+        @apply text-sm font-medium;
+        color: var(--cf-muted);
+    }
+
+    /* Dropdown */
+    .cf-dropdown {
+        @apply relative w-full;
+    }
+
+    .cf-dropdown-input {
+        @apply pe-10;
+    }
+
+    .cf-dropdown-chevron {
+        @apply pointer-events-none absolute top-1.5 right-0 size-7;
+        color: var(--cf-accent);
+    }
+
+    .cf-dropdown-listbox {
+        @apply absolute inset-x-0 z-20 mt-2 max-h-72 overflow-y-auto p-1 shadow-lg;
+        background-color: var(--cf-surface);
+        border: 1px solid var(--cf-border);
+        border-radius: var(--cf-radius);
+    }
+
+    .cf-dropdown-option {
+        @apply cursor-pointer px-3 py-2 text-lg;
+        border-radius: calc(var(--cf-radius) - 0.25rem);
+
+        &.cf-active-option {
+            background-color: var(--cf-choice-bg-hover);
+        }
+
+        &.cf-selected {
+            @apply font-semibold;
+            color: var(--cf-accent);
+        }
+    }
+
+    .cf-dropdown-empty {
+        @apply px-3 py-2;
+        color: var(--cf-muted);
+    }
+}

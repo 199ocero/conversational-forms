@@ -5,6 +5,7 @@ return [
     'navigation' => [
         'ok' => 'OK',
         'submit' => 'Submit',
+        'continue' => 'Continue',
         'next' => 'Next question',
         'previous' => 'Previous question',
         'press_enter' => 'press <kbd>Enter ↵</kbd>',
@@ -33,8 +34,23 @@ return [
         'other' => 'Other',
         'other_placeholder' => 'Type your answer…',
         'validation_attribute' => 'answer',
+        'phone_placeholder' => '+1 555 123 4567',
+        'number_placeholder' => 'Type a number…',
+        'dropdown_placeholder' => 'Type or select an option',
+        'dropdown_empty' => 'No matching options',
+        'accept' => 'I accept',
+        'decline' => "I don't accept",
+        'rating_value' => '{1} :value star out of :max|[2,*] :value stars out of :max',
+        'nps_start' => 'Not likely at all',
+        'nps_end' => 'Extremely likely',
         'yes' => 'Yes',
         'no' => 'No',
+    ],
+
+    'nps' => [
+        'detractor' => 'Detractor',
+        'passive' => 'Passive',
+        'promoter' => 'Promoter',
     ],
 
     'hints' => [

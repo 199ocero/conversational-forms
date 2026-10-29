@@ -76,6 +76,8 @@
     }
 
     .cf-step-content {
+        @apply flex flex-col gap-8;
+
         /* Filament fields used as questions get the same scale as our own. */
         & .fi-fo-field-label-content {
             font-size: var(--cf-question-size);

@@ -27,6 +27,8 @@
         translations: @js([
             'progress' => __('conversational-forms::conversational-forms.navigation.progress'),
             'completed' => __('conversational-forms::conversational-forms.navigation.completed'),
+            'yes' => __('conversational-forms::conversational-forms.questions.yes'),
+            'no' => __('conversational-forms::conversational-forms.questions.no'),
         ]),
     })"
     @if ($isFullScreen)

@@ -2,6 +2,15 @@
 
 All notable changes to `conversational-forms` will be documented in this file.
 
+## Unreleased (v0.2.0)
+
+- Questions: `Website`, `Phone` (normalized numbers), `Number`, `Dropdown` (searchable combobox), `Checkbox`, `LegalConsent`, `PictureChoice`, `Rating` (stars, hearts or thumbs) and `Nps`.
+- `Statement` screens and `QuestionGroup` (several questions on one screen).
+- `HiddenField`, filled from the URL's query string.
+- Answer piping: `{field}` in labels, descriptions and screens, kept in sync in the browser.
+- `media()` on every question.
+- `AnswerColumn`, `NpsColumn`, `RatingColumn` and `AnswerEntry` for displaying answers.
+
 ## Unreleased (v0.1.0)
 
 - `Conversation` layout component: one question per screen, per-step validation, transitions, progress bar, previous / next navigation, auto-advance and full keyboard support.

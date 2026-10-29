@@ -18,4 +18,5 @@
 @import './tokens.css';
 @import './conversation.css';
 @import './questions.css';
+@import './questions-extended.css';
 @import './public.css';

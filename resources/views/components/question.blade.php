@@ -9,15 +9,16 @@
     $errors = $field->getLivewire()->getErrorBag();
     $id = $field->getId();
     $statePath = $field->getStatePath();
-    $label = $field->getLabel();
-    $description = $field->getDescription();
+    $label = $field->getPipedLabel();
+    $description = $field->getPipedDescription();
+    $media = $field->getMedia();
     $number = $field->getQuestionNumber();
     $isRequired = $field->isMarkedAsRequired() && $field->isRequired();
     $errorMessage = $errors->first($statePath) ?: $errors->first("{$statePath}.*");
     $labelTag = $labelTarget ? 'label' : 'div';
 @endphp
 
-<div class="cf-question" data-cf-question="{{ $statePath }}">
+<div @class(['cf-question', 'cf-question-with-media' => filled($media)]) data-cf-question="{{ $statePath }}">
     <div class="cf-question-header">
         @if ($number)
             <span class="cf-question-number" aria-hidden="true">
@@ -38,6 +39,12 @@
             <p id="{{ $id }}-description" class="cf-question-description">{{ $description }}</p>
         @endif
     </div>
+
+    @if ($media)
+        <figure class="cf-question-media">
+            <img src="{{ $media['url'] }}" alt="{{ $media['alt'] }}" loading="lazy" />
+        </figure>
+    @endif
 
     <div class="cf-question-control">
         {{ $slot }}

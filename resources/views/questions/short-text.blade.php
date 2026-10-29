@@ -4,6 +4,7 @@
     $statePath = $getStatePath();
     $hasError = $errors->has($statePath);
     $description = $getDescription();
+    $inputFilter = $getInputFilter();
 
     $attributes = $getExtraInputAttributeBag()
         ->merge([
@@ -25,5 +26,11 @@
 @endphp
 
 <x-conversational-forms::question :field="$field">
-    <input {{ $attributes }} />
+    <input
+        @if (filled($inputFilter))
+            {{-- Reject characters that would make the value invalid, whether typed, pasted or dropped. --}}
+            x-on:beforeinput="filterInput($event, {{ \Illuminate\Support\Js::from($inputFilter) }})"
+        @endif
+        {{ $attributes }}
+    />
 </x-conversational-forms::question>

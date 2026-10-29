@@ -5,18 +5,23 @@ namespace JaOcero\ConversationalForms\Components;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Filament\Support\Components\Attributes\Exposed;
 use Filament\Support\Livewire\Partials\PartialsComponentHook;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Validation\ValidationException;
+use JaOcero\ConversationalForms\Contracts\FormatsAnswer;
 use JaOcero\ConversationalForms\Logic\ConversationPath;
 use JaOcero\ConversationalForms\Logic\LogicGraph;
 use JaOcero\ConversationalForms\Logic\PathResolver;
 use JaOcero\ConversationalForms\Logic\Rule;
+use JaOcero\ConversationalForms\Questions\HiddenField;
+use JaOcero\ConversationalForms\Questions\Question;
 use JaOcero\ConversationalForms\Screens\EndScreen;
 use JaOcero\ConversationalForms\Screens\WelcomeScreen;
+use JaOcero\ConversationalForms\Support\Answer;
 
 /**
  * A Typeform-style layout: shows its children one at a time.
@@ -86,7 +91,9 @@ class Conversation extends Component
     }
 
     /**
-     * Every child of a conversation is wrapped in a `ConversationStep`, unless it already is one.
+     * Every child of a conversation is wrapped in a `ConversationStep`, unless it
+     * already is a step. Hidden fields are kept in a schema of their own, since
+     * they are never shown as a screen.
      */
     public function childComponents(array | Schema | Component | Action | ActionGroup | string | Htmlable | Closure | null $components, string $key = 'default'): static
     {
@@ -96,13 +103,42 @@ class Conversation extends Component
 
         $this->questions = $components;
 
+        parent::childComponents(fn (): array => $this->getHiddenFields(), 'hidden');
+
         return parent::childComponents(fn (): array => $this->wrapInSteps(), $key);
     }
 
     /**
-     * @return array<ConversationStep>
+     * @return array<Step>
      */
     protected function wrapInSteps(): array
+    {
+        return array_map(
+            fn (Component $component): Step => ($component instanceof Step)
+                ? $component
+                : ConversationStep::make([$component]),
+            array_values(array_filter(
+                $this->getQuestionComponents(),
+                fn (Component $component): bool => ! $component instanceof HiddenField,
+            )),
+        );
+    }
+
+    /**
+     * @return array<HiddenField>
+     */
+    protected function getHiddenFields(): array
+    {
+        return array_values(array_filter(
+            $this->getQuestionComponents(),
+            fn (Component $component): bool => $component instanceof HiddenField,
+        ));
+    }
+
+    /**
+     * @return array<Component>
+     */
+    protected function getQuestionComponents(): array
     {
         $components = $this->evaluate($this->questions) ?? [];
 
@@ -110,12 +146,10 @@ class Conversation extends Component
             $components = $components->getComponents(withHidden: true);
         }
 
-        return array_map(
-            fn (mixed $component): ConversationStep => ($component instanceof ConversationStep)
-                ? $component
-                : ConversationStep::make([$component]),
-            array_values(array_filter(is_array($components) ? $components : [$components], fn (mixed $component): bool => $component instanceof Component)),
-        );
+        return array_values(array_filter(
+            is_array($components) ? $components : [$components],
+            fn (mixed $component): bool => $component instanceof Component,
+        ));
     }
 
     /**
@@ -160,15 +194,15 @@ class Conversation extends Component
     }
 
     /**
-     * @return array<ConversationStep>
+     * @return array<Step>
      */
     public function getSteps(): array
     {
-        /** @var array<ConversationStep> */
+        /** @var array<Step> */
         return array_values($this->getChildSchema()->getComponents(withActions: false, withHidden: true));
     }
 
-    public function getStep(string $name): ?ConversationStep
+    public function getStep(string $name): ?Step
     {
         foreach ($this->getSteps() as $step) {
             if ($step->getName() === $name) {
@@ -184,14 +218,29 @@ class Conversation extends Component
      */
     public function getStepNames(): array
     {
-        return array_map(fn (ConversationStep $step): string => $step->getName(), $this->getSteps());
+        return array_map(fn (Step $step): string => $step->getName(), $this->getSteps());
     }
 
+    /**
+     * The position of a step among the numbered steps (statements are not numbered).
+     */
     public function getStepNumber(string $name): ?int
     {
-        $index = array_search($name, $this->getStepNames(), strict: true);
+        $number = 0;
 
-        return is_int($index) ? ($index + 1) : null;
+        foreach ($this->getSteps() as $step) {
+            if (! $step->isNumbered()) {
+                continue;
+            }
+
+            $number++;
+
+            if ($step->getName() === $name) {
+                return $number;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -280,7 +329,7 @@ class Conversation extends Component
         $partials = app(PartialsComponentHook::class);
         $step = $this->resolvePath()->contains($fromStep) ? $this->getStep($fromStep) : null;
 
-        if (! $step instanceof ConversationStep) {
+        if (! $step instanceof Step) {
             $partials->skipPartialRender($livewire);
 
             return null;
@@ -328,6 +377,58 @@ class Conversation extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Find a field in the conversation by its name (its state path relative to the form).
+     */
+    public function getField(string $name): ?Field
+    {
+        $containerStatePath = $this->getContainer()->getStatePath();
+        $statePath = filled($containerStatePath) ? "{$containerStatePath}.{$name}" : $name;
+
+        $fields = [
+            ...array_merge(...array_map(fn (Step $step): array => $step->getFields(), $this->getSteps()) ?: [[]]),
+            ...array_values($this->getChildSchema('hidden')?->getFlatFields(withHidden: true) ?? []),
+        ];
+
+        foreach ($fields as $field) {
+            if ($field->getStatePath() === $statePath) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The absolute Livewire state path of an answer, for reading it in the browser.
+     */
+    public function getAnswerStatePath(string $name): string
+    {
+        $containerStatePath = $this->getContainer()->getStatePath();
+
+        return filled($containerStatePath) ? "{$containerStatePath}.{$name}" : $name;
+    }
+
+    /**
+     * Labels for an answer's possible values, so piping shows "Enterprise" rather than "enterprise".
+     *
+     * @return array<string, string>|null
+     */
+    public function getAnswerLabels(string $name): ?array
+    {
+        $field = $this->getField($name);
+
+        return ($field instanceof Question) ? $field->getAnswerLabels() : null;
+    }
+
+    public function formatAnswer(string $name): string
+    {
+        $answer = data_get($this->getAnswers(), $name);
+        $field = $this->getField($name);
+
+        return ($field instanceof FormatsAnswer) ? $field->formatAnswer($answer) : Answer::format($answer);
     }
 
     public function getWelcomeScreen(): ?WelcomeScreen

@@ -11,6 +11,10 @@
 @endphp
 
 <x-conversational-forms::question :field="$field" :label-target="false">
+    @if (method_exists($field, 'getTerms') && filled($terms = $getTerms()))
+        <div id="{{ $id }}-terms" tabindex="0" class="cf-terms">{{ $terms }}</div>
+    @endif
+
     <div
         x-load
         x-load-src="{{ FilamentAsset::getAlpineComponentSrc('choice-question', ConversationalFormsServiceProvider::getAssetPackageName()) }}"
