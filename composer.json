@@ -42,7 +42,8 @@
     },
     "autoload": {
         "psr-4": {
-            "JaOcero\\ConversationalForms\\": "src/"
+            "JaOcero\\ConversationalForms\\": "src/",
+            "JaOcero\\ConversationalForms\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {

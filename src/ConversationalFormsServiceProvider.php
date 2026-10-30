@@ -5,6 +5,12 @@ namespace JaOcero\ConversationalForms;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
+use JaOcero\ConversationalForms\Definitions\BuiltInQuestionTypes;
+use JaOcero\ConversationalForms\Definitions\QuestionTypeRegistry;
+use JaOcero\ConversationalForms\Livewire\ConversationalFormPage;
+use JaOcero\ConversationalForms\Models\ConversationalForm;
 use JaOcero\ConversationalForms\Support\Assets\AlpineComponent;
 use JaOcero\ConversationalForms\Support\Assets\Css;
 use JaOcero\ConversationalForms\Testing\TestsConversations;
@@ -22,11 +28,25 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package->name(static::$name)
+            ->hasConfigFile()
             ->hasViews(static::$viewNamespace)
             ->hasTranslations()
+            ->hasMigration('create_conversational_forms_tables')
             ->hasInstallCommand(function (InstallCommand $command): void {
-                $command->askToStarRepoOnGitHub('199ocero/conversational-forms');
+                $command
+                    ->publishConfigFile()
+                    ->publishMigrations()
+                    ->askToRunMigrations()
+                    ->askToStarRepoOnGitHub('199ocero/conversational-forms');
             });
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->singleton(
+            QuestionTypeRegistry::class,
+            fn (): QuestionTypeRegistry => (new QuestionTypeRegistry)->register(...BuiltInQuestionTypes::all()),
+        );
     }
 
     public function packageBooted(): void
@@ -39,6 +59,36 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
         Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', static::$viewNamespace);
 
         Testable::mixin(new TestsConversations);
+
+        $this->registerRoutes();
+    }
+
+    /**
+     * The public pages of builder-made conversations.
+     */
+    protected function registerRoutes(): void
+    {
+        if ((! config('conversational-forms.routes.enabled', true)) || $this->app->routesAreCached()) {
+            return;
+        }
+
+        Route::middleware(config('conversational-forms.routes.middleware', ['web']))
+            ->prefix(config('conversational-forms.routes.prefix', 'f'))
+            ->group(function (): void {
+                Route::livewire('{slug}', ConversationalFormPage::class)->name('conversational-forms.show');
+            });
+    }
+
+    /**
+     * A link to a published conversation, or to a preview of its draft.
+     */
+    public static function getFormUrl(ConversationalForm $form, bool $preview = false): string
+    {
+        if ($preview) {
+            return URL::temporarySignedRoute('conversational-forms.show', now()->addHours(2), ['slug' => $form->slug, 'preview' => 1]);
+        }
+
+        return route('conversational-forms.show', ['slug' => $form->slug]);
     }
 
     public static function getAssetPackageName(): string
@@ -62,6 +112,7 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
             AlpineComponent::make('ranking-question', __DIR__ . '/../resources/dist/components/ranking-question.js'),
             AlpineComponent::make('file-upload-question', __DIR__ . '/../resources/dist/components/file-upload-question.js'),
             AlpineComponent::make('signature-question', __DIR__ . '/../resources/dist/components/signature-question.js'),
+            AlpineComponent::make('logic-map', __DIR__ . '/../resources/dist/components/logic-map.js'),
             Css::make('conversational-forms', __DIR__ . '/../resources/dist/conversational-forms.css')->loadedOnRequest(),
         ];
     }

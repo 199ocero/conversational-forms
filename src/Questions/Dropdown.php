@@ -53,4 +53,26 @@ class Dropdown extends Question
     {
         return [KeyboardHint::make('↑ ↓', __('conversational-forms::conversational-forms.hints.choose'))];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'options' => static::optionsToDefinition($this->getOptions()),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (isset($settings['options'])) {
+            $this->options(static::optionsFromDefinition($settings['options']));
+        }
+
+        return $this;
+    }
 }

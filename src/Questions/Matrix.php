@@ -154,4 +154,34 @@ class Matrix extends Question
 
         return implode('; ', $lines);
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'rows' => static::optionsToDefinition($this->evaluate($this->rows)),
+            'answers' => static::optionsToDefinition($this->evaluate($this->answers)),
+            'multiple' => $this->evaluate($this->isMultiple) ?: null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (isset($settings['rows'])) {
+            $this->rows(static::optionsFromDefinition($settings['rows']));
+        }
+
+        if (isset($settings['answers'])) {
+            $this->answers(static::optionsFromDefinition($settings['answers']));
+        }
+
+        $this->multiple((bool) ($settings['multiple'] ?? false));
+
+        return $this;
+    }
 }

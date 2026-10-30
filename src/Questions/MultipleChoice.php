@@ -181,4 +181,43 @@ class MultipleChoice extends Question
     {
         return ($index < 26) ? chr(97 + $index) : '';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'options' => static::optionsToDefinition($this->getOptions()),
+            'multiple' => $this->evaluate($this->isMultiple) ?: null,
+            'other' => $this->evaluate($this->allowsOther) ?: null,
+            'randomize' => $this->evaluate($this->isRandomized) ?: null,
+            'min_selections' => $this->evaluate($this->minSelections),
+            'max_selections' => $this->evaluate($this->maxSelections),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (isset($settings['options'])) {
+            $this->options(static::optionsFromDefinition($settings['options']));
+        }
+
+        $this->multiple((bool) ($settings['multiple'] ?? false));
+        $this->other((bool) ($settings['other'] ?? false));
+        $this->randomize((bool) ($settings['randomize'] ?? false));
+
+        if (array_key_exists('min_selections', $settings)) {
+            $this->minSelections($settings['min_selections']);
+        }
+
+        if (array_key_exists('max_selections', $settings)) {
+            $this->maxSelections($settings['max_selections']);
+        }
+
+        return $this;
+    }
 }

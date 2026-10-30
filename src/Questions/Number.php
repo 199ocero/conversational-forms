@@ -89,4 +89,39 @@ class Number extends ShortText
     {
         return $this->evaluate($this->placeholder) ?? __('conversational-forms::conversational-forms.questions.number_placeholder');
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            ...parent::getDefinitionSettings(),
+            'min' => $this->evaluate($this->minValue),
+            'max' => $this->evaluate($this->maxValue),
+            'integer' => $this->evaluate($this->isInteger) ?: null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        parent::definitionSettings($settings);
+
+        if (array_key_exists('min', $settings)) {
+            $this->minValue($settings['min']);
+        }
+
+        if (array_key_exists('max', $settings)) {
+            $this->maxValue($settings['max']);
+        }
+
+        if (isset($settings['integer'])) {
+            $this->integer((bool) $settings['integer']);
+        }
+
+        return $this;
+    }
 }

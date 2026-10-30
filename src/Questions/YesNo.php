@@ -53,4 +53,31 @@ class YesNo extends Question
             ['value' => false, 'label' => $this->evaluate($this->noLabel) ?? __('conversational-forms::conversational-forms.questions.no'), 'key' => 'n'],
         ];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'yes_label' => $this->evaluate($this->yesLabel),
+            'no_label' => $this->evaluate($this->noLabel),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (array_key_exists('yes_label', $settings)) {
+            $this->yesLabel($settings['yes_label']);
+        }
+
+        if (array_key_exists('no_label', $settings)) {
+            $this->noLabel($settings['no_label']);
+        }
+
+        return $this;
+    }
 }

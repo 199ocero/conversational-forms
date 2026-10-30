@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('conversational_forms', function (Blueprint $table): void {
+            $table->ulid('id')->primary();
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->string('status')->default('draft')->index();
+            $table->json('definition');
+            $table->json('theme')->nullable();
+            $table->json('settings')->nullable();
+            $table->ulid('published_version_id')->nullable();
+            $table->timestamp('published_at')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('conversational_form_versions', function (Blueprint $table): void {
+            $table->ulid('id')->primary();
+            $table->foreignUlid('conversational_form_id')->constrained('conversational_forms')->cascadeOnDelete();
+            $table->unsignedInteger('number');
+            $table->json('definition');
+            $table->json('theme')->nullable();
+            $table->timestamp('published_at');
+            $table->timestamps();
+
+            // Named explicitly: the default name is longer than MySQL's 64 characters.
+            $table->unique(['conversational_form_id', 'number'], 'cf_form_versions_number_unique');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('conversational_form_versions');
+        Schema::dropIfExists('conversational_forms');
+    }
+};

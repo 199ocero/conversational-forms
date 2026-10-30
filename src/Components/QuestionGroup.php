@@ -6,6 +6,7 @@ use Closure;
 use Filament\Schemas\Components\Component;
 use Illuminate\Contracts\Support\Htmlable;
 use JaOcero\ConversationalForms\Concerns\HasVisibilityConditions;
+use JaOcero\ConversationalForms\Logic\ConditionGroup;
 
 /**
  * Several questions on one screen, validated together, for example a first
@@ -69,5 +70,36 @@ class QuestionGroup extends Step
     public function isNumbered(): bool
     {
         return true;
+    }
+
+    /**
+     * The group without its questions; `ConversationDefinition` adds them.
+     *
+     * @return array<string, mixed>
+     */
+    public function toDefinition(): array
+    {
+        return array_filter([
+            'type' => 'group',
+            'key' => $this->getName(),
+            'label' => static::definitionText($this->evaluate($this->label)),
+            'description' => static::definitionText($this->evaluate($this->description)),
+            'visible_when' => $this->getVisibilityConditions()?->toArray(),
+        ], filled(...));
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     */
+    public function fillFromDefinition(array $definition): static
+    {
+        $this->label($definition['label'] ?? null);
+        $this->description($definition['description'] ?? null);
+
+        if (filled($definition['visible_when'] ?? null)) {
+            $this->visibleWhen(ConditionGroup::fromArray($definition['visible_when']));
+        }
+
+        return $this;
     }
 }

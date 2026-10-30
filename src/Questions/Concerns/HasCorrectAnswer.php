@@ -71,4 +71,31 @@ trait HasCorrectAnswer
 
         return Logic::when($name, 'includes_all', $correct)->and($name, 'excludes', $others);
     }
+
+    /**
+     * @return array{answer: mixed, points: int|float, variable: string}|null
+     */
+    public function getCorrectAnswerDefinition(): ?array
+    {
+        if ($this->correctAnswer === null) {
+            return null;
+        }
+
+        return [
+            'answer' => $this->correctAnswer,
+            'points' => $this->evaluate($this->points),
+            'variable' => $this->evaluate($this->scoreVariable),
+        ];
+    }
+
+    /**
+     * @param  array{answer?: mixed, points?: int|float, variable?: string}  $definition
+     */
+    public function fillCorrectAnswerFromDefinition(array $definition): static
+    {
+        $this->correct($definition['answer'] ?? null);
+        $this->points($definition['points'] ?? 1, $definition['variable'] ?? 'score');
+
+        return $this;
+    }
 }

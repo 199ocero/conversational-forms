@@ -23,6 +23,7 @@ use JaOcero\ConversationalForms\Support\Piping;
  */
 trait IsConversationQuestion
 {
+    use HasDefinition;
     use HasDescription;
     use HasLogic;
     use HasMedia;

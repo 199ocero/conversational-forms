@@ -52,4 +52,46 @@ class LongText extends Question implements CanBeLengthConstrainedContract
     {
         return $this->evaluate($this->placeholder) ?? __('conversational-forms::conversational-forms.questions.placeholder');
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'placeholder' => $this->evaluate($this->placeholder),
+            'min_length' => $this->evaluate($this->minLength),
+            'max_length' => $this->evaluate($this->maxLength),
+            'rows' => $this->evaluate($this->rows),
+            'submit_on_enter' => $this->evaluate($this->shouldSubmitOnEnter),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (array_key_exists('placeholder', $settings)) {
+            $this->placeholder($settings['placeholder']);
+        }
+
+        if (array_key_exists('min_length', $settings)) {
+            $this->minLength($settings['min_length']);
+        }
+
+        if (array_key_exists('max_length', $settings)) {
+            $this->maxLength($settings['max_length']);
+        }
+
+        if (isset($settings['rows'])) {
+            $this->rows((int) $settings['rows']);
+        }
+
+        if (isset($settings['submit_on_enter'])) {
+            $this->submitOnEnter((bool) $settings['submit_on_enter']);
+        }
+
+        return $this;
+    }
 }

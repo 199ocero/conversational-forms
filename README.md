@@ -24,6 +24,7 @@ Typeform-style conversational forms for Filament. One question at a time, fully 
 - [Logic](#logic)
 - [Saving answers](#saving-answers)
 - [Public pages](#public-pages)
+- [The builder](#the-builder)
 - [Using other Filament fields](#using-other-filament-fields)
 - [Displaying answers](#displaying-answers)
 - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -734,6 +735,138 @@ Route::livewire('/apply', JobApplication::class)->middleware('throttle:60,1');
 ```
 
 The page uses a minimal layout with Filament's styles, follows the visitor's light or dark mode, and works without a Vite build. To use your own layout, set `protected static string $layout = 'layouts.app';` on the page; your layout must include `@filamentStyles` and `@filamentScripts`.
+
+## The builder
+
+Conversations can also be made in a Filament panel, without code. Add the plugin to a panel and publish the migration:
+
+```php
+use JaOcero\ConversationalForms\ConversationalFormsPlugin;
+
+$panel->plugin(
+    ConversationalFormsPlugin::make()
+        ->navigationGroup('Forms'), // optional
+);
+```
+
+```bash
+php artisan conversational-forms:install   # publishes the config and migration, and offers to migrate
+php artisan storage:link                   # images uploaded in the builder are stored on the public disk
+```
+
+The panel gets a **Conversations** page. Creating one asks for a title and an address, then opens the builder:
+
+- **Questions**: add any question type from the picker, or a question group or a statement, and drag them into order. Each question has its settings (options, ranges, formats), an optional image, a quiz section (points for a correct answer), **Show only when** conditions and **Logic**. A key is made from the question's text; it's what logic and `{key}` piping refer to.
+- **Logic** is written as rows: *when* [question] [comparison] [value], *then* jump to a later step, end, or end with a chosen ending, and optionally add to a variable. The comparisons offered fit the question (a date offers *is before*, a multiple choice offers its own options), and the steps offered are only the ones after the current step.
+- **Welcome and endings**: an optional welcome screen, and the end screens and redirects that logic can choose.
+- **Settings**: the title and address, the progress bar, auto-advance, variables and hidden fields.
+
+Saving checks the draft the same way code is checked: duplicate keys, conditions on questions that don't exist and backward jumps are explained in a notification instead of being saved.
+
+**Preview** saves the draft and shows it in its public page, in a panel beside the builder. **Publish** copies the draft into a new, numbered version: the public page always shows the latest published version, so you can keep editing without changing the live conversation, and answers can always be read against the exact questions they were given to. A published conversation can be **closed** (its page says so) and reopened.
+
+The **Logic map** shows every step in order, with the jumps and endings chosen by logic as arcs beside them, and warns about steps that an earlier rule always skips and endings that are never used.
+
+### The public page
+
+Builder-made conversations are answered at `/f/{address}`, outside the panel and without a login, with the same full-screen layout as `ConversationPage`. Change the prefix or middleware in the config, or turn the routes off and register `ConversationalFormPage` yourself:
+
+```php
+// config/conversational-forms.php
+'routes' => [
+    'enabled' => true,
+    'prefix' => 'f',
+    'middleware' => ['web', 'throttle:60,1'],
+],
+```
+
+When a conversation is completed, `ConversationalFormSubmitted` is dispatched with the form, the version that was answered (`null` for a preview), the answers and the `ConversationResult`:
+
+```php
+use JaOcero\ConversationalForms\Events\ConversationalFormSubmitted;
+
+Event::listen(function (ConversationalFormSubmitted $event): void {
+    if ($event->isPreview()) {
+        return;
+    }
+
+    Lead::create(['email' => $event->data['email'], 'score' => $event->result->variable('score')]);
+});
+```
+
+### How conversations are stored
+
+The builder saves conversations as plain JSON (a *definition*), which `ConversationDefinition` turns into the same `Conversation` that code would build, so a stored conversation and a coded one behave identically. You can use it directly, for example to keep a conversation in a file:
+
+```php
+use JaOcero\ConversationalForms\Definitions\ConversationDefinition;
+
+// Code → definition (the conversation must belong to a schema, for example in a test).
+$definition = ConversationDefinition::fromConversation($conversation);
+
+// Definition → conversation. validate() throws with a readable message if it can't be built.
+$stored = ConversationDefinition::make($definition);
+$stored->validate();
+$conversation = $stored->toConversation();
+```
+
+```json
+{
+    "schema_version": 1,
+    "steps": [
+        { "type": "short_text", "key": "name", "label": "What's your name?", "required": true },
+        {
+            "type": "multiple_choice",
+            "key": "plan",
+            "label": "Which plan, {name}?",
+            "settings": { "options": [{ "value": "starter", "label": "Starter" }, { "value": "enterprise", "label": "Enterprise" }] },
+            "rules": [{ "if": { "all": [{ "field": "plan", "op": "is", "value": "enterprise" }] }, "then": [{ "end_with": "sales" }] }]
+        }
+    ],
+    "endings": [{ "key": "default", "title": "Thanks!" }, { "key": "sales", "title": "Our team will call you." }]
+}
+```
+
+### Your own question types
+
+Register a question type so it can be stored in definitions and added in the builder. Its builder fields edit the keys your question reads in `definitionSettings()`:
+
+```php
+use Filament\Forms\Components\TextInput;
+use JaOcero\ConversationalForms\Definitions\QuestionType;
+use JaOcero\ConversationalForms\Definitions\QuestionTypeRegistry;
+use JaOcero\ConversationalForms\Logic\Enums\AnswerType;
+
+// In a service provider's boot() method:
+app(QuestionTypeRegistry::class)->register(
+    QuestionType::make('license_plate', LicensePlate::class)
+        ->label('License plate')
+        ->icon('heroicon-o-truck')
+        ->answerType(AnswerType::Text)
+        ->settingsSchema(fn (): array => [
+            TextInput::make('country')->label('Country code'),
+        ]),
+);
+```
+
+```php
+class LicensePlate extends Question
+{
+    protected ?string $country = null;
+
+    public function getDefinitionSettings(): array
+    {
+        return ['country' => $this->country];
+    }
+
+    public function definitionSettings(array $settings): static
+    {
+        $this->country = $settings['country'] ?? null;
+
+        return $this;
+    }
+}
+```
 
 ## Using other Filament fields
 

@@ -176,4 +176,29 @@ class TimeQuestion extends Question
     {
         return ['key' => 'minute', 'length' => 2, 'label' => __('conversational-forms::conversational-forms.questions.minute'), 'placeholder' => 'MM', 'options' => $options];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'twelve_hour' => $this->evaluate($this->isTwelveHour),
+            'dropdowns' => $this->hasDropdowns() ? null : false,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (array_key_exists('twelve_hour', $settings)) {
+            $this->twelveHour($settings['twelve_hour']);
+        }
+
+        $this->dropdowns((bool) ($settings['dropdowns'] ?? true));
+
+        return $this;
+    }
 }

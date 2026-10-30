@@ -2,6 +2,15 @@
 
 All notable changes to `conversational-forms` will be documented in this file.
 
+## Unreleased (v0.5.0)
+
+- The builder: `ConversationalFormsPlugin` adds a Conversations resource to a panel, with a block per question type, settings, images, quiz scoring, "show only when" conditions and logic rules edited as rows, a welcome screen, endings, variables and hidden fields.
+- Drafts and published versions: the public page shows the latest published version while the draft is edited; preview, publish, close and reopen.
+- A logic map of each conversation, with warnings for steps and endings that can never be reached.
+- Public pages for builder-made conversations at `/f/{slug}` (configurable), and a `ConversationalFormSubmitted` event.
+- Definitions: `ConversationDefinition` turns conversations into JSON and back; `QuestionTypeRegistry` and `QuestionType` let other packages add question types; `Rule::fromArray()`, `Operator::appliesTo()` and `AnswerType`.
+- Config file and migration (`php artisan conversational-forms:install`).
+
 ## Unreleased (v0.4.0)
 
 - Questions: `DateQuestion` and `TimeQuestion` (typed boxes, each with a list to pick from, plus a calendar for dates and an AM / PM box for 12-hour locales), `ContactInfo` and `Address` (several inputs saved as an array), `Matrix`, `Ranking` (drag, touch or keyboard), `FileUpload` (Filament's uploads with a drop zone) and `Signature` (drawn or typed, stored as a PNG).

@@ -91,6 +91,7 @@ const alpineComponents = [
     'ranking-question',
     'file-upload-question',
     'signature-question',
+    'logic-map',
 ]
 
 await Promise.all([

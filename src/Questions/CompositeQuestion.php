@@ -155,4 +155,31 @@ abstract class CompositeQuestion extends Question
             filled(...),
         ));
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'parts' => $this->evaluate($this->parts),
+            'required_parts' => $this->evaluate($this->requiredParts),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (array_key_exists('parts', $settings)) {
+            $this->parts($settings['parts']);
+        }
+
+        if (array_key_exists('required_parts', $settings)) {
+            $this->requiredParts($settings['required_parts']);
+        }
+
+        return $this;
+    }
 }

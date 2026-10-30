@@ -37,4 +37,39 @@ class FileUpload extends BaseFileUpload implements ConversationQuestion
             $files,
         )));
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'multiple' => $this->isMultiple() ?: null,
+            'max_files' => $this->getMaxFiles(),
+            'max_size' => $this->getMaxSize(),
+            'accepted_types' => $this->getAcceptedFileTypes() ?: null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        $this->multiple((bool) ($settings['multiple'] ?? false));
+
+        if (array_key_exists('max_files', $settings)) {
+            $this->maxFiles($settings['max_files']);
+        }
+
+        if (array_key_exists('max_size', $settings)) {
+            $this->maxSize($settings['max_size']);
+        }
+
+        if (filled($settings['accepted_types'] ?? null)) {
+            $this->acceptedFileTypes(array_values((array) $settings['accepted_types']));
+        }
+
+        return $this;
+    }
 }

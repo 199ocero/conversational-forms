@@ -161,4 +161,29 @@ class Signature extends Question
     {
         return filled($answer) ? __('conversational-forms::conversational-forms.signature.signed') : '';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'typing' => $this->evaluate($this->canBeTyped) ? null : false,
+            'max_size' => $this->evaluate($this->maxSize),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        $this->typing((bool) ($settings['typing'] ?? true));
+
+        if (isset($settings['max_size'])) {
+            $this->maxSize((int) $settings['max_size']);
+        }
+
+        return $this;
+    }
 }

@@ -4,6 +4,7 @@ namespace JaOcero\ConversationalForms\Components;
 
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
+use Illuminate\Contracts\Support\Htmlable;
 use JaOcero\ConversationalForms\Contracts\ConversationQuestion;
 use JaOcero\ConversationalForms\Logic\ConditionGroup;
 use JaOcero\ConversationalForms\Logic\Rule;
@@ -140,5 +141,10 @@ abstract class Step extends Component
         }
 
         return null;
+    }
+
+    protected static function definitionText(mixed $text): ?string
+    {
+        return ($text instanceof Htmlable) ? $text->toHtml() : $text;
     }
 }

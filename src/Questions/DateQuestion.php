@@ -215,4 +215,46 @@ class DateQuestion extends Question
             default => null,
         };
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'format' => $this->getFormat(),
+            'min_date' => $this->getMinDate(),
+            'max_date' => $this->getMaxDate(),
+            'calendar' => $this->hasCalendar() ? null : false,
+            'dropdowns' => $this->hasDropdowns() ? null : false,
+            'first_day_of_week' => $this->evaluate($this->firstDayOfWeek),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (isset($settings['format'])) {
+            $this->format((string) $settings['format']);
+        }
+
+        if (array_key_exists('min_date', $settings)) {
+            $this->minDate($settings['min_date']);
+        }
+
+        if (array_key_exists('max_date', $settings)) {
+            $this->maxDate($settings['max_date']);
+        }
+
+        $this->calendar((bool) ($settings['calendar'] ?? true));
+        $this->dropdowns((bool) ($settings['dropdowns'] ?? true));
+
+        if (array_key_exists('first_day_of_week', $settings)) {
+            $this->firstDayOfWeek($settings['first_day_of_week']);
+        }
+
+        return $this;
+    }
 }

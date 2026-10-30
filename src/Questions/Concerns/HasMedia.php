@@ -3,6 +3,7 @@
 namespace JaOcero\ConversationalForms\Questions\Concerns;
 
 use Closure;
+use JaOcero\ConversationalForms\Support\ImageUrl;
 
 trait HasMedia
 {
@@ -28,12 +29,28 @@ trait HasMedia
      */
     public function getMedia(): ?array
     {
+        $media = $this->getMediaDefinition();
+
+        if ($media === null) {
+            return null;
+        }
+
+        return ['url' => (string) ImageUrl::resolve($media['url']), 'alt' => $media['alt']];
+    }
+
+    /**
+     * The media as given: a URL, or the path of an image uploaded in the builder.
+     *
+     * @return array{url: string, alt: string}|null
+     */
+    public function getMediaDefinition(): ?array
+    {
         $url = $this->evaluate($this->mediaUrl);
 
         if (blank($url)) {
             return null;
         }
 
-        return ['url' => $url, 'alt' => (string) $this->evaluate($this->mediaAlt)];
+        return ['url' => (string) $url, 'alt' => (string) $this->evaluate($this->mediaAlt)];
     }
 }

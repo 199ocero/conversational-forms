@@ -16,6 +16,8 @@ use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Routing\Router;
 use JaOcero\ConversationalForms\ConversationalFormsServiceProvider;
 use JaOcero\ConversationalForms\Tests\Fixtures\Livewire\TestConversationPage;
+use JaOcero\ConversationalForms\Tests\Fixtures\Models\User;
+use JaOcero\ConversationalForms\Tests\Fixtures\Providers\AdminPanelProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
@@ -41,6 +43,7 @@ class TestCase extends Orchestra
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
             ConversationalFormsServiceProvider::class,
+            AdminPanelProvider::class,
         ];
 
         sort($providers);
@@ -52,6 +55,15 @@ class TestCase extends Orchestra
     {
         $app['config']->set('database.default', 'testing');
         $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
+        $app['config']->set('auth.providers.users.model', User::class);
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadLaravelMigrations();
+
+        $migration = include __DIR__ . '/../database/migrations/create_conversational_forms_tables.php.stub';
+        $migration->up();
     }
 
     /**

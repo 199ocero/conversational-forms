@@ -42,4 +42,31 @@ class Checkbox extends Question
     {
         return $this->evaluate($this->checkboxLabel) ?? __('conversational-forms::conversational-forms.questions.yes');
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'checkbox_label' => $this->evaluate($this->checkboxLabel),
+            'must_accept' => $this->hasDefinitionRule('accepted') ?: null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (array_key_exists('checkbox_label', $settings)) {
+            $this->checkboxLabel($settings['checkbox_label']);
+        }
+
+        if ($settings['must_accept'] ?? false) {
+            $this->accepted();
+        }
+
+        return $this;
+    }
 }

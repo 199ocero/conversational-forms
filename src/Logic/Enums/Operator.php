@@ -60,6 +60,52 @@ enum Operator: string
         };
     }
 
+    /**
+     * Whether this operator makes sense for answers of the given type. Used by
+     * the builder to offer only fitting operators.
+     */
+    public function appliesTo(AnswerType $type): bool
+    {
+        return in_array($this, self::forAnswerType($type), strict: true);
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function forAnswerType(AnswerType $type): array
+    {
+        return match ($type) {
+            AnswerType::Text => [self::Is, self::IsNot, self::Contains, self::NotContains, self::StartsWith, self::EndsWith, self::IsEmpty, self::IsNotEmpty],
+            AnswerType::Choice => [self::Is, self::IsNot, self::IsEmpty, self::IsNotEmpty],
+            AnswerType::Choices => [self::IncludesAny, self::IncludesAll, self::Excludes, self::IsEmpty, self::IsNotEmpty],
+            AnswerType::Number => [self::Is, self::IsNot, self::GreaterThan, self::GreaterThanOrEqual, self::LessThan, self::LessThanOrEqual, self::Between, self::IsEmpty, self::IsNotEmpty],
+            AnswerType::Date => [self::On, self::NotOn, self::Before, self::After, self::IsEmpty, self::IsNotEmpty],
+            AnswerType::Boolean => [self::Is, self::IsNot],
+            AnswerType::Other => [self::IsEmpty, self::IsNotEmpty],
+        };
+    }
+
+    /**
+     * Whether the operator compares against a value (`is_empty` doesn't).
+     */
+    public function needsValue(): bool
+    {
+        return ! in_array($this, [self::IsEmpty, self::IsNotEmpty], strict: true);
+    }
+
+    /**
+     * Whether the value is a list (`between` takes two, `includes_any` several).
+     */
+    public function takesList(): bool
+    {
+        return in_array($this, [self::Between, self::IncludesAny, self::IncludesAll, self::Excludes], strict: true);
+    }
+
+    public function getLabel(): string
+    {
+        return __("conversational-forms::conversational-forms.operators.{$this->value}");
+    }
+
     public function evaluate(mixed $answer, mixed $value): bool
     {
         $answer = Values::normalize($answer);

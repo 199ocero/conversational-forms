@@ -54,4 +54,29 @@ class EndScreen extends Screen
     {
         return $this->evaluate($this->buttonUrl);
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toDefinition(): array
+    {
+        return array_filter([
+            'key' => $this->getName(),
+            'type' => 'end_screen',
+            ...parent::toDefinition(),
+            'button_url' => $this->getButtonUrl(),
+        ], filled(...));
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     */
+    public function fillFromDefinition(array $definition): static
+    {
+        parent::fillFromDefinition($definition);
+
+        $this->buttonUrl = $definition['button_url'] ?? null;
+
+        return $this;
+    }
 }

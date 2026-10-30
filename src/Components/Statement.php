@@ -5,6 +5,7 @@ namespace JaOcero\ConversationalForms\Components;
 use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use JaOcero\ConversationalForms\Concerns\HasVisibilityConditions;
+use JaOcero\ConversationalForms\Logic\ConditionGroup;
 
 /**
  * A screen without a question, for example an introduction to a new section.
@@ -74,5 +75,36 @@ class Statement extends Step
     public function isNumbered(): bool
     {
         return false;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toDefinition(): array
+    {
+        return array_filter([
+            'type' => 'statement',
+            'key' => $this->getName(),
+            'title' => static::definitionText($this->evaluate($this->title)),
+            'description' => static::definitionText($this->evaluate($this->description)),
+            'button_label' => $this->evaluate($this->buttonLabel),
+            'visible_when' => $this->getVisibilityConditions()?->toArray(),
+        ], filled(...));
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     */
+    public function fillFromDefinition(array $definition): static
+    {
+        $this->title($definition['title'] ?? null);
+        $this->description($definition['description'] ?? null);
+        $this->buttonLabel($definition['button_label'] ?? null);
+
+        if (filled($definition['visible_when'] ?? null)) {
+            $this->visibleWhen(ConditionGroup::fromArray($definition['visible_when']));
+        }
+
+        return $this;
     }
 }

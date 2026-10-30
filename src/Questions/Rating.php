@@ -102,4 +102,31 @@ class Rating extends Question
     {
         return [KeyboardHint::make("1–{$this->getSteps()}", __('conversational-forms::conversational-forms.hints.choose'))];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'steps' => $this->evaluate($this->steps),
+            'shape' => $this->evaluate($this->shape),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (isset($settings['steps'])) {
+            $this->steps((int) $settings['steps']);
+        }
+
+        if (isset($settings['shape'])) {
+            $this->shape((string) $settings['shape']);
+        }
+
+        return $this;
+    }
 }

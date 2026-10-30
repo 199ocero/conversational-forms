@@ -43,4 +43,21 @@ interface ConversationQuestion extends ConversationAware, FormatsAnswer
      * @return array<string, string>|null
      */
     public function getAnswerLabels(): ?array;
+
+    /**
+     * The question as plain data; see `ConversationDefinition`.
+     *
+     * @return array<string, mixed>
+     */
+    public function toDefinition(): array;
+
+    /**
+     * @param  array<string, mixed>  $definition
+     */
+    public function fillFromDefinition(array $definition): static;
+
+    /**
+     * @return list<Rule>
+     */
+    public function getOwnLogic(): array;
 }

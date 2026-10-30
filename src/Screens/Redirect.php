@@ -38,4 +38,22 @@ class Redirect extends EndScreen
 
         return ($url === null) ? null : Piping::renderUrl($url, $conversation, $variables);
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toDefinition(): array
+    {
+        return [...parent::toDefinition(), 'type' => 'redirect', 'url' => $this->getUrl()];
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     */
+    public function fillFromDefinition(array $definition): static
+    {
+        parent::fillFromDefinition($definition);
+
+        return $this->url($definition['url'] ?? null);
+    }
 }

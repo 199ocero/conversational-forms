@@ -1,0 +1,154 @@
+/*
+ * The builder's logic map, shown in the Filament panel.
+ */
+@layer components {
+    .cf-logic-map {
+        @apply relative pe-48;
+        --cf-logic-accent: var(--primary-600, --theme(--color-indigo-600));
+        --cf-logic-end: var(--success-600, --theme(--color-emerald-600));
+        --cf-logic-border: color-mix(in oklab, currentColor 12%, transparent);
+        --cf-logic-muted: color-mix(in oklab, currentColor 60%, transparent);
+
+        @variant dark {
+            --cf-logic-accent: var(--primary-400, --theme(--color-indigo-400));
+            --cf-logic-end: var(--success-400, --theme(--color-emerald-400));
+        }
+    }
+
+    .cf-logic-nodes {
+        @apply m-0 flex list-none flex-col gap-3 p-0;
+    }
+
+    .cf-logic-heading {
+        @apply mt-4 text-xs font-semibold tracking-wide uppercase first:mt-0;
+        color: var(--cf-logic-muted);
+    }
+
+    .cf-logic-node {
+        @apply relative flex flex-col gap-1 rounded-xl px-4 py-3 shadow-xs transition;
+        background-color: var(--color-white, white);
+        border: 1px solid var(--cf-logic-border);
+
+        @variant dark {
+            background-color: color-mix(in oklab, white 5%, transparent);
+        }
+
+        &.cf-active {
+            border-color: var(--cf-logic-accent);
+            box-shadow: 0 0 0 1px var(--cf-logic-accent);
+        }
+
+        &.cf-logic-ending {
+            border-style: dashed;
+        }
+
+        &.cf-logic-unreachable {
+            @apply opacity-60;
+        }
+    }
+
+    .cf-logic-node-header {
+        @apply flex flex-wrap items-center gap-2 text-xs;
+    }
+
+    .cf-logic-number {
+        @apply grid size-5 place-items-center rounded-md font-bold text-white;
+        background-color: var(--cf-logic-accent);
+    }
+
+    .cf-logic-type {
+        @apply font-medium;
+        color: var(--cf-logic-muted);
+    }
+
+    .cf-logic-key {
+        @apply rounded px-1.5 py-0.5 font-mono;
+        background-color: color-mix(in oklab, currentColor 6%, transparent);
+    }
+
+    .cf-logic-badge {
+        @apply rounded-full px-2 py-0.5 font-medium;
+        background-color: color-mix(in oklab, var(--cf-logic-accent) 12%, transparent);
+        color: var(--cf-logic-accent);
+    }
+
+    .cf-logic-badge-warning {
+        background-color: color-mix(in oklab, var(--warning-500, orange) 15%, transparent);
+        color: var(--warning-700, darkorange);
+
+        @variant dark {
+            color: var(--warning-400, orange);
+        }
+    }
+
+    .cf-logic-label {
+        @apply m-0 text-sm font-medium;
+    }
+
+    .cf-logic-rules {
+        @apply m-0 mt-1 flex list-none flex-col gap-1 p-0 text-xs;
+    }
+
+    .cf-logic-rule {
+        @apply flex flex-wrap items-baseline gap-1.5 rounded-md px-2 py-1;
+        background-color: color-mix(in oklab, var(--cf-logic-accent) 8%, transparent);
+
+        & code {
+            @apply font-mono font-semibold;
+            color: var(--cf-logic-accent);
+        }
+    }
+
+    .cf-logic-rule-end {
+        background-color: color-mix(in oklab, var(--cf-logic-end) 10%, transparent);
+
+        & code {
+            color: var(--cf-logic-end);
+        }
+    }
+
+    .cf-logic-rule-next {
+        background-color: transparent;
+        color: var(--cf-logic-muted);
+
+        & code {
+            color: inherit;
+        }
+    }
+
+    .cf-logic-arcs {
+        @apply pointer-events-none absolute inset-0 overflow-visible;
+    }
+
+    .cf-logic-arc {
+        fill: none;
+        stroke: var(--cf-logic-accent);
+        stroke-width: 1.5;
+        opacity: 0.55;
+        transition: opacity 150ms ease, stroke-width 150ms ease;
+
+        &.cf-logic-arc-end {
+            stroke: var(--cf-logic-end);
+            stroke-dasharray: 4 3;
+        }
+
+        &.cf-active {
+            stroke-width: 2.5;
+            opacity: 1;
+        }
+    }
+
+    .cf-logic-warnings {
+        @apply rounded-xl px-4 py-3 text-sm;
+        background-color: color-mix(in oklab, var(--warning-500, orange) 10%, transparent);
+        border: 1px solid color-mix(in oklab, var(--warning-500, orange) 35%, transparent);
+
+        & ul {
+            @apply m-0 mt-1 list-disc ps-5;
+        }
+    }
+
+    .cf-logic-warnings-title {
+        @apply m-0 font-semibold;
+    }
+}

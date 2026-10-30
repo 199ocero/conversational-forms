@@ -132,7 +132,7 @@ class Conversation extends Component
     /**
      * @return array<HiddenField>
      */
-    protected function getHiddenFields(): array
+    public function getHiddenFields(): array
     {
         return array_values(array_filter(
             $this->getQuestionComponents(),
@@ -268,6 +268,17 @@ class Conversation extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Rules given to the conversation with `logic()`, keyed by step, without
+     * the rules attached to the questions themselves.
+     *
+     * @return array<string, list<Rule>>
+     */
+    public function getConversationLogic(): array
+    {
+        return array_map(array_values(...), $this->evaluate($this->logic));
     }
 
     /**

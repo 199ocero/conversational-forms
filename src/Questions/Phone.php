@@ -68,4 +68,29 @@ class Phone extends ShortText
     {
         return $this->evaluate($this->placeholder) ?? __('conversational-forms::conversational-forms.questions.phone_placeholder');
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            ...parent::getDefinitionSettings(),
+            'normalize' => $this->evaluate($this->shouldNormalize),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        parent::definitionSettings($settings);
+
+        if (isset($settings['normalize'])) {
+            $this->normalize((bool) $settings['normalize']);
+        }
+
+        return $this;
+    }
 }

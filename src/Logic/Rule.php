@@ -185,6 +185,30 @@ class Rule implements Arrayable, JsonSerializable
     }
 
     /**
+     * The inverse of `toArray()`, used to load rules stored as JSON.
+     *
+     * @param  array{if?: 'always' | array<string, mixed>, then?: list<array<string, mixed>>}  $data
+     *
+     * @throws InvalidLogicException
+     */
+    public static function fromArray(array $data): static
+    {
+        $conditions = $data['if'] ?? 'always';
+        $rule = is_array($conditions) ? static::when(ConditionGroup::fromArray($conditions)) : static::always();
+
+        foreach ($data['then'] ?? [] as $action) {
+            match (true) {
+                isset($action['jump_to']) => $rule->jumpTo((string) $action['jump_to']),
+                isset($action['end_with']) => $rule->endWith((string) $action['end_with']),
+                isset($action['end']) => $rule->end(),
+                default => $rule->applyCalculationArray($action),
+            };
+        }
+
+        return $rule;
+    }
+
+    /**
      * @return array{if: 'always' | array<string, mixed>, then: list<array<string, mixed>>}
      */
     public function toArray(): array
@@ -224,6 +248,20 @@ class Rule implements Arrayable, JsonSerializable
         $this->conditions->add($item, $combinator);
 
         return $this;
+    }
+
+    /**
+     * @param  array<string, mixed>  $action  `['add' => ['score', 10]]`
+     *
+     * @throws InvalidLogicException
+     */
+    protected function applyCalculationArray(array $action): void
+    {
+        $name = (string) array_key_first($action);
+        $operator = CalculationOperator::tryFrom($name) ?? throw new InvalidLogicException("Unknown logic action [{$name}].");
+        $arguments = array_values((array) $action[$name]);
+
+        $this->calculate($operator, (string) ($arguments[0] ?? ''), $arguments[1] ?? null);
     }
 
     protected function calculate(CalculationOperator $operator, string $variable, int | float | string | bool | null $value): static

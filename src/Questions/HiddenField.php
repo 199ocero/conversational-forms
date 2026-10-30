@@ -70,4 +70,32 @@ class HiddenField extends Hidden
 
         return is_string($value) ? mb_substr($value, 0, $this->getMaxLength()) : null;
     }
+
+    /**
+     * @return array{key: string, from_query?: string, max_length: int}
+     */
+    public function toDefinition(): array
+    {
+        return array_filter([
+            'key' => $this->getName(),
+            'from_query' => $this->getQueryParameter(),
+            'max_length' => $this->getMaxLength(),
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     */
+    public function fillFromDefinition(array $definition): static
+    {
+        if (filled($definition['from_query'] ?? null)) {
+            $this->fromQuery((string) $definition['from_query']);
+        }
+
+        if (isset($definition['max_length'])) {
+            $this->maxLength((int) $definition['max_length']);
+        }
+
+        return $this;
+    }
 }

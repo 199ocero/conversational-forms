@@ -106,4 +106,37 @@ class OpinionScale extends Question
     {
         return [KeyboardHint::make("{$this->getStart()}–{$this->getEnd()}", __('conversational-forms::conversational-forms.hints.choose'))];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefinitionSettings(): array
+    {
+        return [
+            'start' => $this->evaluate($this->start),
+            'end' => $this->evaluate($this->end),
+            'start_label' => $this->evaluate($this->startLabel),
+            'end_label' => $this->evaluate($this->endLabel),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     */
+    public function definitionSettings(array $settings): static
+    {
+        if (isset($settings['start'], $settings['end'])) {
+            $this->range((int) $settings['start'], (int) $settings['end']);
+        }
+
+        if (array_key_exists('start_label', $settings)) {
+            $this->startLabel($settings['start_label']);
+        }
+
+        if (array_key_exists('end_label', $settings)) {
+            $this->endLabel($settings['end_label']);
+        }
+
+        return $this;
+    }
 }

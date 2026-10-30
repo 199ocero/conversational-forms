@@ -59,4 +59,33 @@ abstract class Screen extends Component
     }
 
     abstract public function getButtonLabel(): ?string;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toDefinition(): array
+    {
+        return array_filter([
+            'title' => static::definitionText($this->evaluate($this->title)),
+            'description' => static::definitionText($this->evaluate($this->description)),
+            'button_label' => $this->evaluate($this->buttonLabel),
+        ], filled(...));
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     */
+    public function fillFromDefinition(array $definition): static
+    {
+        $this->title($definition['title'] ?? null);
+        $this->description($definition['description'] ?? null);
+        $this->buttonLabel($definition['button_label'] ?? null);
+
+        return $this;
+    }
+
+    protected static function definitionText(mixed $text): ?string
+    {
+        return ($text instanceof Htmlable) ? $text->toHtml() : $text;
+    }
 }
