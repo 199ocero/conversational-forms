@@ -18,7 +18,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use JaOcero\ConversationalForms\Contracts\ConversationQuestion;
@@ -33,6 +33,7 @@ use JaOcero\ConversationalForms\Models\ConversationalFormResponse;
 use JaOcero\ConversationalForms\Questions\Nps;
 use JaOcero\ConversationalForms\Support\ResponseExport;
 use JaOcero\ConversationalForms\Support\ResponseTranscript;
+use JaOcero\ConversationalForms\Support\Views;
 use JaOcero\ConversationalForms\Tables\Columns\AnswerColumn;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -141,7 +142,7 @@ class ManageResponses extends ManageRelatedRecords
                     ->label(static::text('view'))
                     ->icon(Heroicon::OutlinedDocumentText)
                     ->modalHeading(fn (ConversationalFormResponse $record): string => static::text('transcript_heading', ['date' => $record->started_at->toDayDateTimeString()]))
-                    ->modalContent(fn (ConversationalFormResponse $record): Factory | \Illuminate\Contracts\View\View => view('conversational-forms::builder.transcript', [
+                    ->modalContent(fn (ConversationalFormResponse $record): View => view(Views::name('builder.transcript'), [
                         'response' => $record,
                         'rows' => ResponseTranscript::for($record)->rows(),
                     ]))

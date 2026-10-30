@@ -13,7 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use JaOcero\ConversationalForms\Builder\BuilderSchema;
 use JaOcero\ConversationalForms\Builder\DefinitionState;
 use JaOcero\ConversationalForms\ConversationalFormsServiceProvider;
@@ -25,6 +25,7 @@ use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Schemas\C
 use JaOcero\ConversationalForms\Logic\Exceptions\InvalidLogicException;
 use JaOcero\ConversationalForms\Models\ConversationalForm;
 use JaOcero\ConversationalForms\Support\QrCode;
+use JaOcero\ConversationalForms\Support\Views;
 
 /**
  * The builder. It edits the draft; the public page keeps showing the last
@@ -143,7 +144,7 @@ class EditConversationalForm extends EditRecord
                 })
                 ->modalHeading(fn (): string => static::text('preview_heading', ['title' => $this->record->title]))
                 ->modalDescription(static::text('preview_description'))
-                ->modalContent(fn (): Factory | \Illuminate\Contracts\View\View => view('conversational-forms::builder.preview', [
+                ->modalContent(fn (): View => view(Views::name('builder.preview'), [
                     'url' => ConversationalFormsServiceProvider::getFormUrl($this->record, preview: true),
                 ]))
                 ->modalWidth(Width::SevenExtraLarge)
@@ -187,7 +188,7 @@ class EditConversationalForm extends EditRecord
                 ->visible(fn (): bool => $this->record->isPublished())
                 ->modalHeading(static::text('share'))
                 ->modalDescription(static::text('share_description'))
-                ->modalContent(fn (): Factory | \Illuminate\Contracts\View\View => view('conversational-forms::builder.share', [
+                ->modalContent(fn (): View => view(Views::name('builder.share'), [
                     'url' => $url = ConversationalFormsServiceProvider::getFormUrl($this->record),
                     'title' => $this->record->title,
                     'slug' => $this->record->slug,
