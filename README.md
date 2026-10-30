@@ -411,7 +411,7 @@ Ranking::make('priorities')
 
 ### DateQuestion and TimeQuestion
 
-Dates are typed into day, month and year boxes; focus moves to the next box as each one fills up, and Backspace in an empty box moves back. A calendar button opens the browser's date picker. Dates that don't exist (31 February) are rejected. Saved as `YYYY-MM-DD` (and `HH:MM` for times, on a 24-hour clock), so date logic operators work on them.
+Dates are typed into day, month and year boxes; focus moves to the next box as each one fills up, and Backspace in an empty box moves back. Each box also opens a list to pick from (click it or press ↓): days, month names in the app's locale, and the years between `minDate` and `maxDate` (a century back to ten years ahead when they aren't set). Typing narrows the list, Enter or a click picks a value and opens the next box's list, and values that can't make a valid date are disabled (31 under February, months before `minDate`). The calendar button opens a month view under the boxes: the arrow keys move by day and week, Page Up / Page Down by month (with Shift, by year), Enter picks and Escape closes. It opens on the answer, or on the month and year already typed, and dates outside `minDate`/`maxDate` can't be picked. Its week starts on the app locale's first day (Monday for `en`, Sunday for `en_US`). Times follow the app locale's clock: 12-hour locales (`en`, `en_US`) add an AM / PM box (press A or P, or pick from its list; it comes first where the locale writes it first, like Korean), 24-hour ones (`en_GB`, `fr`) don't, and `->twelveHour()` / `->twelveHour(false)` overrides it. Hour lists follow the clock and minutes come in steps of five; any minute can still be typed. Dates that don't exist (31 February) are rejected. Saved as `YYYY-MM-DD` (and `HH:MM` for times, always on a 24-hour clock, so `9:30 PM` is saved as `21:30`), so date logic operators work on them. Tables and infolists show times on the question's clock.
 
 ```php
 use JaOcero\ConversationalForms\Questions\DateQuestion;
@@ -422,9 +422,13 @@ DateQuestion::make('start_date')
     ->format('MDY')      // order of the boxes: DMY (default), MDY or YMD
     ->minDate(today())
     ->maxDate(today()->addYear())
-    ->calendar(false);   // hide the calendar button
+    ->firstDayOfWeek(0)  // start the calendar's week on Sunday (0) to Saturday (6)
+    ->calendar(false)    // hide the calendar button
+    ->dropdowns(false);  // hide the lists under the boxes
 
-TimeQuestion::make('call_time')->label("What's the best time to call?");
+TimeQuestion::make('call_time')
+    ->label("What's the best time to call?")
+    ->twelveHour();      // force AM / PM; false forces 24-hour; default follows the locale
 ```
 
 ### ContactInfo and Address

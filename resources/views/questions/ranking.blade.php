@@ -20,8 +20,8 @@
             translations: @js(__('conversational-forms::conversational-forms.ranking')),
         })"
         x-on:pointermove="drag($event)"
-        x-on:pointerup="endDrag($event)"
-        x-on:pointercancel="endDrag($event)"
+        x-on:pointerup="endDrag()"
+        x-on:pointercancel="endDrag()"
         class="cf-ranking"
     >
         <ol
@@ -31,7 +31,7 @@
             class="cf-ranking-list"
         >
             <template x-for="(value, index) in order" x-bind:key="value">
-                <li data-cf-rank-row x-bind:class="{ 'cf-grabbed': grabbed === value }" class="cf-ranking-item">
+                <li data-cf-rank-row x-bind:data-cf-rank-value="value" x-bind:class="{ 'cf-grabbed': grabbed === value }" class="cf-ranking-item">
                     <span class="cf-ranking-handle" x-on:pointerdown="startDrag(value, $event)" aria-hidden="true">
                         <svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm0 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm9-13a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm1 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" /></svg>
                     </span>

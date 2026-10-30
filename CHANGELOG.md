@@ -4,7 +4,7 @@ All notable changes to `conversational-forms` will be documented in this file.
 
 ## Unreleased (v0.4.0)
 
-- Questions: `DateQuestion` and `TimeQuestion` (typed boxes, optional calendar), `ContactInfo` and `Address` (several inputs saved as an array), `Matrix`, `Ranking` (drag, touch or keyboard), `FileUpload` (Filament's uploads with a drop zone) and `Signature` (drawn or typed, stored as a PNG).
+- Questions: `DateQuestion` and `TimeQuestion` (typed boxes, each with a list to pick from, plus a calendar for dates and an AM / PM box for 12-hour locales), `ContactInfo` and `Address` (several inputs saved as an array), `Matrix`, `Ranking` (drag, touch or keyboard), `FileUpload` (Filament's uploads with a drop zone) and `Signature` (drawn or typed, stored as a PNG).
 - Conditional questions (`visibleWhen()`) are always rendered and skip validation and saving while hidden, so they can appear later without a server render.
 - Answer shortcuts move focus to the chosen answer, and Enter on an answer in a screen with several questions moves on.
 - Fixed: the path cache crashed when answers contained uploaded files.

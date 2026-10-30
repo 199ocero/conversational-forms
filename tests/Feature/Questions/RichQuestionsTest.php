@@ -31,8 +31,61 @@ describe('DateQuestion', function () {
         conversation(Conversation::make([DateQuestion::make('start')->format('MDY')->minDate('2026-01-01')]))
             ->assertSeeInOrder(['Month', 'Day', 'Year'])
             ->assertSeeHtml('inputmode="numeric"')
-            ->assertSeeHtml('type="date"')
-            ->assertSeeHtml('min="2026-01-01"');
+            ->assertSeeHtml('role="combobox"')
+            ->assertSeeHtml('role="listbox"');
+    });
+
+    it('offers days, month names and the years between the minimum and maximum dates', function () {
+        $segments = collect(DateQuestion::make('d')->minDate('2024-03-01')->maxDate('2026-12-31')->getSegments())->keyBy('key');
+
+        expect($segments['day']['options'])->toHaveCount(31)
+            ->and($segments['day']['options'][0])->toBe(['value' => '01', 'label' => '1'])
+            ->and($segments['month']['options'][1])->toBe(['value' => '02', 'label' => 'February'])
+            ->and(array_column($segments['year']['options'], 'value'))->toBe(['2024', '2025', '2026']);
+    });
+
+    it('offers a century back and ten years ahead without a minimum or maximum date', function () {
+        $this->travelTo('2026-06-15');
+
+        expect(DateQuestion::make('d')->getYearRange())->toBe([1926, 2036]);
+    });
+
+    it('names the months in the app locale', function () {
+        app()->setLocale('fr');
+
+        $months = collect(DateQuestion::make('d')->getSegments())->firstWhere('key', 'month')['options'];
+
+        expect($months[0]['label'])->toBe('janvier');
+    });
+
+    it('opens a calendar from a button after the boxes', function () {
+        conversation(Conversation::make([DateQuestion::make('start')]))
+            ->assertSeeHtml('aria-haspopup="dialog"')
+            ->assertSeeHtml('role="grid"')
+            ->assertSeeHtml('aria-label="Choose a date from a calendar"');
+
+        conversation(Conversation::make([DateQuestion::make('start')->calendar(false)]))
+            ->assertDontSeeHtml('aria-haspopup="dialog"')
+            ->assertDontSeeHtml('role="grid"');
+    });
+
+    it('starts the calendar week on the locale\'s first day unless told otherwise', function (string $locale, int $firstDay) {
+        app()->setLocale($locale);
+
+        expect(DateQuestion::make('d')->getFirstDayOfWeek())->toBe($firstDay)
+            ->and(DateQuestion::make('d')->firstDayOfWeek(3)->getFirstDayOfWeek())->toBe(3);
+    })->with([
+        'en (Monday)' => ['en', 1],
+        'en_US (Sunday)' => ['en_US', 0],
+        'ar (Saturday)' => ['ar', 6],
+    ]);
+
+    it('can leave out the lists', function () {
+        expect(collect(DateQuestion::make('d')->dropdowns(false)->getSegments())->pluck('options')->flatten())->toBeEmpty();
+
+        conversation(Conversation::make([DateQuestion::make('start')->dropdowns(false)]))
+            ->assertDontSeeHtml('role="combobox"')
+            ->assertDontSeeHtml('role="listbox"');
     });
 
     it('rejects dates that do not exist or are out of range', function (string $date, ?string $message) {
@@ -77,13 +130,69 @@ describe('TimeQuestion', function () {
     it('renders hour and minute boxes and validates the time', function () {
         $livewire = conversation(Conversation::make([TimeQuestion::make('time'), ShortText::make('next')]))
             ->assertSeeInOrder(['Hour', 'Minute'])
-            ->assertDontSeeHtml('type="date"')
+            ->assertDontSeeHtml('role="grid"')
             ->set('data.time', '25:00')
             ->advanceConversation('time');
 
         expect(errorFor($livewire, 'data.time'))->toBe('Please enter a valid time.');
 
         $livewire->set('data.time', '09:30')->advanceConversation('time')->assertHasNoErrors();
+    });
+
+    it('offers every hour and minutes in steps of five', function () {
+        [$hours, $minutes] = array_column(TimeQuestion::make('time')->twelveHour(false)->getSegments(), 'options');
+
+        expect(array_column($hours, 'label'))->toBe(array_map(fn (int $hour): string => sprintf('%02d', $hour), range(0, 23)))
+            ->and(array_column($minutes, 'value'))->toBe(['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55']);
+    });
+
+    it('follows the app locale\'s clock unless told otherwise', function (string $locale, bool $isTwelveHour) {
+        app()->setLocale($locale);
+
+        expect(TimeQuestion::make('time')->isTwelveHour())->toBe($isTwelveHour)
+            ->and(TimeQuestion::make('time')->twelveHour(! $isTwelveHour)->isTwelveHour())->toBe(! $isTwelveHour);
+    })->with([
+        'en' => ['en', true],
+        'en_US' => ['en_US', true],
+        'en_GB' => ['en_GB', false],
+        'fr' => ['fr', false],
+    ]);
+
+    it('adds an AM / PM box on a 12-hour clock', function () {
+        $segments = TimeQuestion::make('time')->twelveHour()->getSegments();
+
+        expect(array_column($segments, 'key'))->toBe(['hour', 'minute', 'meridiem'])
+            ->and(array_column($segments[0]['options'], 'label'))->toBe(array_map(strval(...), range(1, 12)))
+            ->and($segments[2]['options'])->toBe([['value' => 'am', 'label' => 'AM'], ['value' => 'pm', 'label' => 'PM']])
+            ->and($segments[2]['separator'])->toBe('');
+
+        conversation(Conversation::make([TimeQuestion::make('time')->twelveHour()]))
+            ->assertSeeInOrder(['Hour', 'Minute', 'AM / PM'])
+            ->assertSeeHtml('readonly');
+    });
+
+    it('puts AM / PM first where the locale does', function () {
+        app()->setLocale('ko');
+
+        $segments = TimeQuestion::make('time')->getSegments();
+
+        expect(array_column($segments, 'key'))->toBe(['meridiem', 'hour', 'minute'])
+            ->and(array_column($segments[0]['options'], 'label'))->toBe(['오전', '오후']);
+    });
+
+    it('still saves a 24-hour time and shows it on the question\'s clock', function () {
+        $livewire = conversation(Conversation::make([TimeQuestion::make('time')->twelveHour(), ShortText::make('next')]))
+            ->set('data.time', '21:30')
+            ->advanceConversation('time')
+            ->assertHasNoErrors()
+            ->set('data.time', '9:30 pm')
+            ->advanceConversation('time');
+
+        expect(errorFor($livewire, 'data.time'))->toBe('Please enter a valid time.')
+            ->and(TimeQuestion::make('t')->twelveHour()->formatAnswer('21:30'))->toBe('9:30 PM')
+            ->and(TimeQuestion::make('t')->twelveHour()->formatAnswer('00:05'))->toBe('12:05 AM')
+            ->and(TimeQuestion::make('t')->twelveHour(false)->formatAnswer('21:30'))->toBe('21:30')
+            ->and(TimeQuestion::make('t')->formatAnswer('25:00'))->toBe('');
     });
 });
 

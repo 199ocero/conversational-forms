@@ -1,4 +1,11 @@
-import { dropIndex, move, reconcile } from '../support/ranking.js'
+import { dropIndex, move, reconcile, shiftFor } from '../support/ranking.js'
+
+const prefersReducedMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// Keeps the row's own box-shadow transition alongside the slide.
+const SLIDE =
+    'translate 200ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 150ms ease'
 
 /**
  * Order a list by dragging (mouse, pen or touch) or with the keyboard:
@@ -55,6 +62,56 @@ export default function rankingQuestionComponent({
             this.state = [...order]
         },
 
+        rows() {
+            return Array.from(root.querySelectorAll('[data-cf-rank-row]'))
+        },
+
+        /**
+         * Reorder with a slide: rows start where they are on screen (including
+         * any drag offset) and glide into their new places.
+         */
+        reorder(order) {
+            const before = new Map(
+                this.rows().map((row) => [
+                    row.dataset.cfRankValue,
+                    row.getBoundingClientRect().top,
+                ]),
+            )
+
+            for (const row of this.rows()) {
+                row.style.transition = 'none'
+                row.style.translate = ''
+            }
+
+            this.commit(order)
+
+            this.$nextTick(() => {
+                if (prefersReducedMotion()) {
+                    return
+                }
+
+                const rows = this.rows()
+
+                for (const row of rows) {
+                    const delta =
+                        (before.get(row.dataset.cfRankValue) ?? 0) -
+                        row.getBoundingClientRect().top
+
+                    row.style.translate = delta ? `0 ${delta}px` : ''
+                }
+
+                // Apply the starting offsets before animating to the new places.
+                void root.offsetHeight
+
+                requestAnimationFrame(() => {
+                    for (const row of rows) {
+                        row.style.transition = SLIDE
+                        row.style.translate = ''
+                    }
+                })
+            })
+        },
+
         announce(key, value) {
             this.announcement = (translations[key] ?? '')
                 .replace(':item', labelOf(value))
@@ -70,7 +127,7 @@ export default function rankingQuestionComponent({
                 return
             }
 
-            this.commit(move(this.order, from, to))
+            this.reorder(move(this.order, from, to))
             this.announce('moved', value)
             this.$nextTick(() => this.focusItem(value))
         },
@@ -105,7 +162,7 @@ export default function rankingQuestionComponent({
 
             if (event.key === 'Escape' && this.grabbed !== null) {
                 event.preventDefault()
-                this.commit(this.orderBeforeGrab)
+                this.reorder(this.orderBeforeGrab)
                 this.announce('cancelled', value)
                 this.grabbed = null
 
@@ -146,9 +203,37 @@ export default function rankingQuestionComponent({
             event.preventDefault()
 
             const element = event.currentTarget.closest('[data-cf-rank-row]')
+            const rows = this.rows()
+            const rects = rows.map((row) => row.getBoundingClientRect())
+            const from = rows.indexOf(element)
+            const gap = rects.length > 1 ? rects[1].top - rects[0].bottom : 0
 
-            pointer = { value, startY: event.clientY, element }
+            pointer = {
+                value,
+                element,
+                rows,
+                from,
+                to: from,
+                startY: event.clientY,
+                step: rects[from].height + gap,
+                center: rects[from].top + rects[from].height / 2,
+                // Midpoints of the other rows, where the dragged row's centre changes places.
+                midpoints: rects
+                    .filter((_, index) => index !== from)
+                    .map((rect) => rect.top + rect.height / 2),
+            }
+
             element.setPointerCapture?.(event.pointerId)
+            element.style.transition = 'none'
+
+            for (const row of rows) {
+                if (row !== element) {
+                    row.style.transition = prefersReducedMotion()
+                        ? 'none'
+                        : SLIDE
+                }
+            }
+
             this.grabbed = value
         },
 
@@ -157,31 +242,42 @@ export default function rankingQuestionComponent({
                 return
             }
 
-            pointer.element.style.translate = `0 ${event.clientY - pointer.startY}px`
+            const offset = event.clientY - pointer.startY
+            const to = dropIndex(pointer.midpoints, pointer.center + offset)
+
+            pointer.element.style.translate = `0 ${offset}px`
+
+            if (to === pointer.to) {
+                return
+            }
+
+            // The other rows make room, so the drop position is visible while dragging.
+            pointer.to = to
+            pointer.rows.forEach((row, index) => {
+                if (row !== pointer.element) {
+                    const shift = shiftFor(
+                        index,
+                        pointer.from,
+                        to,
+                        pointer.step,
+                    )
+
+                    row.style.translate = shift ? `0 ${shift}px` : ''
+                }
+            })
         },
 
-        endDrag(event) {
+        endDrag() {
             if (!pointer) {
                 return
             }
 
-            const rows = Array.from(root.querySelectorAll('[data-cf-rank-row]'))
-            const midpoints = rows.map((row) => {
-                const rect = row.getBoundingClientRect()
+            const { value, from, to } = pointer
 
-                return rect.top + rect.height / 2
-            })
-            const from = this.order.indexOf(pointer.value)
-            const to = dropIndex(
-                midpoints.filter((_, index) => index !== from),
-                event.clientY,
-            )
-
-            pointer.element.style.translate = ''
-            this.commit(move(this.order, from, to))
-            this.announce('dropped', pointer.value)
-            this.grabbed = null
             pointer = null
+            this.grabbed = null
+            this.reorder(move(this.order, from, to))
+            this.announce('dropped', value)
         },
     }
 }

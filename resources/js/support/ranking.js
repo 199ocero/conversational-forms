@@ -35,6 +35,27 @@ export function reconcile(order, values) {
 }
 
 /**
+ * How far the row at `index` slides while the row at `from` is dragged over
+ * position `to`: rows between the two make room by moving one row's height
+ * (`step`) up or down. The dragged row itself is moved by the pointer.
+ */
+export function shiftFor(index, from, to, step) {
+    if (index === from) {
+        return 0
+    }
+
+    if (from < to && index > from && index <= to) {
+        return -step
+    }
+
+    if (from > to && index >= to && index < from) {
+        return step
+    }
+
+    return 0
+}
+
+/**
  * Where an item dragged to vertical position `y` should be inserted, given
  * the vertical midpoints of the other items (without the dragged one).
  */
