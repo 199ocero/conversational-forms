@@ -626,6 +626,8 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 
 **Definition of done:** visual regression screenshots per preset (light/dark/mobile); contrast check unit-tested.
 
+**Status (2026-10-30):** implemented and verified, not yet tagged. `Theme` (colours, font, radius, background image and overlay), six presets that each pass WCAG AA (asserted in tests), contrast checking, the Design tab with a live preview, and themes published with each version. Screenshots of every preset at desktop and phone width were reviewed in real Chrome, along with the Design tab after picking a preset.
+
 ### Phase 8: v0.8.0 "Media answers"
 
 `AudioAnswer` / `VideoAnswer` (MediaRecorder, with a file-upload fallback where unsupported and an explicit permission UX), stored through the same upload pipeline as `FileUpload`.
@@ -754,6 +756,12 @@ Deprecations removed, README complete, external accessibility review (or at leas
 | 7 | Filament version | `^5.11` (2026-10-29). The `#[Exposed]` component methods the conversation relies on first shipped in Filament 5.11.0; older 5.x releases fail CI's prefer-lowest jobs. |
 
 **Browser support (decided default):** the last two major versions of Chrome, Edge, Firefox and Safari (macOS and iOS), with a hard floor of **Safari 16.4, Chrome 111 and Firefox 128**. That floor is what Tailwind CSS v4 (used to build our CSS and by Filament v5) itself requires, so supporting anything older isn't possible without dropping Tailwind v4 features. It also covers `inert`, `:has()`, `dvh` units and `visualViewport`, which the stage relies on. Media answers (Phase 8) additionally require MediaRecorder and fall back to a file upload where it's missing. Browser tests run Chromium + WebKit (+ Firefox from v0.4). The README states this in its Requirements section. **[verify]** the exact Tailwind v4 browser floor against its docs when writing the README.
+
+**Themes (Phase 7) decisions:**
+- *Bunny Fonts instead of Google Fonts:* the same families and CSS API, without sending visitors' IP addresses to Google (a GDPR concern for public forms). One config value turns external fonts off.
+- *A theme decides light or dark:* themed conversations set their own variables for both modes, and the public page forces Filament's dark mode on or off from the background's luminance, so fallback Filament fields match.
+- *Presets are starting points:* picking one fills the fields, which can then be adjusted; the preset's name is stored only to show which one was picked.
+- *Screenshots instead of pixel diffs:* each preset is checked at desktop and phone width in Chrome during development; automated pixel-diff tests would add a browser and baseline images to CI for little gain at this stage.
 
 **Responses (Phase 6) decisions:**
 - *No events table:* each response records the steps it answered, so drop-off is counted from responses (partial ones included) instead of a separate per-step event log.

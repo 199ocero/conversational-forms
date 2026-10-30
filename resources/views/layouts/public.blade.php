@@ -17,8 +17,8 @@
             }
 
             :root {
-                /* Read by Filament's dark mode script: follow the operating system. */
-                --default-theme-mode: system;
+                /* Read by Filament's dark mode script: follow the theme, or else the operating system. */
+                --default-theme-mode: {{ ($theme ?? null) ? ($theme->isDark() ? 'dark' : 'light') : 'system' }};
             }
         </style>
 
@@ -27,11 +27,23 @@
         {{-- Filament's compiled stylesheet, so fallback Filament fields are styled without a Vite build. --}}
         {{ FilamentAsset::getTheme('app')?->getHtml() }}
 
-        <script>
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.classList.add('dark')
-            }
-        </script>
+        @if ($theme ?? null)
+            {{-- A theme decides light or dark itself, and colours the page around the conversation. --}}
+            <script>
+                document.documentElement.classList.toggle('dark', @js($theme->isDark()))
+            </script>
+            <style>
+                .cf-public-body:not(.cf-embedded-body) {
+                    background-color: {{ $theme->toArray()['background'] }} !important;
+                }
+            </style>
+        @else
+            <script>
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark')
+                }
+            </script>
+        @endif
     </head>
 
     <body @class(['fi-body', 'cf-public-body', 'cf-embedded-body' => $isEmbedded ?? false])>

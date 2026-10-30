@@ -11,6 +11,8 @@
     $completedEnding = $getLivewire()->completedConversationEnding ?? null;
     $isFullScreen = $isFullScreen();
     $isCompleted = filled($completedEnding);
+    $theme = $getTheme();
+    $fontUrl = \JaOcero\ConversationalForms\Themes\Fonts::stylesheetUrl($theme?->getFont());
 @endphp
 
 <div
@@ -43,8 +45,16 @@
     x-cloak
     wire:ignore.self
     data-cf-full-screen="{{ $isFullScreen ? 'true' : 'false' }}"
+    @if ($theme)
+        data-cf-theme="{{ $theme->isDark() ? 'dark' : 'light' }}"
+        style="{{ $theme->toStyle() }}"
+    @endif
     {{ $getExtraAttributeBag()->class(['cf-conversation', 'cf-full-screen' => $isFullScreen]) }}
 >
+    @if ($fontUrl)
+        <link rel="stylesheet" href="{{ $fontUrl }}" />
+    @endif
+
     @if ($hasProgressBar())
         <div
             role="progressbar"

@@ -8,9 +8,6 @@ namespace JaOcero\ConversationalForms\Support;
  */
 final class Views
 {
-    /**
-     * @return view-string
-     */
     public static function name(string $view): string
     {
         /** @var view-string $name */

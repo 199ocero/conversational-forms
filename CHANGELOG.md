@@ -2,6 +2,12 @@
 
 All notable changes to `conversational-forms` will be documented in this file.
 
+## Unreleased (v0.7.0)
+
+- Themes: `Theme` sets a conversation's colours, font, corner radius and background image (with an overlay), and the public page follows its light or dark background. Six bundled themes (`Theme::preset()`), all passing WCAG AA contrast.
+- A Design tab in the builder with presets, colour pickers, fonts, corners, a background image, a live preview and contrast warnings. Themes are published with each version.
+- Fonts load from Bunny Fonts, or not at all (`fonts.url` set to `null`).
+
 ## Unreleased (v0.6.0)
 
 - Responses for builder-made conversations: saved as partial after each step and completed on submit, with the version that was answered. Previews are never stored; unfinished responses are pruned after 30 days (`model:prune`).

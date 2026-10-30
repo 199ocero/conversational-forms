@@ -16,6 +16,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
 use JaOcero\ConversationalForms\Builder\BuilderSchema;
 use JaOcero\ConversationalForms\Builder\DefinitionState;
+use JaOcero\ConversationalForms\Builder\ThemeSchema;
 use JaOcero\ConversationalForms\ConversationalFormsServiceProvider;
 use JaOcero\ConversationalForms\Definitions\ConversationDefinition;
 use JaOcero\ConversationalForms\Definitions\Exceptions\InvalidDefinitionException;
@@ -64,6 +65,9 @@ class EditConversationalForm extends EditRecord
                     Tab::make(static::text('tab_screens'))
                         ->icon(Heroicon::OutlinedWindow)
                         ->schema($builder->welcomeAndEndings()),
+                    Tab::make(static::text('tab_design'))
+                        ->icon(Heroicon::OutlinedSwatch)
+                        ->schema(ThemeSchema::components()),
                     Tab::make(static::text('tab_settings'))
                         ->icon(Heroicon::OutlinedCog6Tooth)
                         ->schema([
@@ -97,6 +101,7 @@ class EditConversationalForm extends EditRecord
             'title' => $data['title'] ?? null,
             'slug' => $data['slug'] ?? null,
             ...DefinitionState::fromDefinition($this->record->definition ?? []),
+            'theme' => ThemeSchema::toState($this->record->theme),
         ];
     }
 
@@ -127,6 +132,7 @@ class EditConversationalForm extends EditRecord
             'title' => $data['title'],
             'slug' => $data['slug'],
             'definition' => $definition,
+            'theme' => ThemeSchema::fromState($data['theme'] ?? null),
         ];
     }
 

@@ -22,6 +22,7 @@ use JaOcero\ConversationalForms\Questions\HiddenField;
 use JaOcero\ConversationalForms\Screens\EndScreen;
 use JaOcero\ConversationalForms\Screens\WelcomeScreen;
 use JaOcero\ConversationalForms\Support\Answer;
+use JaOcero\ConversationalForms\Themes\Theme;
 
 /**
  * A Typeform-style layout: shows its children one at a time.
@@ -61,6 +62,11 @@ class Conversation extends Component
     protected string | Closure $submitMethod = 'submitConversation';
 
     protected ?Closure $afterAdvance = null;
+
+    /**
+     * @var Theme | array<string, mixed> | Closure | null
+     */
+    protected Theme | array | Closure | null $theme = null;
 
     /**
      * @var array<string, ConversationPath>
@@ -167,6 +173,26 @@ class Conversation extends Component
         $this->logic = $logic;
 
         return $this;
+    }
+
+    /**
+     * The conversation's colours, font and background. Without a theme it
+     * follows the Filament panel's colours and dark mode.
+     *
+     * @param  Theme | array<string, mixed> | Closure | null  $theme  A `Theme`, or one as an array (`Theme::toArray()`).
+     */
+    public function theme(Theme | array | Closure | null $theme): static
+    {
+        $this->theme = $theme;
+
+        return $this;
+    }
+
+    public function getTheme(): ?Theme
+    {
+        $theme = $this->evaluate($this->theme);
+
+        return is_array($theme) ? (filled($theme) ? Theme::fromArray($theme) : null) : $theme;
     }
 
     /**

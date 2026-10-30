@@ -83,6 +83,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Fonts
+    |--------------------------------------------------------------------------
+    |
+    | Themes can use a font from Bunny Fonts, a privacy-friendly host of the
+    | Google Fonts families. Set the URL to `null` to never load fonts from
+    | another site; themes then use the system font.
+    |
+    */
+
+    'fonts' => [
+        'url' => 'https://fonts.bunny.net/css',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Images
     |--------------------------------------------------------------------------
     |

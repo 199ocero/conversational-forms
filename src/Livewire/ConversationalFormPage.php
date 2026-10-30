@@ -17,6 +17,7 @@ use JaOcero\ConversationalForms\Models\ConversationalFormResponse;
 use JaOcero\ConversationalForms\Models\ConversationalFormVersion;
 use JaOcero\ConversationalForms\Support\Captcha;
 use JaOcero\ConversationalForms\Support\Models;
+use JaOcero\ConversationalForms\Themes\Theme;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 
@@ -136,7 +137,18 @@ class ConversationalFormPage extends ConversationPage
         return $this->getDefinition()
             ->toConversation($conversation)
             ->fullScreen(! $this->isEmbedded)
+            ->theme(fn (): ?array => $this->getThemeData())
             ->afterAdvance(fn (string $step, ConversationPath $path) => $this->saveProgress($step, $path));
+    }
+
+    /**
+     * The published version's theme, or the draft's in a preview.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getThemeData(): ?array
+    {
+        return $this->isPreview() ? $this->conversationalForm->theme : $this->version?->theme;
     }
 
     public function getTitle(): string
@@ -295,9 +307,12 @@ class ConversationalFormPage extends ConversationPage
         /** @var view-string $view */
         $view = $this->isClosed() ? 'conversational-forms::livewire.closed-form' : 'conversational-forms::livewire.conversational-form-page';
 
+        $theme = $this->getThemeData();
+
         return view($view)->layout(static::$layout, [
             'title' => $this->getTitle(),
             'isEmbedded' => $this->isEmbedded,
+            'theme' => filled($theme) ? Theme::fromArray($theme) : null,
         ]);
     }
 }

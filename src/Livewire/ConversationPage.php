@@ -59,6 +59,7 @@ abstract class ConversationPage extends Component implements HasSchemas
         return view($view)
             ->layout(static::$layout, [
                 'title' => $this->getTitle(),
+                'theme' => $this->getConversation()->getTheme(),
             ]);
     }
 }

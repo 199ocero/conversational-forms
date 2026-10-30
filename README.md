@@ -972,6 +972,34 @@ RatingColumn::make('rating')->steps(5);        // ★★★★☆
 
 ## Theming
 
+### Themes
+
+A theme sets a conversation's colours, font, corner radius and background image, in light and dark mode alike; the public page switches to light or dark to match its background. Six themes are bundled (`paper`, `midnight`, `forest`, `sunset`, `mono` and `lavender`), and any of them can be adjusted:
+
+```php
+use JaOcero\ConversationalForms\Themes\Theme;
+
+Conversation::make([...])->theme(Theme::preset('midnight'));
+
+Conversation::make([...])->theme(
+    Theme::make()
+        ->accent('#e11d48')      // buttons, chosen answers and focus rings
+        ->background('#fff7f1')
+        ->text('#3b1f1a')        // questions
+        ->answer('#9a3412')      // typed answers (defaults to the text colour)
+        ->font('DM Sans')        // see Themes\Fonts::FAMILIES
+        ->radius('large')        // none, small, medium, large or full
+        ->backgroundImage('https://example.com/sky.jpg')
+        ->overlay(60),           // how much the background colour covers the image
+);
+```
+
+Builder-made conversations have a **Design** tab with the same options and a live preview. It warns when colours fall short of WCAG AA contrast (4.5:1 for text, 3:1 for buttons), and every bundled theme passes. A theme goes live with the next published version.
+
+Fonts are loaded from [Bunny Fonts](https://fonts.bunny.net), a privacy-friendly host of the Google Fonts families. Set `conversational-forms.fonts.url` to `null` to never load fonts from another site; themes then use the system font.
+
+### CSS variables
+
 Conversations follow your Filament panel's colors and dark mode automatically. To change them, set any of these CSS variables on `.cf-conversation`, for example in your theme or with `extraAttributes()`:
 
 | Variable | Default | Used for |
