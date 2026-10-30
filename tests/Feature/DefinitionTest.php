@@ -121,7 +121,7 @@ describe('ConversationDefinition', function () {
 
 describe('QuestionTypeRegistry', function () {
     it('registers every built-in question', function () {
-        expect(array_keys(app(QuestionTypeRegistry::class)->all()))->toHaveCount(23)
+        expect(array_keys(app(QuestionTypeRegistry::class)->all()))->toHaveCount(25)
             ->and(app(QuestionTypeRegistry::class)->get('nps')->getQuestionClass())->toBe(Questions\Nps::class)
             ->and(app(QuestionTypeRegistry::class)->get('nps')->getLabel())->toBe('NPS');
     });

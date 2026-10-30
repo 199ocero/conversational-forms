@@ -484,6 +484,31 @@ Signature::make('signature')
     ->required();
 ```
 
+### AudioAnswer and VideoAnswer
+
+Answers recorded in the browser with the microphone, or the camera and microphone. People see one **Start recording** button, a timer, and a player to listen back; **Record again** replaces the recording. Recordings are uploaded like `FileUpload` files, so `disk()`, `directory()` and `visibility()` work the same way, and the answer is the stored file's path.
+
+```php
+use JaOcero\ConversationalForms\Questions\AudioAnswer;
+use JaOcero\ConversationalForms\Questions\VideoAnswer;
+
+AudioAnswer::make('pitch')
+    ->label('Tell us about your idea')
+    ->maxDuration(90)      // seconds; recording stops by itself (default 120)
+    ->maxSize(4096)        // kilobytes (default 5 MB)
+    ->disk('s3')
+    ->required();
+
+VideoAnswer::make('intro')
+    ->label('Say hi on camera')
+    ->maxDuration(45)      // default 60 seconds and 12 MB
+    ->allowUpload(false);  // only offer a file upload when recording isn't possible
+```
+
+When the browser can't record (no permission, no microphone, a device in use, an old browser, or a page that isn't served over HTTPS), people are told why and can upload a file instead. Chrome and Firefox record WebM, Safari MP4.
+
+**Security.** Recordings are uploads from the public, so they get the same checks as any upload: the size limit and file type are validated on the server (the duration only in the browser, since checking it on the server would need a tool such as FFmpeg); files go through Livewire's temporary uploads, which are throttled; public pages also limit each visitor's requests; and builder-made conversations store them on a private disk by default (`conversational-forms.uploads`). Livewire's default upload limit is 12 MB; raise `livewire.temporary_file_upload.rules` for longer videos.
+
 ## Structuring a conversation
 
 ### Statement

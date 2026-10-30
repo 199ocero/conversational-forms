@@ -177,6 +177,8 @@ return [
             'ranking' => 'Ranking',
             'file_upload' => 'File upload',
             'signature' => 'Signature',
+            'audio_answer' => 'Audio answer',
+            'video_answer' => 'Video answer',
             'statement' => 'Statement',
             'group' => 'Question group',
         ],
@@ -252,6 +254,8 @@ return [
             'max_size' => 'Largest file',
             'accepted_types' => 'Accepted file types',
             'typing' => 'Allow typing the name instead',
+            'max_duration' => 'Longest recording',
+            'allow_upload' => 'Allow uploading a file instead',
         ],
 
         'form' => [
@@ -522,6 +526,30 @@ return [
             'answer' => 'Typed answers on the background: :ratio:1 (at least :minimum:1 is recommended).',
             'accent' => 'Buttons and answers on the background: :ratio:1 (at least :minimum:1 is recommended).',
             'button' => 'Button text on the button colour: :ratio:1 (at least :minimum:1 is recommended).',
+        ],
+    ],
+
+    'media' => [
+        'microphone' => 'microphone',
+        'camera' => 'camera and microphone',
+        'record' => 'Start recording',
+        'stop' => 'Stop',
+        'again' => 'Record again',
+        'try_again' => 'Try again',
+        'saving' => 'Saving the recording',
+        'upload_instead' => 'Upload a file instead',
+        'hint' => 'Up to :duration. Your browser will ask to use your :device.',
+        'status' => [
+            'requesting' => 'Waiting for permission to use your :device…',
+            'recording' => 'Recording. Press Stop when you are done.',
+            'uploading' => 'Saving your recording…',
+            'done' => 'Your recording is saved.',
+            'denied' => "Your browser didn't allow the :device. Allow it in the site settings and try again, or upload a file instead.",
+            'missing' => 'No :device was found. Connect one and try again, or upload a file instead.',
+            'busy' => 'Your :device is in use by another app. Close it and try again.',
+            'unsupported' => "This browser can't record here. Upload a file instead.",
+            'failed' => "The recording couldn't be saved. Please try again.",
+            'too_large' => 'The recording is too large. Please record a shorter one.',
         ],
     ],
 

@@ -432,3 +432,119 @@
         }
     }
 }
+
+/* Recorded answers (audio and video). */
+@layer components {
+    .cf-media {
+        @apply flex w-full max-w-xl flex-col items-start gap-4;
+    }
+
+    .cf-media-start {
+        @apply flex flex-col items-start gap-2;
+    }
+
+    .cf-media-record,
+    .cf-media-stop,
+    .cf-media-again {
+        @apply inline-flex cursor-pointer items-center gap-3 px-5 py-3 text-lg font-semibold transition;
+        border-radius: var(--cf-radius);
+
+        &:disabled {
+            @apply cursor-wait opacity-70;
+        }
+    }
+
+    .cf-media-record {
+        color: var(--cf-accent-contrast);
+        background-color: var(--cf-accent);
+    }
+
+    .cf-media-record-dot {
+        @apply size-3 rounded-full bg-current;
+    }
+
+    .cf-media-stop,
+    .cf-media-again {
+        color: var(--cf-accent);
+        background-color: var(--cf-choice-bg);
+        border: 1px solid var(--cf-choice-border);
+
+        &:hover {
+            background-color: var(--cf-choice-bg-hover);
+        }
+    }
+
+    .cf-media-recording {
+        @apply flex items-center gap-4;
+    }
+
+    .cf-media-recording-dot {
+        @apply size-3 rounded-full;
+        background-color: var(--cf-danger);
+        animation: cf-media-pulse 1.2s ease-in-out infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
+    }
+
+    .cf-media-timer {
+        @apply text-xl;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .cf-media-live,
+    .cf-media-playback {
+        @apply w-full;
+        border-radius: var(--cf-radius);
+    }
+
+    .cf-media-video .cf-media-live,
+    .cf-media-video .cf-media-playback {
+        @apply aspect-video bg-black object-cover;
+    }
+
+    .cf-media-progress {
+        @apply h-1.5 w-full overflow-hidden rounded-full;
+        background-color: var(--cf-choice-bg);
+
+        & span {
+            @apply block h-full transition-[width];
+            background-color: var(--cf-accent);
+        }
+    }
+
+    .cf-media-done {
+        @apply flex flex-wrap items-center gap-4;
+    }
+
+    .cf-media-saved {
+        @apply m-0 flex items-center gap-2 font-medium;
+    }
+
+    .cf-media-problem {
+        @apply m-0 font-medium;
+        color: var(--cf-danger);
+    }
+
+    .cf-media-upload {
+        @apply cursor-pointer text-sm font-medium underline underline-offset-4;
+        color: var(--cf-muted);
+
+        &:hover,
+        &:focus-within {
+            color: var(--cf-accent);
+        }
+
+        &:focus-within {
+            outline: 2px solid var(--cf-accent);
+            outline-offset: 2px;
+        }
+    }
+
+    @keyframes cf-media-pulse {
+        50% {
+            opacity: 0.35;
+        }
+    }
+}

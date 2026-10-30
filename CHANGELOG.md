@@ -2,6 +2,11 @@
 
 All notable changes to `conversational-forms` will be documented in this file.
 
+## Unreleased (v0.8.0)
+
+- Questions: `AudioAnswer` and `VideoAnswer`, recorded in the browser with MediaRecorder (a timer, a player to listen back, record again) and uploaded like `FileUpload`, with a duration limit, server-checked size and type limits, and a file upload when recording isn't possible (permission denied, no device, a busy device, an unsupported browser).
+- Both are available in the builder.
+
 ## Unreleased (v0.7.0)
 
 - Themes: `Theme` sets a conversation's colours, font, corner radius and background image (with an overlay), and the public page follows its light or dark background. Six bundled themes (`Theme::preset()`), all passing WCAG AA contrast.

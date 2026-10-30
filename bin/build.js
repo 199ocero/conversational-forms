@@ -92,6 +92,7 @@ const alpineComponents = [
     'file-upload-question',
     'signature-question',
     'logic-map',
+    'media-question',
 ]
 
 await Promise.all([

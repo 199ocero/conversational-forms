@@ -178,6 +178,14 @@ final class BuiltInQuestionTypes
                     ]),
                     TagsInput::make('accepted_types')->label(self::field('accepted_types'))->placeholder('image/*, application/pdf'),
                 ]),
+            QuestionType::make('audio_answer', Questions\AudioAnswer::class)
+                ->icon(Heroicon::OutlinedMicrophone)->group('rich')->answerType(AnswerType::Other)
+                ->makeUsing(fn (string $key): Questions\AudioAnswer => self::storeUploads(Questions\AudioAnswer::make($key)))
+                ->settingsSchema(fn (): array => self::mediaSettings(defaultDuration: 120, defaultSize: 5 * 1024)),
+            QuestionType::make('video_answer', Questions\VideoAnswer::class)
+                ->icon(Heroicon::OutlinedVideoCamera)->group('rich')->answerType(AnswerType::Other)
+                ->makeUsing(fn (string $key): Questions\VideoAnswer => self::storeUploads(Questions\VideoAnswer::make($key)))
+                ->settingsSchema(fn (): array => self::mediaSettings(defaultDuration: 60, defaultSize: 12 * 1024)),
             QuestionType::make('signature', Questions\Signature::class)
                 ->icon(Heroicon::OutlinedPencil)->group('rich')->answerType(AnswerType::Other)
                 ->makeUsing(fn (string $key): Questions\Signature => Questions\Signature::make($key)
@@ -186,6 +194,36 @@ final class BuiltInQuestionTypes
                 ->settingsSchema(fn (): array => [
                     Toggle::make('typing')->label(self::field('typing'))->default(true),
                 ]),
+        ];
+    }
+
+    /**
+     * Store a builder-made question's files where the config says.
+     *
+     * @template TUpload of Questions\FileUpload
+     *
+     * @param  TUpload  $question
+     * @return TUpload
+     */
+    private static function storeUploads(Questions\FileUpload $question): Questions\FileUpload
+    {
+        return $question
+            ->disk(config('conversational-forms.uploads.disk'))
+            ->directory(config('conversational-forms.uploads.directory'))
+            ->visibility(config('conversational-forms.uploads.visibility', 'private'));
+    }
+
+    /**
+     * @return array<Component>
+     */
+    private static function mediaSettings(int $defaultDuration, int $defaultSize): array
+    {
+        return [
+            Grid::make(3)->schema([
+                TextInput::make('max_duration')->label(self::field('max_duration'))->integer()->minValue(5)->maxValue(600)->suffix('s')->placeholder((string) $defaultDuration),
+                TextInput::make('max_size')->label(self::field('max_size'))->integer()->minValue(100)->suffix('KB')->placeholder((string) $defaultSize),
+                Toggle::make('allow_upload')->label(self::field('allow_upload'))->default(true)->inline(false),
+            ]),
         ];
     }
 

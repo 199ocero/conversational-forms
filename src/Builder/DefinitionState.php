@@ -19,7 +19,7 @@ final class DefinitionState
     /**
      * Settings stored as numbers; the builder's inputs give strings.
      */
-    private const NUMERIC_SETTINGS = ['min_length', 'max_length', 'rows', 'min', 'max', 'min_selections', 'max_selections', 'steps', 'start', 'end', 'max_files', 'max_size', 'first_day_of_week'];
+    private const NUMERIC_SETTINGS = ['min_length', 'max_length', 'rows', 'min', 'max', 'min_selections', 'max_selections', 'steps', 'start', 'end', 'max_files', 'max_size', 'first_day_of_week', 'max_duration'];
 
     /**
      * @param  array<string, mixed>  $definition
