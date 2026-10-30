@@ -2,7 +2,6 @@
 
 namespace JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Pages;
 
-use Filament\Actions\Action;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Enums\Width;
@@ -25,6 +24,18 @@ class ViewLogicMap extends Page
     protected static string $resource = ConversationalFormResource::class;
 
     protected string $view = 'conversational-forms::builder.logic-map';
+
+    protected static string | \BackedEnum | null $navigationIcon = Heroicon::OutlinedShare;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('conversational-forms::conversational-forms.builder.form.logic_map');
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return __('conversational-forms::conversational-forms.builder.form.logic_map');
+    }
 
     protected Width | string | null $maxContentWidth = Width::FiveExtraLarge;
 
@@ -56,15 +67,5 @@ class ViewLogicMap extends Page
     public function getLogicMap(): LogicMap
     {
         return LogicMap::fromDefinition($this->record->definition ?? []);
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('edit')
-                ->label(__('conversational-forms::conversational-forms.builder.logic.back'))
-                ->icon(Heroicon::OutlinedPencilSquare)
-                ->url(fn (): string => static::getResource()::getUrl('edit', ['record' => $this->record])),
-        ];
     }
 }

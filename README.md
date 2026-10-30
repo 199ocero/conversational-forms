@@ -780,7 +780,54 @@ Builder-made conversations are answered at `/f/{address}`, outside the panel and
 ],
 ```
 
-When a conversation is completed, `ConversationalFormSubmitted` is dispatched with the form, the version that was answered (`null` for a preview), the answers and the `ConversationResult`:
+### Responses
+
+Answers to builder-made conversations are stored. A response is saved as *not finished* after the first answer and updated after each step, then marked completed on submit, so you can see where people stop. Previews are never stored.
+
+Each conversation's **Responses** tab shows:
+
+- the number of people who started and completed it, the completion rate and the average time to complete;
+- a drop-off chart: how many people answered each step;
+- the Net Promoter Score of each NPS question;
+- a table of responses, with one column per question showing answers the way people read them (a choice's label, a date in the question's format), filters for status, ending, version and date, and a transcript of each response;
+- export to CSV or Excel, of all filtered responses or a selection.
+
+Responses that were never finished are deleted after 30 days by Laravel's model pruning. Schedule it, and change the number of days (or `null` to keep them) in the config:
+
+```php
+// routes/console.php
+use Illuminate\Support\Facades\Schedule;
+use JaOcero\ConversationalForms\Models\ConversationalFormResponse;
+
+Schedule::command('model:prune', ['--model' => ConversationalFormResponse::class])->daily();
+```
+
+### Sharing and embedding
+
+**Share** (once published) gives the link, and two ways to embed the conversation in another website: an iframe, or a script that inserts an iframe which grows with the conversation:
+
+```html
+<div data-conversational-form="feedback"></div>
+<script src="https://your-app.com/f/embed.js" async></script>
+```
+
+Install `bacon/bacon-qr-code` to also get a QR code of the link.
+
+### Spam protection
+
+Public pages ignore submissions that fill in a hidden field people never see, or that arrive faster than a person could answer (3 seconds), and limit each visitor to 120 requests a minute. They still show the end screen, so bots learn nothing. A captcha can be added; Cloudflare Turnstile is built in:
+
+```dotenv
+CONVERSATIONAL_FORMS_CAPTCHA=turnstile
+TURNSTILE_SITE_KEY=...
+TURNSTILE_SECRET_KEY=...
+```
+
+Other services can be used by implementing `JaOcero\ConversationalForms\Contracts\CaptchaProvider` and setting its class name as the provider.
+
+### Events
+
+When a conversation is completed, `ConversationalFormSubmitted` is dispatched with the form, the version that was answered (`null` for a preview), the answers, the `ConversationResult` and the stored response:
 
 ```php
 use JaOcero\ConversationalForms\Events\ConversationalFormSubmitted;

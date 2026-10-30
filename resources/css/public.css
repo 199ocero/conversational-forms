@@ -14,4 +14,32 @@
     .cf-public-page {
         @apply min-h-dvh;
     }
+
+    /* Embedded in another page with the embed script: no page background, height follows the content. */
+    .cf-embedded-body {
+        @apply min-h-0! bg-transparent;
+
+        &:where(.dark, .dark *) {
+            @apply bg-transparent;
+        }
+
+        /* Room on the left for the question numbers, which sit beside the questions. */
+        & .cf-public-page {
+            @apply min-h-0 py-6 ps-12 pe-6;
+        }
+    }
+
+    .cf-honeypot {
+        @apply absolute -left-[10000px] size-px overflow-hidden;
+    }
+
+    .cf-captcha {
+        @apply fixed bottom-4 left-4 z-20;
+    }
+
+    .cf-captcha-error {
+        @apply fixed inset-x-4 bottom-4 z-20 mx-auto max-w-md rounded-lg px-4 py-3 text-center text-sm font-medium;
+        color: var(--danger-600, --theme(--color-red-600));
+        background-color: color-mix(in oklab, var(--danger-600, --theme(--color-red-600)) 12%, white);
+    }
 }

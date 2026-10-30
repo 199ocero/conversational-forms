@@ -73,6 +73,14 @@ class ConversationalForm extends Model
     }
 
     /**
+     * @return HasMany<ConversationalFormResponse, $this>
+     */
+    public function responses(): HasMany
+    {
+        return $this->hasMany(Models::response(), 'conversational_form_id');
+    }
+
+    /**
      * @return BelongsTo<ConversationalFormVersion, $this>
      */
     public function publishedVersion(): BelongsTo

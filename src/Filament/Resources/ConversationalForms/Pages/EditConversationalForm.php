@@ -24,6 +24,7 @@ use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Conversat
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Schemas\ConversationalFormForm;
 use JaOcero\ConversationalForms\Logic\Exceptions\InvalidLogicException;
 use JaOcero\ConversationalForms\Models\ConversationalForm;
+use JaOcero\ConversationalForms\Support\QrCode;
 
 /**
  * The builder. It edits the draft; the public page keeps showing the last
@@ -34,6 +35,13 @@ use JaOcero\ConversationalForms\Models\ConversationalForm;
 class EditConversationalForm extends EditRecord
 {
     protected static string $resource = ConversationalFormResource::class;
+
+    protected static string | \BackedEnum | null $navigationIcon = Heroicon::OutlinedPencilSquare;
+
+    public static function getNavigationLabel(): string
+    {
+        return static::text('builder');
+    }
 
     protected Width | string | null $maxContentWidth = Width::SevenExtraLarge;
 
@@ -172,11 +180,22 @@ class EditConversationalForm extends EditRecord
                         ])
                         ->send();
                 }),
-            Action::make('logic')
-                ->label(static::text('logic_map'))
+            Action::make('share')
+                ->label(static::text('share'))
                 ->icon(Heroicon::OutlinedShare)
                 ->color('gray')
-                ->url(fn (): string => static::getResource()::getUrl('logic', ['record' => $this->record])),
+                ->visible(fn (): bool => $this->record->isPublished())
+                ->modalHeading(static::text('share'))
+                ->modalDescription(static::text('share_description'))
+                ->modalContent(fn (): Factory | \Illuminate\Contracts\View\View => view('conversational-forms::builder.share', [
+                    'url' => $url = ConversationalFormsServiceProvider::getFormUrl($this->record),
+                    'title' => $this->record->title,
+                    'slug' => $this->record->slug,
+                    'scriptUrl' => route('conversational-forms.embed-script'),
+                    'qrCode' => QrCode::svg($url),
+                ]))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel(static::text('close_preview')),
             ActionGroup::make([
                 Action::make('open')
                     ->label(static::text('open'))

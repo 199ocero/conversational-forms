@@ -15,3 +15,8 @@ parameters:
             identifiers:
                 - method.notFound
                 - return.type
+        # bacon/bacon-qr-code is suggested, not required; the class is only used when it exists.
+        -
+            path: src/Support/QrCode.php
+            identifiers:
+                - class.notFound

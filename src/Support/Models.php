@@ -3,6 +3,7 @@
 namespace JaOcero\ConversationalForms\Support;
 
 use JaOcero\ConversationalForms\Models\ConversationalForm;
+use JaOcero\ConversationalForms\Models\ConversationalFormResponse;
 use JaOcero\ConversationalForms\Models\ConversationalFormVersion;
 
 /**
@@ -16,6 +17,14 @@ final class Models
     public static function form(): string
     {
         return config('conversational-forms.models.form', ConversationalForm::class);
+    }
+
+    /**
+     * @return class-string<ConversationalFormResponse>
+     */
+    public static function response(): string
+    {
+        return config('conversational-forms.models.response', ConversationalFormResponse::class);
     }
 
     /**

@@ -3,6 +3,9 @@
 namespace JaOcero\ConversationalForms\Filament\Resources\ConversationalForms;
 
 use BackedEnum;
+use Filament\Navigation\NavigationItem;
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -14,6 +17,7 @@ use JaOcero\ConversationalForms\ConversationalFormsPlugin;
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Pages\CreateConversationalForm;
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Pages\EditConversationalForm;
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Pages\ListConversationalForms;
+use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Pages\ManageResponses;
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Pages\ViewLogicMap;
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Schemas\ConversationalFormForm;
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Tables\ConversationalFormsTable;
@@ -25,6 +29,8 @@ class ConversationalFormResource extends Resource
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
+
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     /**
      * @return class-string<ConversationalForm>
@@ -79,7 +85,22 @@ class ConversationalFormResource extends Resource
             'create' => CreateConversationalForm::route('/create'),
             'edit' => EditConversationalForm::route('/{record}/edit'),
             'logic' => ViewLogicMap::route('/{record}/logic'),
+            'responses' => ManageResponses::route('/{record}/responses'),
         ];
+    }
+
+    /**
+     * Builder, logic map and responses, as tabs on each conversation.
+     *
+     * @return array<NavigationItem>
+     */
+    public static function getRecordSubNavigation(Page $page): array
+    {
+        return $page->generateNavigationItems([
+            EditConversationalForm::class,
+            ViewLogicMap::class,
+            ManageResponses::class,
+        ]);
     }
 
     protected static function plugin(): ?ConversationalFormsPlugin

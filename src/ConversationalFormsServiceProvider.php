@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use JaOcero\ConversationalForms\Definitions\BuiltInQuestionTypes;
 use JaOcero\ConversationalForms\Definitions\QuestionTypeRegistry;
+use JaOcero\ConversationalForms\Http\Controllers\EmbedScriptController;
 use JaOcero\ConversationalForms\Livewire\ConversationalFormPage;
 use JaOcero\ConversationalForms\Models\ConversationalForm;
 use JaOcero\ConversationalForms\Support\Assets\AlpineComponent;
@@ -31,7 +32,7 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews(static::$viewNamespace)
             ->hasTranslations()
-            ->hasMigration('create_conversational_forms_tables')
+            ->hasMigrations(['create_conversational_forms_tables', 'create_conversational_form_responses_table'])
             ->hasInstallCommand(function (InstallCommand $command): void {
                 $command
                     ->publishConfigFile()
@@ -75,6 +76,7 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
         Route::middleware(config('conversational-forms.routes.middleware', ['web']))
             ->prefix(config('conversational-forms.routes.prefix', 'f'))
             ->group(function (): void {
+                Route::get('embed.js', EmbedScriptController::class)->name('conversational-forms.embed-script');
                 Route::livewire('{slug}', ConversationalFormPage::class)->name('conversational-forms.show');
             });
     }

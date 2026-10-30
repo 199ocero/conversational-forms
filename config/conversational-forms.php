@@ -1,6 +1,7 @@
 <?php
 
 use JaOcero\ConversationalForms\Models\ConversationalForm;
+use JaOcero\ConversationalForms\Models\ConversationalFormResponse;
 use JaOcero\ConversationalForms\Models\ConversationalFormVersion;
 
 return [
@@ -18,6 +19,50 @@ return [
     'models' => [
         'form' => ConversationalForm::class,
         'version' => ConversationalFormVersion::class,
+        'response' => ConversationalFormResponse::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Responses
+    |--------------------------------------------------------------------------
+    |
+    | Answers to builder-made conversations are stored, and saved as partial
+    | after each step so drop-off can be measured. Partial responses older
+    | than this many days are deleted by `php artisan model:prune` (`null`
+    | keeps them).
+    |
+    */
+
+    'responses' => [
+        'store_partials' => true,
+        'prune_partials_after_days' => 30,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Spam protection
+    |--------------------------------------------------------------------------
+    |
+    | Public pages ignore submissions that fill in a hidden "honeypot" field
+    | or arrive faster than a person could answer, and limit how many
+    | requests one visitor can make per minute. A captcha can be added with
+    | a provider such as Cloudflare Turnstile.
+    |
+    */
+
+    'spam' => [
+        'honeypot' => true,
+        'minimum_seconds' => 3,
+        'requests_per_minute' => 120,
+    ],
+
+    'captcha' => [
+        'provider' => env('CONVERSATIONAL_FORMS_CAPTCHA'), // `turnstile` or a CaptchaProvider class
+        'turnstile' => [
+            'site_key' => env('TURNSTILE_SITE_KEY'),
+            'secret_key' => env('TURNSTILE_SECRET_KEY'),
+        ],
     ],
 
     /*

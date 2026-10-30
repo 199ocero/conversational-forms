@@ -5,11 +5,13 @@ namespace JaOcero\ConversationalForms\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 use JaOcero\ConversationalForms\Livewire\ConversationResult;
 use JaOcero\ConversationalForms\Models\ConversationalForm;
+use JaOcero\ConversationalForms\Models\ConversationalFormResponse;
 use JaOcero\ConversationalForms\Models\ConversationalFormVersion;
 
 /**
  * A builder-made conversation was completed on its public page. `$version`
- * is `null` for previews of the draft, which are never stored.
+ * and `$response` are `null` for previews of the draft, which are never
+ * stored.
  */
 class ConversationalFormSubmitted
 {
@@ -23,6 +25,7 @@ class ConversationalFormSubmitted
         public ?ConversationalFormVersion $version,
         public array $data,
         public ConversationResult $result,
+        public ?ConversationalFormResponse $response = null,
     ) {}
 
     public function isPreview(): bool

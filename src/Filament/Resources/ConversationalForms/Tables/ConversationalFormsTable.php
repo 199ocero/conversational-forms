@@ -15,6 +15,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use JaOcero\ConversationalForms\ConversationalFormsServiceProvider;
 use JaOcero\ConversationalForms\Enums\FormStatus;
+use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\ConversationalFormResource;
 use JaOcero\ConversationalForms\Models\ConversationalForm;
 
 class ConversationalFormsTable
@@ -35,6 +36,11 @@ class ConversationalFormsTable
                 TextColumn::make('versions_count')
                     ->label(static::text('versions'))
                     ->counts('versions')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('completed_responses_count')
+                    ->label(__('conversational-forms::conversational-forms.responses.title'))
+                    ->counts(['responses as completed_responses_count' => fn ($query) => $query->where('status', 'completed')])
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('published_at')
@@ -62,6 +68,11 @@ class ConversationalFormsTable
                     ->color('gray')
                     ->url(fn (ConversationalForm $record): string => ConversationalFormsServiceProvider::getFormUrl($record), shouldOpenInNewTab: true)
                     ->visible(fn (ConversationalForm $record): bool => $record->isPublished()),
+                Action::make('responses')
+                    ->label(__('conversational-forms::conversational-forms.responses.title'))
+                    ->icon(Heroicon::OutlinedInboxStack)
+                    ->color('gray')
+                    ->url(fn (ConversationalForm $record): string => ConversationalFormResource::getUrl('responses', ['record' => $record])),
                 EditAction::make()->label(static::text('edit')),
             ])
             ->toolbarActions([

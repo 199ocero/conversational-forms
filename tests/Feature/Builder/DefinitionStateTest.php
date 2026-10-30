@@ -6,24 +6,6 @@ use JaOcero\ConversationalForms\Builder\RuleSummary;
 use JaOcero\ConversationalForms\Definitions\ConversationDefinition;
 use JaOcero\ConversationalForms\Tests\Fixtures\KitchenSink;
 
-/**
- * Sort associative keys so definitions compare regardless of key order.
- */
-function canonical(mixed $value): mixed
-{
-    if (! is_array($value)) {
-        return $value;
-    }
-
-    $value = array_map(canonical(...), $value);
-
-    if (! array_is_list($value)) {
-        ksort($value);
-    }
-
-    return $value;
-}
-
 describe('DefinitionState', function () {
     it('round-trips every question type, screen and rule through the builder', function () {
         $definition = ConversationDefinition::fromConversation(conversationIn(conversation(KitchenSink::conversation())));

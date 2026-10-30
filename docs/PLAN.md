@@ -618,6 +618,8 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 
 **Definition of done:** analytics numbers verified by fixtures with known answers; export tested; rate-limit and honeypot tests; embed tested in a cross-origin page in a browser test.
 
+**Status (2026-10-30):** implemented and verified, not yet tagged. Partial and completed responses, the Responses tab (stats, drop-off, NPS, readable answer columns, filters, transcripts, CSV / Excel export), sharing (link, iframe, auto-resizing embed script, optional QR code), honeypot, minimum time, per-visitor rate limit, a captcha contract with Turnstile, and pruning of unfinished responses. Analytics are checked against fixtures with known answers. Verified in real Chrome: answering the playground's builder-made form (one completed response, one abandoned), the Responses tab, a transcript with piping, the share panel, and the embed script on another page (the iframe settles at its content height). A new CI job runs the suite on MySQL, which caught two identifiers over MySQL's 64-character limit and key reordering in JSON columns.
+
 ### Phase 7: v0.7.0 "Themes"
 
 **Scope:** `Theme` value object (colors, fonts with optional Google Fonts loading, background image/overlay, button/answer styles, corner radius), a theme editor in the builder with live preview, 6 bundled presets, per-form theme stored in JSON, contrast checking (WCAG AA warning when accent/background fail).
@@ -752,6 +754,12 @@ Deprecations removed, README complete, external accessibility review (or at leas
 | 7 | Filament version | `^5.11` (2026-10-29). The `#[Exposed]` component methods the conversation relies on first shipped in Filament 5.11.0; older 5.x releases fail CI's prefer-lowest jobs. |
 
 **Browser support (decided default):** the last two major versions of Chrome, Edge, Firefox and Safari (macOS and iOS), with a hard floor of **Safari 16.4, Chrome 111 and Firefox 128**. That floor is what Tailwind CSS v4 (used to build our CSS and by Filament v5) itself requires, so supporting anything older isn't possible without dropping Tailwind v4 features. It also covers `inert`, `:has()`, `dvh` units and `visualViewport`, which the stage relies on. Media answers (Phase 8) additionally require MediaRecorder and fall back to a file upload where it's missing. Browser tests run Chromium + WebKit (+ Firefox from v0.4). The README states this in its Requirements section. **[verify]** the exact Tailwind v4 browser floor against its docs when writing the README.
+
+**Responses (Phase 6) decisions:**
+- *No events table:* each response records the steps it answered, so drop-off is counted from responses (partial ones included) instead of a separate per-step event log.
+- *Exports are streamed, not queued:* CSV and Excel files are written row by row while downloading (OpenSpout, already installed with Filament), so they work without Filament's export tables, a queue or database notifications.
+- *Spam is dropped silently:* a filled honeypot or a too-fast submission still shows the end screen but stores nothing, so bots learn nothing. Rate limiting counts every Livewire request to the page (`hydrate()`), not just the first page load.
+- *The embed measures the page, not the document:* Filament's body is sized to the viewport, which grows with the iframe; measuring the conversation's container avoids a feedback loop.
 
 **Builder (Phase 5) decisions:**
 - *Logic map without ELK.js:* jumps only go forward, so every conversation is a list in step order with jumps as arcs beside it. That's clearer than a general graph layout and costs about 1 kB of JS instead of a 1.5 MB library. Positions are measured from the rendered cards, so cards can be any height.

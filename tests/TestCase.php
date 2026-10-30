@@ -53,7 +53,8 @@ class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
-        $app['config']->set('database.default', 'testing');
+        // CI also runs the suite against MySQL (`DB_CONNECTION=mysql`).
+        $app['config']->set('database.default', env('DB_CONNECTION', 'testing'));
         $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
         $app['config']->set('auth.providers.users.model', User::class);
     }
@@ -62,8 +63,21 @@ class TestCase extends Orchestra
     {
         $this->loadLaravelMigrations();
 
-        $migration = include __DIR__ . '/../database/migrations/create_conversational_forms_tables.php.stub';
-        $migration->up();
+        $migrations = array_map(
+            fn (string $name): object => include __DIR__ . "/../database/migrations/{$name}.php.stub",
+            ['create_conversational_forms_tables', 'create_conversational_form_responses_table'],
+        );
+
+        foreach ($migrations as $migration) {
+            $migration->up();
+        }
+
+        // In-memory SQLite starts empty for every test; a real database doesn't.
+        $this->beforeApplicationDestroyed(function () use ($migrations): void {
+            foreach (array_reverse($migrations) as $migration) {
+                $migration->down();
+            }
+        });
     }
 
     /**

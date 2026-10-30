@@ -33,3 +33,22 @@ function definitionConversation(array $definition): Testable
 {
     return conversation(ConversationDefinition::make($definition)->toConversation());
 }
+
+/**
+ * Sort associative keys so definitions compare regardless of key order
+ * (MySQL's JSON columns store object keys in their own order).
+ */
+function canonical(mixed $value): mixed
+{
+    if (! is_array($value)) {
+        return $value;
+    }
+
+    $value = array_map(canonical(...), $value);
+
+    if (! array_is_list($value)) {
+        ksort($value);
+    }
+
+    return $value;
+}

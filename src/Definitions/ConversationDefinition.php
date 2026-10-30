@@ -245,6 +245,49 @@ final class ConversationDefinition
     }
 
     /**
+     * Every question, including those in groups, keyed by question key in
+     * the order they're asked. They aren't part of a form, so they can be
+     * used to describe answers: `$questions['plan']->formatAnswer('pro')`.
+     *
+     * @return array<string, Field&ConversationQuestion>
+     */
+    public function getQuestions(): array
+    {
+        $registry = self::registry();
+        $questions = [];
+
+        foreach ($this->getStepDefinitions() as $step) {
+            $type = $step['type'] ?? null;
+
+            if ($type === 'statement') {
+                continue;
+            }
+
+            foreach (($type === 'group') ? ($step['questions'] ?? []) : [$step] as $definition) {
+                $type = (string) ($definition['type'] ?? '');
+
+                if (! $registry->has($type)) {
+                    continue;
+                }
+
+                $question = $registry->get($type)->makeQuestion((string) $definition['key']);
+                $question->fillFromDefinition($definition);
+                $questions[(string) $definition['key']] = $question;
+            }
+        }
+
+        return $questions;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getHiddenFieldKeys(): array
+    {
+        return array_map(fn (array $field): string => (string) $field['key'], $this->definition['hidden_fields'] ?? []);
+    }
+
+    /**
      * @return list<string>
      */
     public function getStepKeys(): array

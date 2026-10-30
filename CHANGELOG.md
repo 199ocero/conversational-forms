@@ -2,6 +2,14 @@
 
 All notable changes to `conversational-forms` will be documented in this file.
 
+## Unreleased (v0.6.0)
+
+- Responses for builder-made conversations: saved as partial after each step and completed on submit, with the version that was answered. Previews are never stored; unfinished responses are pruned after 30 days (`model:prune`).
+- A Responses tab per conversation: started / completed / completion rate / average time, a drop-off chart, NPS, a table with one readable column per question, filters, a transcript of each response, and CSV / Excel export.
+- Sharing: the link, an iframe snippet, an embed script whose iframe grows with the conversation (`/f/embed.js`), and a QR code when `bacon/bacon-qr-code` is installed.
+- Spam protection on public pages: a honeypot field, a minimum time, a per-visitor request limit, and an optional captcha (`CaptchaProvider`, with Cloudflare Turnstile built in).
+- The test suite also runs against MySQL in CI; migrations name their keys explicitly to stay under MySQL's 64-character limit.
+
 ## Unreleased (v0.5.0)
 
 - The builder: `ConversationalFormsPlugin` adds a Conversations resource to a panel, with a block per question type, settings, images, quiz scoring, "show only when" conditions and logic rules edited as rows, a welcome screen, endings, variables and hidden fields.

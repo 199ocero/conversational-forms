@@ -56,7 +56,7 @@ describe('the builder resource', function () {
 
         expect(ConversationalForm::query()->sole())
             ->status->toBe(FormStatus::Draft)
-            ->definition->toBe(['schema_version' => 1, 'steps' => []]);
+            ->definition->toEqual(['schema_version' => 1, 'steps' => []]);
     });
 
     it('requires unique addresses', function () {
@@ -91,9 +91,9 @@ describe('the builder resource', function () {
             ->assertHasNoFormErrors()
             ->assertNotified();
 
-        expect($form->refresh()->definition['steps'][1]['rules'])->toBe([
+        expect(canonical($form->refresh()->definition['steps'][1]['rules']))->toBe(canonical([
             ['if' => ['all' => [['field' => 'subscribe', 'op' => 'is', 'value' => false]]], 'then' => [['end_with' => 'bye']]],
-        ]);
+        ]));
     });
 
     it('refuses to save a draft that can\'t be built, and says why', function () {
@@ -112,7 +112,7 @@ describe('the builder resource', function () {
             ->call('save')
             ->assertNotified("This conversation can't be saved yet");
 
-        expect($form->refresh()->definition)->toBe($definition);
+        expect(canonical($form->refresh()->definition))->toBe(canonical($definition));
     });
 
     it('publishes the draft as a new version', function () {
@@ -209,8 +209,12 @@ describe('the public page', function () {
 
         $form = ConversationalForm::factory()->published()->create();
 
-        Livewire::test(ConversationalFormPage::class, ['slug' => $form->slug])
-            ->set('data.name', 'Jay')
+        $page = Livewire::test(ConversationalFormPage::class, ['slug' => $form->slug]);
+
+        // Submitting faster than a person could answer is treated as spam.
+        $this->travel(10)->seconds();
+
+        $page->set('data.name', 'Jay')
             ->set('data.email', 'jay@example.com')
             ->submitConversation()
             ->assertConversationCompleted('default')
@@ -219,7 +223,8 @@ describe('the public page', function () {
         Event::assertDispatched(ConversationalFormSubmitted::class, fn (ConversationalFormSubmitted $event): bool => $event->form->is($form)
             && ($event->version?->is($form->publishedVersion) ?? false)
             && ($event->data === ['name' => 'Jay', 'email' => 'jay@example.com'])
-            && (! $event->isPreview()));
+            && (! $event->isPreview())
+            && ($event->response?->isCompleted() ?? false));
     });
 
     it('validates answers on the server like any conversation', function () {

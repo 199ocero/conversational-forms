@@ -60,6 +60,8 @@ class Conversation extends Component
 
     protected string | Closure $submitMethod = 'submitConversation';
 
+    protected ?Closure $afterAdvance = null;
+
     /**
      * @var array<string, ConversationPath>
      */
@@ -163,6 +165,18 @@ class Conversation extends Component
     public function logic(array | Closure $logic): static
     {
         $this->logic = $logic;
+
+        return $this;
+    }
+
+    /**
+     * Run after each step is answered and validated, for example to save
+     * the answers so far. The callback can receive `$step` (the step just
+     * answered), `$path` (the `ConversationPath`) and `$livewire`.
+     */
+    public function afterAdvance(?Closure $callback): static
+    {
+        $this->afterAdvance = $callback;
 
         return $this;
     }
@@ -420,6 +434,10 @@ class Conversation extends Component
 
         $path = $this->resolvePath();
         $next = $path->after($fromStep);
+
+        if ($this->afterAdvance instanceof Closure) {
+            $this->evaluate($this->afterAdvance, ['step' => $fromStep, 'path' => $path]);
+        }
 
         return [
             'next' => $next,
