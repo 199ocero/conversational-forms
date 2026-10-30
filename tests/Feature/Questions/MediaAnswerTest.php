@@ -72,12 +72,17 @@ describe('AudioAnswer and VideoAnswer', function () {
         'too large' => [fn () => UploadedFile::fake()->create('long.webm', 6 * 1024, 'audio/webm'), 'must not be greater than 5120 kilobytes'],
     ]);
 
-    it('accepts audio that the server sees as a WebM or MP4 video', function (string $mime) {
+    it('accepts audio that the server sees as a WebM or MP4 video', function (string $name, string $mime) {
         conversation(Conversation::make([AudioAnswer::make('pitch')->disk('public')->required(), ShortText::make('next')]))
-            ->set('data.pitch.recording', UploadedFile::fake()->create('recording', 50, $mime))
+            ->set('data.pitch.recording', UploadedFile::fake()->create($name, 50, $mime))
             ->advanceConversation('pitch')
             ->assertHasNoErrors();
-    })->with(['video/webm', 'video/mp4', 'audio/ogg', 'audio/mpeg']);
+    })->with([
+        'WebM seen as video' => ['audio-1.webm', 'video/webm'],
+        'M4A seen as video' => ['audio-1.m4a', 'video/mp4'],
+        'Ogg' => ['audio-1.ogg', 'audio/ogg'],
+        'MP3' => ['audio-1.mp3', 'audio/mpeg'],
+    ]);
 
     it('is stored and edited like the other questions', function () {
         $registry = app(QuestionTypeRegistry::class);
