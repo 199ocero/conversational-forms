@@ -6,7 +6,8 @@
 @layer components {
     .cf-conversation {
         --cf-accent: var(--primary-600, --theme(--color-indigo-600));
-        --cf-accent-contrast: --theme(--color-white);
+        /* `--cf-primary-contrast` is set by the conversation when white is too light for Filament's primary colour. */
+        --cf-accent-contrast: var(--cf-primary-contrast, --theme(--color-white));
         --cf-bg: transparent;
         --cf-fg: var(--gray-950, --theme(--color-gray-950));
         --cf-muted: var(--gray-500, --theme(--color-gray-500));

@@ -8,7 +8,9 @@ use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
+use Filament\Support\Colors\Color;
 use Filament\Support\Components\Attributes\Exposed;
+use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Livewire\Partials\PartialsComponentHook;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +24,7 @@ use JaOcero\ConversationalForms\Questions\HiddenField;
 use JaOcero\ConversationalForms\Screens\EndScreen;
 use JaOcero\ConversationalForms\Screens\WelcomeScreen;
 use JaOcero\ConversationalForms\Support\Answer;
+use JaOcero\ConversationalForms\Themes\Contrast;
 use JaOcero\ConversationalForms\Themes\Theme;
 
 /**
@@ -193,6 +196,35 @@ class Conversation extends Component
         $theme = $this->evaluate($this->theme);
 
         return is_array($theme) ? (filled($theme) ? Theme::fromArray($theme) : null) : $theme;
+    }
+
+    /**
+     * Without a theme, buttons and selected answers use Filament's primary
+     * colour (shade 600) with white text. Light palettes such as amber fall
+     * short of WCAG AA with white, so their text uses the palette's darkest
+     * shade that passes instead. Returns `null` when white is fine.
+     */
+    public function getPrimaryContrast(): ?string
+    {
+        $primary = FilamentColor::getColor('primary');
+
+        if (! isset($primary[600])) {
+            return null;
+        }
+
+        $accent = Color::convertToHex($primary[600]);
+
+        if (Contrast::ratio($accent, '#ffffff') >= Contrast::TEXT) {
+            return null;
+        }
+
+        foreach ([950, 900, 800] as $shade) {
+            if (isset($primary[$shade]) && (Contrast::ratio($accent, Color::convertToHex($primary[$shade])) >= Contrast::TEXT)) {
+                return "var(--primary-{$shade})";
+            }
+        }
+
+        return 'var(--gray-950)';
     }
 
     /**

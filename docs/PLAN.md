@@ -95,6 +95,8 @@ Facts below come from the installed Filament **v5.11.0** / Livewire **v4.4.8** s
 | `ConversationalFormsServiceProvider` | `Spatie\LaravelPackageTools\PackageServiceProvider` | Views, translations, config, assets, Testable mixin, (later) migrations and commands. |
 | `ConversationalFormsPlugin` (Phase 5+) | `Filament\Contracts\Plugin` | Panel integration: guest conversation route under a panel's theme, builder resource, responses resource. |
 
+> **As built (2026-10-31):** §1.2 and §1.3 are the original design. Where the code differs: there's no `Evaluator` or `Combinator` (operators evaluate themselves in `Operator::evaluate()`, and `Condition` / `ConditionGroup` have `matches()`, with the combinator stored as a string); `Piping` lives in `Support\`; `Statement` is a component (`Components\Statement`), not a screen; question behaviour shared with `FileUpload` is in `Questions\Concerns\IsConversationQuestion` and `Contracts\ConversationQuestion`; definitions are `Definitions\ConversationDefinition` with `QuestionTypeRegistry` and `QuestionType`; `ResponseEntry` was replaced by the response transcript (`Support\ResponseTranscript`) and `AnswerEntry`; there's no `art/` directory yet. The browser tests live in `tests/Browser/` and need the Pest browser plugin, which CI installs (`browser-tests.yml`) because it requires PHP 8.4.
+
 ### 1.3 Directory structure
 
 ```
@@ -637,6 +639,18 @@ Versioning: `0.x` while the API stabilises (minor = feature phase, patch = fixes
 **Definition of done:** permission-denied and unsupported-browser paths tested; documented threat model (file size, MIME checks, public-page throttling).
 
 **Status (2026-10-30):** implemented and verified, not yet tagged. `AudioAnswer` and `VideoAnswer` (abstract `MediaAnswer` on top of `FileUpload`), the recorder with clear states for each failure, the builder types, and the threat model in the README. Vitest drives the recorder through permission denied, a missing device, an unsupported browser, recording to the time limit, the size limit and recording again; Pest checks the server-side type and size validation. In real Chrome with fake devices: an audio and a video recording (the video stopped by its time limit) were uploaded, stored on the private disk and submitted, and a denied permission showed its message and the upload alternative.
+
+### Before tagging: open items (2026-10-31)
+
+Every phase is built but none is tagged. What's left from the definitions of done above:
+
+- [x] **Browser tests in CI** (`tests/Browser`, `browser-tests.yml`): the keyboard-only run-through, focus after each transition and after a validation error, a logic jump and going back, the phone layout (no sideways scrolling, 44 px targets) and dark mode, with an axe scan of every screen of the onboarding conversation. They found two issues, now fixed: white text on Filament's default amber accent (3.19:1) and touch targets under 44 px.
+- [ ] Browser tests for the remaining questions (Phase 2 and 4 types, the builder, the embed in a cross-origin page), and WebKit next to Chromium.
+- [ ] A manual screen-reader pass (VoiceOver and NVDA).
+- [ ] `art/`: banner, GIF and screenshots, referenced from the README.
+- [ ] The performance budget (§5) as a benchmark test, coverage targets measured, PHPStan raised past level 6.
+- [ ] Deferred features: a recipe and trait for Filament create / edit pages, locale-aware `Number` formatting, a country selector for `Phone`, video in `media()`; planned but not built: `persistStepInQueryString()`, lazy steps, `Logic::whenUsing()`, `allowsEmbedding`.
+- [ ] Tags `v0.1.0`–`v0.8.0` (or a single `v0.9.0`), and the Filament plugin directory submission.
 
 ### After 1.0: separate add-on packages (decided)
 

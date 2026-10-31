@@ -15,6 +15,7 @@ use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Routing\Router;
 use JaOcero\ConversationalForms\ConversationalFormsServiceProvider;
+use JaOcero\ConversationalForms\Tests\Fixtures\Livewire\BrowserConversationPage;
 use JaOcero\ConversationalForms\Tests\Fixtures\Livewire\TestConversationPage;
 use JaOcero\ConversationalForms\Tests\Fixtures\Models\User;
 use JaOcero\ConversationalForms\Tests\Fixtures\Providers\AdminPanelProvider;
@@ -86,5 +87,6 @@ class TestCase extends Orchestra
     protected function defineRoutes($router): void
     {
         $router->livewire('/waitlist', TestConversationPage::class);
+        $router->livewire('/onboarding', BrowserConversationPage::class);
     }
 }

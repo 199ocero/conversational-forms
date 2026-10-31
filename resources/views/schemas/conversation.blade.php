@@ -13,6 +13,17 @@
     $isCompleted = filled($completedEnding);
     $theme = $getTheme();
     $fontUrl = \JaOcero\ConversationalForms\Themes\Fonts::stylesheetUrl($theme?->getFont());
+    $rootAttributes = $getExtraAttributeBag()->class(['cf-conversation', 'cf-full-screen' => $isFullScreen]);
+    // One style attribute: the theme's variables (or, without a theme, readable
+    // button text for the panel's primary colour), then any from `extraAttributes()`,
+    // which come last so they win.
+    $primaryContrast = $theme ? null : $getPrimaryContrast();
+    $style = collect([
+        $theme?->toStyle() ?? (filled($primaryContrast) ? "--cf-primary-contrast: {$primaryContrast}" : null),
+        $rootAttributes->get('style'),
+    ])->filter(fn (?string $declarations): bool => filled($declarations))
+        ->map(fn (string $declarations): string => rtrim(trim($declarations), ';'))
+        ->implode('; ');
 @endphp
 
 <div
@@ -47,9 +58,11 @@
     data-cf-full-screen="{{ $isFullScreen ? 'true' : 'false' }}"
     @if ($theme)
         data-cf-theme="{{ $theme->isDark() ? 'dark' : 'light' }}"
-        style="{{ $theme->toStyle() }}"
     @endif
-    {{ $getExtraAttributeBag()->class(['cf-conversation', 'cf-full-screen' => $isFullScreen]) }}
+    @if (filled($style))
+        style="{{ $style }}"
+    @endif
+    {{ $rootAttributes->except('style') }}
 >
     @if ($fontUrl)
         <link rel="stylesheet" href="{{ $fontUrl }}" />

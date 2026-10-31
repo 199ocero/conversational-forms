@@ -14,10 +14,16 @@
     beStrictAboutOutputDuringTests="true"
     cacheDirectory=".phpunit.cache"
     backupStaticProperties="false"
+    defaultTestSuite="Conversational Forms Test Suite"
 >
     <testsuites>
         <testsuite name="Conversational Forms Test Suite">
             <directory>tests</directory>
+            <exclude>tests/Browser</exclude>
+        </testsuite>
+        <!-- Chromium through the Pest browser plugin (PHP 8.4+); see tests/Pest.php. -->
+        <testsuite name="Browser">
+            <directory>tests/Browser</directory>
         </testsuite>
     </testsuites>
     <logging>

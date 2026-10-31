@@ -10,6 +10,10 @@ All notable changes to `conversational-forms` will be documented in this file.
 - Preview is now **Test run**: the draft's public page, with logic.
 - A new step's key follows its text until it's saved, and a duplicated step gets keys that aren't taken (`email_2`).
 - `QuestionType::previewView()` draws other packages' question types in the live preview.
+- Browser tests (Chromium, through the Pest browser plugin) answer a conversation with the keyboard alone, check focus, logic jumps, going back, the phone layout and dark mode, and scan every screen for accessibility issues with axe.
+- Fixed: with a light primary colour such as Filament's default amber, buttons and selected answers had white text below WCAG AA contrast; they now use the palette's darkest shade.
+- Fixed: answers and the previous / next buttons are at least 44 × 44 px on touch screens.
+- Fixed: a `style` passed with `extraAttributes()` was ignored on themed conversations; it's now kept (and wins over the theme's variables).
 
 ## Unreleased (v0.8.0)
 

@@ -149,6 +149,11 @@
         color: var(--cf-accent-contrast);
         border-radius: var(--cf-radius);
 
+        /* Touch targets are at least 44 × 44 px. */
+        @media (any-pointer: coarse) {
+            @apply size-11;
+        }
+
         & svg {
             @apply size-6;
         }

@@ -44,6 +44,24 @@ If the project maintainer has any additional requirements, you will find them li
 
 - **Add tests!** - Your patch won't be accepted if it doesn't have tests.
 
+## Running the tests
+
+```bash
+composer test          # Pest
+npx vitest run         # JavaScript
+composer analyse       # Larastan
+```
+
+The browser tests in `tests/Browser` run in Chromium through the Pest browser plugin, which needs PHP 8.4. It isn't in `composer.json` (the package still installs on PHP 8.2), so add it locally without saving it:
+
+```bash
+composer require --dev pestphp/pest-plugin-browser --no-update && composer update
+npm ci && npx playwright install chromium
+composer test:browser
+```
+
+Undo the `composer.json` change before committing. A failing browser test saves a screenshot in `tests/Browser/Screenshots`.
+
 - **Document any change in behaviour** - Make sure the `README.md` and any other relevant documentation are kept up-to-date.
 
 - **Consider our release cycle** - We try to follow [SemVer v2.0.0](https://semver.org/). Randomly breaking public APIs is not an option.

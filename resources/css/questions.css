@@ -95,6 +95,7 @@
 
     .cf-choice {
         @apply flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-start;
+        min-height: 2.75rem; /* a 44 px touch target */
         font-size: --theme(--text-lg);
         background-color: var(--cf-choice-bg);
         border: 1px solid var(--cf-choice-border);

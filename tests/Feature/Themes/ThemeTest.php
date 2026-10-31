@@ -1,6 +1,8 @@
 <?php
 
 use Filament\Facades\Filament;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentColor;
 use JaOcero\ConversationalForms\Builder\ThemeSchema;
 use JaOcero\ConversationalForms\Components\Conversation;
 use JaOcero\ConversationalForms\Filament\Resources\ConversationalForms\Pages\EditConversationalForm;
@@ -109,6 +111,30 @@ describe('themed conversations', function () {
             ->assertDontSeeHtml('fonts.bunny.net');
     });
 
+    it('uses dark button text on a primary colour too light for white', function () {
+        FilamentColor::register(['primary' => Color::Amber]);
+
+        conversation(Conversation::make([ShortText::make('name')]))
+            ->assertSeeHtml('style="--cf-primary-contrast: var(--primary-950)"');
+    });
+
+    it('keeps styles from extra attributes in the same style attribute', function () {
+        FilamentColor::register(['primary' => Color::Amber]);
+
+        conversation(Conversation::make([ShortText::make('name')])->extraAttributes(['style' => '--cf-radius: 1rem']))
+            ->assertSeeHtml('style="--cf-primary-contrast: var(--primary-950); --cf-radius: 1rem"');
+
+        conversation(Conversation::make([ShortText::make('name')])->theme(Theme::preset('midnight'))->extraAttributes(['style' => '--cf-radius: 1rem']))
+            ->assertSeeHtml('--cf-bg: #0f172a')
+            ->assertSeeHtml('; --cf-radius: 1rem"');
+    });
+
+    it('keeps white button text on a primary colour dark enough for it', function () {
+        FilamentColor::register(['primary' => Color::Indigo]);
+
+        conversation(Conversation::make([ShortText::make('name')]))
+            ->assertDontSeeHtml('--cf-primary-contrast');
+    });
 
     it('shows the published theme on the public page, in its own light or dark mode', function () {
         $form = ConversationalForm::factory()->create(['theme' => Theme::preset('midnight')->toArray()]);

@@ -1043,7 +1043,7 @@ Conversations follow your Filament panel's colors and dark mode automatically. T
 | Variable | Default | Used for |
 | --- | --- | --- |
 | `--cf-accent` | `--primary-600` (`--primary-400` in dark mode) | Buttons, answers, focus rings |
-| `--cf-accent-contrast` | white | Text on the accent color |
+| `--cf-accent-contrast` | white, or the primary palette's darkest shade when white is too light on it | Text on the accent color |
 | `--cf-fg` / `--cf-muted` | `--gray-950` / `--gray-500` | Text |
 | `--cf-bg` | transparent | Background |
 | `--cf-answer-color` | `--cf-fg` | Text typed into answers (set it to `var(--cf-accent)` for accent-coloured answers) |
