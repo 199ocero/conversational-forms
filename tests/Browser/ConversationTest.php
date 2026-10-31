@@ -3,7 +3,7 @@
 use JaOcero\ConversationalForms\Tests\Fixtures\Livewire\BrowserConversationPage;
 
 it('can be answered from start to finish with the keyboard alone', function (): void {
-    $page = visit('/onboarding')->assertSee('Get started in a minute');
+    $page = visitConversation('/onboarding')->assertSee('Get started in a minute');
 
     pressKey($page, 'Enter');
     waitForStep($page, 'name');
@@ -46,7 +46,7 @@ it('can be answered from start to finish with the keyboard alone', function (): 
 });
 
 it('keeps the step and focuses the answer when it is invalid', function (): void {
-    $page = visit('/onboarding');
+    $page = visitConversation('/onboarding');
 
     pressKey($page, 'Enter');
     waitForStep($page, 'name');
@@ -60,7 +60,7 @@ it('keeps the step and focuses the answer when it is invalid', function (): void
 });
 
 it('skips questions that logic jumps over, and goes back with the keyboard', function (): void {
-    $page = visit('/onboarding');
+    $page = visitConversation('/onboarding');
 
     pressKey($page, 'Enter');
     waitForStep($page, 'name');
@@ -84,7 +84,7 @@ it('skips questions that logic jumps over, and goes back with the keyboard', fun
 });
 
 it('has no accessibility issues on any screen', function (): void {
-    $page = visit('/onboarding');
+    $page = visitConversation('/onboarding');
     $page->assertNoAccessibilityIssues();
 
     pressKey($page, 'Enter');
@@ -115,7 +115,7 @@ it('has no accessibility issues on any screen', function (): void {
 });
 
 it('has no accessibility issues in dark mode', function (): void {
-    $page = visit('/onboarding')->inDarkMode();
+    $page = waitUntil(visit('/onboarding')->inDarkMode(), "document.querySelector('.cf-conversation')?._x_dataStack");
 
     pressKey($page, 'Enter');
     waitForStep($page, 'name');
@@ -124,7 +124,7 @@ it('has no accessibility issues in dark mode', function (): void {
 });
 
 it('fits a phone screen', function (): void {
-    $page = visit('/onboarding')->on()->iPhone15();
+    $page = waitUntil(visit('/onboarding')->on()->iPhone15(), "document.querySelector('.cf-conversation')?._x_dataStack");
 
     $page->press('Start');
     waitForStep($page, 'name');

@@ -75,6 +75,9 @@ describe('storing responses', function () {
     });
 
     it('updates the same response and completes it on submit', function () {
+        // Slow runners would otherwise add real seconds to the measured duration.
+        $this->freezeSecond();
+
         $form = feedbackForm();
         $page = answerFeedback($form, ['plan' => 'pro', 'reason' => 'Speed']);
 

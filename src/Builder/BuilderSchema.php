@@ -30,6 +30,7 @@ use JaOcero\ConversationalForms\Definitions\QuestionTypeRegistry;
 use JaOcero\ConversationalForms\Logic\Enums\AnswerType;
 use JaOcero\ConversationalForms\Logic\Enums\CalculationOperator;
 use JaOcero\ConversationalForms\Logic\Enums\Operator;
+use JaOcero\ConversationalForms\Support\Views;
 
 /**
  * The builder's form components. They edit the state made by
@@ -138,7 +139,7 @@ final readonly class BuilderSchema
     {
         return Repeater::make('endings')
             ->hiddenLabel()
-            ->view('conversational-forms::builder.editor.items')
+            ->view(Views::name('builder.editor.items'))
             // Logic lists the endings: adding or removing one re-renders the steps' rules too.
             ->partiallyRenderAfterActionsCalled(false)
             ->schema([
@@ -221,7 +222,7 @@ final readonly class BuilderSchema
     {
         return $items
             ->hiddenLabel()
-            ->view('conversational-forms::builder.editor.items')
+            ->view(Views::name('builder.editor.items'))
             // Other steps' logic lists the steps: adding, copying, deleting or reordering one re-renders them all.
             ->partiallyRenderAfterActionsCalled(false)
             ->cloneable()

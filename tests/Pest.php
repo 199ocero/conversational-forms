@@ -82,6 +82,15 @@ pest()
     ->in('Browser');
 
 /**
+ * Open a page with a conversation and wait for its script to load: the
+ * conversation's keyboard handling only exists once Alpine has started it.
+ */
+function visitConversation(string $url): mixed
+{
+    return waitUntil(visit($url), "document.querySelector('.cf-conversation')?._x_dataStack");
+}
+
+/**
  * Press a key where the focus is, as a person using the keyboard would.
  */
 function pressKey(mixed $page, string $key): mixed

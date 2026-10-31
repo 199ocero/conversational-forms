@@ -392,7 +392,7 @@ describe('the editor', function () {
             ->call('save')
             ->assertHasNoFormErrors();
 
-        expect($form->refresh()->definition['steps'][0]['settings']['options'])->toBe([['value' => 'starter', 'label' => 'Starter']]);
+        expect(canonical($form->refresh()->definition['steps'][0]['settings']['options']))->toBe(canonical([['value' => 'starter', 'label' => 'Starter']]));
     });
 
     it('copies a step right after itself, with keys that are free', function () {
