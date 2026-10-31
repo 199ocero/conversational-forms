@@ -153,65 +153,1103 @@
     }
 }
 
-/* The Design tab's preview: a sample question drawn with the theme's variables. */
+/*
+ * The builder's editor: an outline, a live preview and the selected item's
+ * settings, filling the window inside the panel's page shell.
+ */
 @layer components {
-    .cf-theme-preview {
-        @apply gap-4 overflow-hidden rounded-xl p-6;
-        border: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+    .cf-editor-body {
+        @apply h-dvh overflow-hidden;
     }
 
-    .cf-theme-preview-question {
-        @apply m-0 text-xl font-semibold;
+    /*
+     * Only the outline, preview and panel scroll. Everything around them is
+     * clipped rather than hidden: an element with hidden overflow can still
+     * be scrolled by focus or `scrollIntoView()`, which pushed the whole
+     * editor out of the window; a clipped one can't be scrolled at all.
+     */
+    html:has(.cf-editor-body),
+    .cf-editor-body,
+    .fi-page.cf-editor-page,
+    .cf-editor-page .fi-page-header-main-ctn,
+    .cf-editor-page .fi-page-main,
+    .cf-editor-page .fi-page-content,
+    .cf-editor {
+        overflow: clip;
     }
 
-    .cf-theme-preview-number {
-        @apply me-1 text-base;
-        color: var(--cf-accent);
+    .fi-page.cf-editor-page,
+    .cf-editor-page .fi-page-header-main-ctn,
+    .cf-editor-page .fi-page-main,
+    .cf-editor-page .fi-page-content {
+        @apply m-0 flex min-h-0 max-w-none flex-1 flex-col gap-0 p-0;
     }
 
-    .cf-theme-preview-description {
-        @apply -mt-2 mb-0 text-sm;
-        color: var(--cf-muted);
-    }
+    .fi-page.cf-editor-page {
+        @apply h-dvh;
+        --cf-editor-border: var(--gray-200, --theme(--color-gray-200));
+        --cf-editor-surface: var(--color-white, white);
+        --cf-editor-canvas: var(--gray-50, --theme(--color-gray-50));
+        --cf-editor-muted: var(--gray-500, --theme(--color-gray-500));
+        --cf-editor-hover: var(--gray-50, --theme(--color-gray-50));
+        --cf-editor-accent: var(--primary-600, --theme(--color-indigo-600));
+        --cf-editor-selected: color-mix(in oklab, var(--cf-editor-accent) 10%, transparent);
+        --cf-editor-danger: var(--danger-600, --theme(--color-red-600));
+        --cf-editor-warning: var(--warning-500, --theme(--color-amber-500));
 
-    .cf-theme-preview-choices {
-        @apply flex flex-col gap-2;
-    }
-
-    .cf-theme-preview-choice {
-        @apply flex items-center gap-3 px-3 py-2 text-base;
-        background-color: var(--cf-choice-bg);
-        border: 1px solid var(--cf-choice-border);
-        border-radius: var(--cf-radius);
-
-        & kbd {
-            @apply grid size-6 place-items-center text-xs;
-            border: 1px solid var(--cf-choice-border);
-            border-radius: calc(var(--cf-radius) * 0.6);
-            color: var(--cf-accent);
+        @variant dark {
+            --cf-editor-border: color-mix(in oklab, white 10%, transparent);
+            --cf-editor-surface: var(--gray-900, --theme(--color-gray-900));
+            --cf-editor-canvas: var(--gray-950, --theme(--color-gray-950));
+            --cf-editor-muted: var(--gray-400, --theme(--color-gray-400));
+            --cf-editor-hover: color-mix(in oklab, white 5%, transparent);
+            --cf-editor-accent: var(--primary-400, --theme(--color-indigo-400));
+            --cf-editor-danger: var(--danger-400, --theme(--color-red-400));
         }
+    }
 
-        &.cf-selected {
-            background-color: var(--cf-choice-bg-selected);
-            box-shadow: inset 0 0 0 1px var(--cf-accent);
+    /* The header: back, title and save state, links, actions. */
+    .cf-editor-header {
+        @apply flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5;
+        background-color: var(--cf-editor-surface);
+        border-bottom: 1px solid var(--cf-editor-border);
+    }
 
-            & kbd {
-                background-color: var(--cf-accent);
-                color: var(--cf-accent-contrast);
+    .cf-editor-header-start {
+        @apply flex min-w-0 flex-1 items-center gap-3;
+    }
+
+    .cf-editor-back {
+        @apply grid size-9 shrink-0 place-items-center rounded-lg transition;
+        color: var(--cf-editor-muted);
+
+        &:hover {
+            background-color: var(--cf-editor-hover);
+        }
+    }
+
+    .cf-editor-back-icon {
+        @apply size-5;
+    }
+
+    .cf-editor-title {
+        @apply min-w-0;
+    }
+
+    .cf-editor-heading {
+        @apply m-0 truncate text-base font-semibold;
+    }
+
+    .cf-editor-subheading {
+        @apply m-0 flex flex-wrap items-center gap-x-3 text-xs;
+        color: var(--cf-editor-muted);
+    }
+
+    .cf-editor-save-state {
+        @apply inline-flex items-center gap-1.5 font-medium;
+
+        &.cf-editor-dirty {
+            color: var(--warning-700, --theme(--color-amber-700));
+
+            @variant dark {
+                color: var(--warning-400, --theme(--color-amber-400));
             }
         }
     }
 
-    .cf-theme-preview-answer {
-        @apply m-0 pb-1 text-lg;
-        color: var(--cf-answer-color);
-        border-bottom: 1px solid var(--cf-answer-color);
+    .cf-editor-save-state.cf-editor-save-problem {
+        @apply cursor-help;
+        color: var(--danger-600, --theme(--color-red-600));
+
+        @variant dark {
+            color: var(--danger-400, --theme(--color-red-400));
+        }
     }
 
-    .cf-theme-preview-button {
-        @apply w-fit px-4 py-2 font-semibold;
-        background-color: var(--cf-accent);
-        color: var(--cf-accent-contrast);
-        border-radius: var(--cf-radius);
+    .cf-editor-save-state-dot {
+        @apply size-1.5 rounded-full;
+        background-color: var(--success-500, --theme(--color-emerald-500));
+
+        .cf-editor-dirty & {
+            background-color: currentColor;
+        }
+    }
+
+    .cf-editor-nav {
+        @apply flex items-center gap-1;
+    }
+
+    .cf-editor-nav-link {
+        @apply rounded-lg px-3 py-1.5 text-sm font-medium transition;
+        color: var(--cf-editor-muted);
+
+        &:hover {
+            background-color: var(--cf-editor-hover);
+        }
+
+        &.cf-active {
+            color: var(--cf-editor-accent);
+            background-color: var(--cf-editor-selected);
+        }
+    }
+
+    .cf-editor-header-actions {
+        @apply flex flex-1 justify-end;
+    }
+
+    /* Three columns, or tabs on smaller screens. */
+    /* The outline and the preview; the settings panel slides over the preview when opened. */
+    .cf-editor {
+        @apply relative grid min-h-0 flex-1 overflow-clip;
+        grid-template-columns: 17rem minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+
+        @media (max-width: 79.999rem) {
+            grid-template-columns: 15rem minmax(0, 1fr);
+        }
+
+        @media (max-width: 63.999rem) {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr);
+        }
+    }
+
+    .cf-editor-tabs {
+        @apply hidden gap-1 px-3 py-2;
+        border-bottom: 1px solid var(--cf-editor-border);
+        background-color: var(--cf-editor-surface);
+
+        @media (max-width: 63.999rem) {
+            @apply flex;
+        }
+    }
+
+    .cf-editor-tab {
+        @apply flex-1 cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium;
+        color: var(--cf-editor-muted);
+
+        &[aria-selected='true'] {
+            color: var(--cf-editor-accent);
+            background-color: var(--cf-editor-selected);
+        }
+    }
+
+    .cf-editor-pane {
+        @apply min-h-0 overflow-y-auto;
+
+        @media (max-width: 63.999rem) {
+            @apply hidden;
+
+            [data-cf-pane='outline'] > &.cf-editor-outline,
+            [data-cf-pane='preview'] > &.cf-editor-preview {
+                @apply block;
+            }
+        }
+    }
+
+    /* The outline. */
+    .cf-editor-outline {
+        background-color: var(--cf-editor-surface);
+        border-inline-end: 1px solid var(--cf-editor-border);
+    }
+
+    .cf-editor-outline-inner {
+        @apply flex flex-col gap-1 p-3;
+    }
+
+    .cf-editor-outline-section {
+        @apply flex flex-col gap-0.5 py-2;
+
+        & + & {
+            border-top: 1px solid var(--cf-editor-border);
+        }
+    }
+
+    .cf-editor-outline-heading {
+        @apply flex items-center justify-between gap-2 px-2 pb-1;
+
+        & h3 {
+            @apply m-0 text-xs font-semibold tracking-wide uppercase;
+            color: var(--cf-editor-muted);
+        }
+    }
+
+    .cf-editor-add {
+        @apply inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold transition;
+        color: var(--cf-editor-accent);
+
+        &:hover {
+            background-color: var(--cf-editor-selected);
+        }
+
+        &:disabled {
+            @apply cursor-wait opacity-50;
+        }
+    }
+
+    .cf-editor-add-icon {
+        @apply size-4;
+    }
+
+    .cf-editor-rows {
+        @apply m-0 flex list-none flex-col gap-0.5 p-0;
+    }
+
+    .cf-editor-rows-item-nested {
+        @apply ms-5;
+    }
+
+    .cf-editor-row {
+        @apply relative flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-start text-sm transition;
+
+        &:hover {
+            background-color: var(--cf-editor-hover);
+        }
+
+        &.cf-active {
+            background-color: var(--cf-editor-selected);
+            color: var(--cf-editor-accent);
+        }
+
+        &.cf-editor-row-within {
+            box-shadow: inset 2px 0 0 var(--cf-editor-accent);
+        }
+
+        &.cf-editor-row-dragging {
+            @apply opacity-40;
+        }
+
+        &.cf-editor-row-drop {
+            box-shadow: inset 0 2px 0 var(--cf-editor-accent);
+        }
+    }
+
+    .cf-editor-row-with-actions {
+        @apply cursor-default gap-1 py-0;
+    }
+
+    /* The number and icon line up with the title, also on rows with a caption under it. */
+    .cf-editor-row-button {
+        @apply flex min-w-0 flex-1 cursor-pointer items-start gap-2 py-1.5 text-start leading-5;
+        color: inherit;
+
+        &:focus-visible {
+            @apply rounded-md;
+            outline: 2px solid var(--cf-editor-accent);
+            outline-offset: 1px;
+        }
+    }
+
+    /* The drag handle takes the place of the row's number (or icon) while the row is pointed at, so it costs no space. */
+    .cf-editor-row-handle {
+        @apply pointer-events-none absolute top-1 left-1 z-10 grid size-6 translate-none cursor-grab place-items-center opacity-0 transition;
+        color: var(--cf-editor-muted);
+
+        & svg {
+            @apply size-3.5;
+        }
+
+        .cf-editor-row:hover & {
+            @apply pointer-events-auto opacity-100;
+        }
+    }
+
+    .cf-editor-row-with-actions:hover .cf-editor-row-button > :first-child {
+        @apply opacity-0;
+    }
+
+    .cf-editor-row-number {
+        @apply h-5 w-4 shrink-0 text-end text-xs leading-5 font-semibold tabular-nums;
+        color: var(--cf-editor-muted);
+
+        .cf-active & {
+            color: inherit;
+        }
+    }
+
+    .cf-editor-row-icon {
+        @apply grid h-5 w-4 shrink-0 place-items-center;
+        color: var(--cf-editor-muted);
+
+        & svg {
+            @apply size-4;
+        }
+
+        .cf-active & {
+            color: inherit;
+        }
+    }
+
+    .cf-editor-row-title {
+        @apply min-w-0 flex-1 truncate;
+    }
+
+    .cf-editor-row-untitled {
+        @apply italic;
+        color: var(--cf-editor-muted);
+    }
+
+    .cf-editor-row-text {
+        @apply flex min-w-0 flex-1 flex-col;
+    }
+
+    /* "Logic" and "Sometimes shown": labels under the title, not buttons. */
+    .cf-editor-row-meta {
+        @apply flex flex-wrap gap-x-2 text-[0.6875rem] leading-4 font-normal;
+        color: var(--cf-editor-muted);
+    }
+
+    .cf-editor-row-meta-item {
+        @apply inline-flex items-center gap-0.5 whitespace-nowrap;
+
+        & svg {
+            @apply size-3;
+        }
+    }
+
+    .cf-editor-row-warning {
+        @apply mt-1.5 size-2 shrink-0 rounded-full;
+        background-color: var(--cf-editor-warning);
+
+        .cf-editor-row-invalid & {
+            background-color: var(--cf-editor-danger);
+        }
+    }
+
+    /* Shown on the row being pointed at or selected; otherwise they leave the title its room. */
+    .cf-editor-row-actions {
+        @apply hidden shrink-0 items-center;
+
+        .cf-editor-row:hover &,
+        .cf-editor-row:focus-within &,
+        .cf-editor-row.cf-active & {
+            @apply flex;
+        }
+    }
+
+    .cf-editor-icon-button {
+        @apply grid size-7 cursor-pointer place-items-center rounded-md transition;
+        color: var(--cf-editor-muted);
+
+        & svg {
+            @apply size-4;
+        }
+
+        &:hover {
+            background-color: var(--cf-editor-hover);
+            color: inherit;
+        }
+
+        &:disabled {
+            @apply cursor-wait opacity-50;
+        }
+    }
+
+    .cf-editor-icon-button-danger:hover,
+    .cf-editor-icon-button-confirm {
+        color: var(--cf-editor-danger);
+    }
+
+    .cf-editor-icon-button-confirm {
+        background-color: color-mix(in oklab, var(--cf-editor-danger) 12%, transparent);
+    }
+
+    .cf-editor-badge {
+        @apply shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[0.6875rem];
+        color: var(--cf-editor-muted);
+        background-color: var(--cf-editor-hover);
+        border: 1px solid var(--cf-editor-border);
+    }
+
+    .cf-editor-empty {
+        @apply m-0 px-2 py-3 text-sm;
+        color: var(--cf-editor-muted);
+    }
+
+    .cf-editor-outline-footer {
+        @apply mt-auto;
+    }
+
+    /* The question type picker: every type at a glance, by category. */
+    .cf-editor-picker-backdrop {
+        @apply fixed inset-0 z-40 grid place-items-start justify-items-center overflow-y-auto px-4 pt-[8vh] pb-8;
+        background-color: color-mix(in oklab, var(--gray-950, black) 50%, transparent);
+        backdrop-filter: blur(2px);
+    }
+
+    .cf-editor-picker {
+        @apply flex flex-col gap-5 rounded-2xl p-5 shadow-2xl;
+        width: min(60rem, 100%);
+        background-color: var(--cf-editor-surface);
+        border: 1px solid var(--cf-editor-border);
+        animation: cf-editor-picker-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .cf-editor-picker-search {
+        @apply w-full rounded-lg px-3 py-2.5 text-sm;
+        background-color: var(--cf-editor-canvas);
+        border: 1px solid var(--cf-editor-border);
+
+        &:focus {
+            outline: 2px solid var(--cf-editor-accent);
+            outline-offset: -1px;
+        }
+    }
+
+    .cf-editor-picker-groups {
+        @apply grid gap-x-6 gap-y-5;
+        grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    }
+
+    .cf-editor-picker-group {
+        @apply flex flex-col gap-1;
+
+        & h4 {
+            @apply m-0 mb-1 px-2 text-xs font-semibold tracking-wide uppercase;
+            color: var(--cf-editor-muted);
+        }
+
+        /* A colour per category. */
+        --cf-picker-hue: var(--gray-500, --theme(--color-gray-500));
+
+        &[data-group='text'] {
+            --cf-picker-hue: --theme(--color-sky-500);
+        }
+
+        &[data-group='choice'] {
+            --cf-picker-hue: --theme(--color-violet-500);
+        }
+
+        &[data-group='scale'] {
+            --cf-picker-hue: --theme(--color-amber-500);
+        }
+
+        &[data-group='rich'] {
+            --cf-picker-hue: --theme(--color-emerald-500);
+        }
+
+        &[data-group='layout'] {
+            --cf-picker-hue: --theme(--color-rose-500);
+        }
+    }
+
+    .cf-editor-picker-types {
+        @apply flex flex-col gap-0.5;
+    }
+
+    .cf-editor-picker-type {
+        @apply flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 text-start text-sm font-medium transition;
+        animation: cf-editor-picker-item-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        animation-delay: calc(var(--cf-picker-index, 0) * 18ms);
+
+        &:hover,
+        &:focus-visible {
+            background-color: color-mix(in oklab, var(--cf-picker-hue) 12%, transparent);
+            outline: none;
+
+            & .cf-editor-picker-icon {
+                animation: cf-editor-picker-icon-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+                background-color: var(--cf-picker-hue);
+                color: white;
+            }
+        }
+    }
+
+    .cf-editor-picker-icon {
+        @apply grid size-8 shrink-0 place-items-center rounded-lg transition-colors;
+        background-color: color-mix(in oklab, var(--cf-picker-hue) 15%, transparent);
+        color: var(--cf-picker-hue);
+
+        & svg {
+            @apply size-4.5;
+        }
+    }
+
+    @keyframes cf-editor-picker-in {
+        from {
+            opacity: 0;
+            scale: 0.97;
+            translate: 0 0.5rem;
+        }
+    }
+
+    @keyframes cf-editor-picker-item-in {
+        from {
+            opacity: 0;
+            translate: 0 0.25rem;
+        }
+    }
+
+    @keyframes cf-editor-picker-icon-pop {
+        0% {
+            scale: 1;
+            rotate: 0deg;
+        }
+
+        40% {
+            scale: 1.18;
+            rotate: -8deg;
+        }
+
+        70% {
+            scale: 0.95;
+            rotate: 4deg;
+        }
+
+        100% {
+            scale: 1;
+            rotate: 0deg;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cf-editor-picker,
+        .cf-editor-picker-type,
+        .cf-editor-picker-type:hover .cf-editor-picker-icon,
+        .cf-editor-picker-type:focus-visible .cf-editor-picker-icon {
+            animation: none;
+        }
+    }
+
+    /* The preview. */
+    .cf-editor-preview {
+        background-color: var(--cf-editor-canvas);
+    }
+
+    .cf-editor-preview-inner {
+        @apply flex min-h-full flex-col gap-4 p-4;
+    }
+
+    /* Device on the left, the selected step in the middle, its actions and the step arrows on the right. */
+    .cf-editor-preview-toolbar {
+        @apply grid items-center gap-2 rounded-xl px-2 py-1.5;
+        grid-template-columns: 1fr auto 1fr;
+        background-color: var(--cf-editor-surface);
+        border: 1px solid var(--cf-editor-border);
+    }
+
+    .cf-editor-segmented {
+        @apply flex rounded-lg p-0.5;
+        background-color: var(--cf-editor-surface);
+        border: 1px solid var(--cf-editor-border);
+    }
+
+    .cf-editor-segmented-button {
+        @apply grid size-8 cursor-pointer place-items-center rounded-md transition;
+        color: var(--cf-editor-muted);
+
+        & svg {
+            @apply size-4;
+        }
+
+        &[aria-pressed='true'] {
+            background-color: var(--cf-editor-selected);
+            color: var(--cf-editor-accent);
+        }
+
+        &:disabled {
+            @apply cursor-default opacity-40;
+        }
+    }
+
+    .cf-editor-contrast {
+        @apply rounded-xl px-4 py-3 text-sm;
+        background-color: color-mix(in oklab, var(--cf-editor-warning) 12%, transparent);
+        border: 1px solid color-mix(in oklab, var(--cf-editor-warning) 35%, transparent);
+
+        & ul {
+            @apply m-0 mt-1 list-disc ps-5;
+        }
+    }
+
+    .cf-editor-contrast-title {
+        @apply m-0 font-semibold;
+    }
+
+    .cf-editor-stage {
+        @apply flex flex-1 justify-center;
+    }
+
+    .cf-editor-conversation {
+        @apply w-full flex-1 overflow-hidden rounded-xl px-6 py-6 shadow-sm;
+        min-height: 32rem;
+        /* A length (not "none"), so switching to the phone frame and back can animate. */
+        max-width: 100%;
+        transition:
+            max-width 450ms cubic-bezier(0.22, 1, 0.36, 1),
+            padding 450ms cubic-bezier(0.22, 1, 0.36, 1);
+
+        & .cf-question-label,
+        & .cf-screen-title,
+        & .cf-input {
+            transition: font-size 450ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &,
+            & .cf-question-label,
+            & .cf-screen-title,
+            & .cf-input {
+                transition: none;
+            }
+        }
+        border: 1px solid var(--cf-editor-border);
+        background-color: var(--cf-bg);
+
+        /* Without a theme, the preview sits on the page's own background. */
+        &:not([data-cf-theme]) {
+            background-color: var(--cf-editor-canvas);
+        }
+
+        @media (min-width: 64rem) {
+            @apply px-16 py-10;
+        }
+
+        & > .cf-step,
+        & > .cf-screen {
+            @apply mx-auto w-full;
+            max-width: var(--cf-content-width);
+        }
+
+        & .cf-step {
+            @apply flex-1;
+        }
+    }
+
+    /* A phone-sized frame: sizes that otherwise follow the window follow the frame. */
+    .cf-editor-stage-mobile {
+        & .cf-editor-conversation {
+            @apply max-w-[23.4375rem] px-5 py-6;
+            --cf-question-size: --theme(--text-2xl);
+            --cf-answer-size: --theme(--text-xl);
+        }
+
+        & .cf-question-number {
+            @apply static w-auto justify-start;
+        }
+
+        & .cf-screen-title {
+            @apply text-3xl;
+        }
+    }
+
+    .cf-editor-token {
+        @apply rounded-md px-1 font-mono text-[0.85em];
+        background-color: color-mix(in oklab, var(--cf-accent) 14%, transparent);
+        color: var(--cf-accent);
+    }
+
+    /* Text edited in place: it looks like the conversation until it's clicked. */
+    .cf-editor-editable {
+        @apply inline;
+
+        &.cf-editor-editable-editing:not(.cf-editor-editable-inline) {
+            @apply block;
+        }
+    }
+
+    .cf-editor-editable-text {
+        @apply cursor-text rounded-md;
+        outline: 1px dashed transparent;
+        outline-offset: 0.25rem;
+        transition: outline-color 120ms ease;
+
+        &:hover,
+        &:focus-visible {
+            outline-color: color-mix(in oklab, var(--cf-accent) 55%, transparent);
+        }
+
+        .cf-editor-editable-invalid & {
+            outline-color: var(--cf-danger);
+        }
+    }
+
+    .cf-editor-editable-placeholder {
+        color: var(--cf-muted);
+        opacity: 0.75;
+
+        .cf-editor-editable-invalid & {
+            color: var(--cf-danger);
+            opacity: 1;
+        }
+    }
+
+    .cf-editor-editable-input {
+        @apply m-0 block w-full resize-none overflow-hidden rounded-md border-0 bg-transparent p-0 shadow-none;
+        font: inherit;
+        letter-spacing: inherit;
+        line-height: inherit;
+        color: inherit;
+        outline: 2px solid var(--cf-accent);
+        outline-offset: 0.25rem;
+
+        &::placeholder {
+            color: var(--cf-muted);
+            opacity: 0.75;
+        }
+
+        .cf-editor-editable-inline & {
+            @apply inline-block w-auto;
+            min-width: 1ch;
+        }
+    }
+
+    /* An ending's button only shows on the public page once it has a link. */
+    .cf-editor-button-unused {
+        @apply opacity-50;
+    }
+
+    .cf-editor-placeholder-text {
+        @apply italic;
+        color: var(--cf-muted);
+    }
+
+    .cf-editor-question-selected {
+        @apply rounded-lg;
+        outline: 2px dashed color-mix(in oklab, var(--cf-accent) 45%, transparent);
+        outline-offset: 0.75rem;
+    }
+
+    /* Choices are added and removed in the preview. */
+    .cf-editor-option-remove {
+        @apply ms-auto grid size-6 shrink-0 cursor-pointer place-items-center rounded-md opacity-0 transition;
+        color: var(--cf-muted);
+
+        & svg {
+            @apply size-4;
+        }
+
+        [data-cf-editor-option]:hover &,
+        &:focus-visible {
+            @apply opacity-100;
+        }
+
+        &:hover {
+            color: var(--cf-danger);
+            background-color: color-mix(in oklab, var(--cf-danger) 12%, transparent);
+        }
+
+        .cf-picture & {
+            @apply absolute top-2 right-2;
+            background-color: var(--cf-bg, white);
+        }
+    }
+
+    .cf-editor-add-option {
+        @apply inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium;
+        color: var(--cf-accent);
+
+        & svg {
+            @apply size-4;
+        }
+
+        &:hover {
+            background-color: var(--cf-choice-bg-hover);
+        }
+    }
+
+    .cf-editor-conversation .cf-picture {
+        @apply relative;
+    }
+
+    .cf-editor-preview-control {
+        @apply flex flex-col gap-3;
+    }
+
+    .cf-editor-segment-wrapper {
+        display: contents;
+    }
+
+    .cf-editor-picture-placeholder {
+        @apply grid aspect-square place-items-center;
+        color: var(--cf-muted);
+        background-color: var(--cf-choice-bg);
+
+        & svg {
+            @apply size-8;
+        }
+    }
+
+    .cf-editor-no-preview,
+    .cf-editor-redirect {
+        @apply m-0 flex items-center gap-3 rounded-lg px-4 py-3 text-sm;
+        color: var(--cf-muted);
+        border: 1px dashed var(--cf-border);
+    }
+
+    .cf-editor-redirect-icon {
+        @apply size-5 shrink-0;
+    }
+
+    .cf-editor-screen-content {
+        @apply flex flex-col gap-6;
+    }
+
+    /* The selected item's settings, in a panel opened on demand over the preview. */
+    .cf-editor-panel {
+        @apply absolute inset-y-0 right-0 z-30 flex w-full max-w-sm flex-col shadow-xl;
+        background-color: var(--cf-editor-surface);
+        border-inline-start: 1px solid var(--cf-editor-border);
+        translate: 100% 0;
+        visibility: hidden;
+        transition:
+            translate 200ms ease,
+            visibility 200ms;
+
+        &.cf-open {
+            translate: 0 0;
+            visibility: visible;
+        }
+    }
+
+    .cf-editor-panel-header {
+        @apply flex shrink-0 flex-col gap-1 px-4 py-3;
+        border-bottom: 1px solid var(--cf-editor-border);
+    }
+
+    .cf-editor-panel-heading {
+        @apply flex items-center gap-2;
+    }
+
+    .cf-editor-panel-icon {
+        @apply grid size-5 place-items-center;
+        color: var(--cf-editor-accent);
+
+        & svg {
+            @apply size-5;
+        }
+    }
+
+    .cf-editor-panel-title {
+        @apply m-0 flex-1 truncate text-sm font-semibold;
+    }
+
+    .cf-editor-panel-description {
+        @apply m-0 mt-1 text-sm;
+        color: var(--cf-editor-muted);
+    }
+
+    .cf-editor-panel-body {
+        @apply min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-8;
+
+        /* Grids in the settings follow this panel's width (`BuilderSchema::columns()`). */
+        container-type: inline-size;
+
+        /* Only the selected item's settings are shown, so the gaps between the others go too. */
+        & > .fi-sc {
+            @apply gap-0;
+        }
+    }
+
+    /* The logic view: every step's conditions and rules, where the preview was. */
+    [data-cf-view='logic'] {
+        & > .cf-editor-preview {
+            @apply hidden;
+        }
+
+        & > .cf-editor-panel {
+            @apply static z-auto block max-w-none overflow-y-auto shadow-none;
+            grid-column: 2;
+            grid-row: 1 / -1;
+            translate: none;
+            visibility: visible;
+            background-color: var(--cf-editor-canvas);
+            border-inline-start: 0;
+
+            @media (max-width: 63.999rem) {
+                grid-column: 1;
+                grid-row: 2;
+            }
+        }
+
+        & .cf-editor-panel-header {
+            @apply mx-auto w-full max-w-4xl border-0 px-6 pt-6;
+        }
+
+        & .cf-editor-panel-body {
+            /* The panel scrolls, so its scroll bar sits at the window's edge. */
+            @apply mx-auto w-full max-w-4xl flex-none overflow-visible px-6 pb-16;
+
+            & > .fi-sc,
+            & .cf-editor-items {
+                @apply gap-3;
+            }
+        }
+
+        & .cf-editor-item {
+            @apply rounded-xl px-4 pt-3 pb-4;
+            background-color: var(--cf-editor-surface);
+            border: 1px solid var(--cf-editor-border);
+            scroll-margin-top: 1rem;
+        }
+
+        & .cf-editor-item-nested {
+            @apply ms-6 mt-3;
+            background-color: var(--cf-editor-canvas);
+        }
+
+        /* "Show only when" and "After this step", as small labels. */
+        & .fi-section-not-contained .fi-section-header-heading {
+            @apply text-xs font-semibold tracking-wide uppercase;
+            color: var(--cf-editor-muted);
+        }
+
+        /* The step jumped to from the outline flashes briefly, so it's easy to spot. */
+        & .cf-editor-logic-card-selected {
+            animation: cf-editor-logic-card-flash 1.4s ease-out;
+        }
+    }
+
+    /* Each condition on one line, with its delete button at the end instead of a header row. */
+    .cf-editor-conditions .fi-fo-repeater-item {
+        @apply relative;
+    }
+
+    .cf-editor-conditions .fi-fo-repeater-item-header {
+        @apply absolute top-1/2 right-2 z-10 -translate-y-1/2 border-0 bg-transparent p-0;
+    }
+
+    .cf-editor-conditions .fi-fo-repeater-item-content {
+        @apply border-t-0 pe-12;
+    }
+
+    @keyframes cf-editor-logic-card-flash {
+        0%,
+        30% {
+            border-color: var(--cf-editor-accent);
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--cf-editor-accent) 25%, transparent);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        [data-cf-view='logic'] .cf-editor-logic-card-selected {
+            animation: none;
+        }
+    }
+
+    .cf-editor-logic-card-header {
+        @apply mb-2 flex w-full cursor-pointer items-center gap-2 text-start text-sm font-semibold;
+    }
+
+    .cf-editor-logic-card-title {
+        @apply min-w-0 flex-1 truncate;
+    }
+
+    /* Content or logic, at the top of the outline. */
+    .cf-editor-view-switch {
+        @apply mb-2 grid grid-cols-2 gap-0.5 rounded-lg p-0.5;
+        background-color: var(--cf-editor-hover);
+        border: 1px solid var(--cf-editor-border);
+    }
+
+    .cf-editor-view-switch-button {
+        @apply cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition;
+        color: var(--cf-editor-muted);
+
+        &[aria-selected='true'] {
+            background-color: var(--cf-editor-surface);
+            color: inherit;
+            box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+        }
+    }
+
+    /* The toolbar above the selected step in the preview. */
+    .cf-editor-preview-toolbar > :first-child {
+        @apply justify-self-start;
+    }
+
+    .cf-editor-step-toolbar-type {
+        @apply min-w-0 justify-self-center text-sm font-medium;
+    }
+
+    .cf-editor-step-toolbar-type-inner {
+        @apply inline-flex min-w-0 items-center gap-2 truncate;
+    }
+
+    /* The step's actions and the step arrows, together at the end of the bar. */
+    .cf-editor-preview-toolbar-end {
+        @apply flex items-center gap-2 justify-self-end;
+    }
+
+    .cf-editor-step-toolbar-actions {
+        @apply flex items-center gap-1;
+    }
+
+    .cf-editor-toolbar-button {
+        @apply relative inline-grid size-8 cursor-pointer place-items-center rounded-lg transition;
+        color: var(--cf-editor-muted);
+
+        & svg {
+            @apply size-4;
+        }
+
+        &:hover,
+        &[aria-expanded='true'] {
+            background-color: var(--cf-editor-hover);
+            color: inherit;
+        }
+
+        &:disabled {
+            @apply cursor-wait opacity-50;
+        }
+    }
+
+    /* On the Logic icon: this step has conditions or rules. */
+    .cf-editor-toolbar-dot {
+        @apply absolute top-1 right-1 size-1.5 rounded-full;
+        background-color: var(--cf-editor-accent);
+    }
+
+    .cf-editor-dot {
+        @apply size-1.5 rounded-full;
+        background-color: var(--cf-editor-accent);
+    }
+
+    .cf-editor-switch {
+        @apply inline-flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium;
+
+        &:hover {
+            background-color: var(--cf-editor-hover);
+        }
+    }
+
+    .cf-editor-switch-track {
+        @apply relative inline-block h-4 w-7 rounded-full transition;
+        background-color: var(--cf-editor-border);
+
+        &::after {
+            @apply absolute top-0.5 left-0.5 size-3 rounded-full bg-white shadow-sm transition;
+            content: '';
+        }
+
+        [aria-checked='true'] > & {
+            background-color: var(--cf-editor-accent);
+
+            &::after {
+                translate: 0.75rem 0;
+            }
+        }
+    }
+
+    .cf-editor-link {
+        @apply cursor-pointer text-xs font-semibold;
+        color: var(--cf-editor-accent);
+
+        &:hover {
+            @apply underline;
+        }
+    }
+
+    /* Text edited in the preview: the fields stay for validation and saving. */
+    .cf-editor-edited-in-preview {
+        @apply hidden;
+    }
+
+    .cf-editor-items {
+        @apply flex flex-col;
+    }
+
+    .cf-editor-item > .fi-sc {
+        @apply gap-5;
     }
 }

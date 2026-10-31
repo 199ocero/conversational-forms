@@ -36,6 +36,8 @@ class QuestionType
 
     protected string $group = 'other';
 
+    protected ?string $previewView = null;
+
     /**
      * @param  class-string<Field&ConversationQuestion>  $questionClass
      */
@@ -113,6 +115,23 @@ class QuestionType
         return $this;
     }
 
+    /**
+     * A Blade view drawing the question in the builder's live preview. It is
+     * rendered once and drawn by Alpine.js, so it reads the question from the
+     * `question` variable (`question.data.label`, `question.data.settings`)
+     * rather than from PHP, and must have a single root element. Without
+     * one, the preview shows the question's text and suggests a test run.
+     *
+     *     QuestionType::make('payment', Payment::class)
+     *         ->previewView('payments::builder.preview')
+     */
+    public function previewView(?string $view): static
+    {
+        $this->previewView = $view;
+
+        return $this;
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -146,6 +165,11 @@ class QuestionType
     public function getGroup(): string
     {
         return $this->group;
+    }
+
+    public function getPreviewView(): ?string
+    {
+        return $this->previewView;
     }
 
     /**

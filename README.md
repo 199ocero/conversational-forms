@@ -779,16 +779,16 @@ php artisan conversational-forms:install   # publishes the config and migration,
 php artisan storage:link                   # images uploaded in the builder are stored on the public disk
 ```
 
-The panel gets a **Conversations** page. Creating one asks for a title and an address, then opens the builder:
+The panel gets a **Conversations** page. Creating one asks for a title and an address, then opens the builder: an outline of the conversation on the left and a live preview of the selected step beside it.
 
-- **Questions**: add any question type from the picker, or a question group or a statement, and drag them into order. Each question has its settings (options, ranges, formats), an optional image, a quiz section (points for a correct answer), **Show only when** conditions and **Logic**. A key is made from the question's text; it's what logic and `{key}` piping refer to.
-- **Logic** is written as rows: *when* [question] [comparison] [value], *then* jump to a later step, end, or end with a chosen ending, and optionally add to a variable. The comparisons offered fit the question (a date offers *is before*, a multiple choice offers its own options), and the steps offered are only the ones after the current step.
-- **Welcome and endings**: an optional welcome screen, and the end screens and redirects that logic can choose.
-- **Settings**: the title and address, the progress bar, auto-advance, variables and hidden fields.
+- **Outline**: the welcome screen, the steps (with a group's questions under it), the endings, **Design** and **Settings**. Add a question type, a question group or a statement after the selected step, duplicate or delete a step, and drag steps into order (or select one and press <kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd>). Steps that still need a key or a question are marked, and so are steps with conditions or logic.
+- **Preview**: the selected step, drawn with the conversation's own styles and theme. Click any text in it (the question, its description, a choice, a button, the welcome and end screens) to edit it in place, and add or remove choices right there. Piped answers show as `{key}` chips, and the preview can be switched to a phone-sized frame.
+- **Toolbar** above the preview: the selected step's type, with **Logic** and **Settings** buttons. Settings opens a panel with the rest of the step's options (required, ranges, formats, limits, an image, the key, and quiz points for a correct answer); clicking anywhere else closes it. Design and Settings in the outline open the same panel. A new step's key follows its text until it's saved; it's what logic and `{key}` piping refer to.
+- **Logic**, switched to at the top of the outline, lists every step with its rules as sentences: *when* [question] [comparison] [value], *then* jump to a later step, end, or end with a chosen ending, and optionally add to a variable; steps can also be asked only when earlier answers match. The comparisons offered fit the question (a date offers *is before*, a multiple choice offers its own options), and the steps offered are only the ones after the current step.
 
-Saving checks the draft the same way code is checked: duplicate keys, conditions on questions that don't exist and backward jumps are explained in a notification instead of being saved.
+The draft saves itself a few seconds after your last change (`builder.autosave_seconds` in the config, `null` to turn it off), and **Save** or <kbd>⌘</kbd> / <kbd>Ctrl</kbd> + <kbd>S</kbd> saves at once; the header says whether everything is saved, and leaving with unsaved changes asks first. When the draft can't be saved yet, saving by itself only marks what needs attention, without moving you away from what you're doing. Only adding, copying, deleting and reordering steps, uploads, and the logic pickers (whose choices come from other steps) talk to the server while you edit. Saving checks the draft the same way code is checked: missing values select the step that needs them, and duplicate keys, conditions on questions that don't exist and backward jumps are explained in a notification instead of being saved.
 
-**Preview** saves the draft and shows it in its public page, in a panel beside the builder. **Publish** copies the draft into a new, numbered version: the public page always shows the latest published version, so you can keep editing without changing the live conversation, and answers can always be read against the exact questions they were given to. A published conversation can be **closed** (its page says so) and reopened.
+**Test run** saves the draft and opens its public page beside the editor, with logic, so you can answer it. **Publish** copies the draft into a new, numbered version: the public page always shows the latest published version, so you can keep editing without changing the live conversation, and answers can always be read against the exact questions they were given to. A published conversation can be **closed** (its page says so) and reopened.
 
 The **Logic map** shows every step in order, with the jumps and endings chosen by logic as arcs beside them, and warns about steps that an earlier rule always skips and endings that are never used.
 
@@ -940,6 +940,19 @@ class LicensePlate extends Question
 }
 ```
 
+To show it in the editor's live preview, add a Blade view with `previewView()`. It's rendered once and drawn by Alpine.js, so it reads the question from the `question` variable (`question.data.label`, `question.data.settings.country`) and must have a single root element; without one, the preview shows the question's text and suggests a test run:
+
+```php
+QuestionType::make('license_plate', LicensePlate::class)
+    // ...
+    ->previewView('license-plates::preview');
+```
+
+```blade
+{{-- resources/views/preview.blade.php --}}
+<input class="cf-input" x-bind:placeholder="question.data?.settings?.country ?? 'AB 123 CD'" />
+```
+
 ## Using other Filament fields
 
 Any Filament field can be a question: built-in fields like `Select` and `DatePicker`, and third-party fields. They keep their own look inside the conversation, and Enter moves on (except while a dropdown or popup is open).
@@ -1019,7 +1032,7 @@ Conversation::make([...])->theme(
 );
 ```
 
-Builder-made conversations have a **Design** tab with the same options and a live preview. It warns when colours fall short of WCAG AA contrast (4.5:1 for text, 3:1 for buttons), and every bundled theme passes. A theme goes live with the next published version.
+In the builder, **Design** has the same options and the preview follows them as they change. It warns when colours fall short of WCAG AA contrast (4.5:1 for text, 3:1 for buttons), and every bundled theme passes. A theme goes live with the next published version.
 
 Fonts are loaded from [Bunny Fonts](https://fonts.bunny.net), a privacy-friendly host of the Google Fonts families. Set `conversational-forms.fonts.url` to `null` to never load fonts from another site; themes then use the system font.
 

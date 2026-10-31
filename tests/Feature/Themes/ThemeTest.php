@@ -109,6 +109,7 @@ describe('themed conversations', function () {
             ->assertDontSeeHtml('fonts.bunny.net');
     });
 
+
     it('shows the published theme on the public page, in its own light or dark mode', function () {
         $form = ConversationalForm::factory()->create(['theme' => Theme::preset('midnight')->toArray()]);
         $form->publish();
@@ -168,5 +169,40 @@ describe('the Design tab', function () {
             ->and(ThemeSchema::fromState([...Theme::preset('lavender')->toArray(), 'preset' => 'lavender']))->toMatchArray(['preset' => 'lavender', 'radius' => 'full'])
             // Half-typed colours don't break the preview.
             ->and(ThemeSchema::fromState(['preset' => 'paper', 'accent' => '#12', 'background' => '#fff', 'text' => '#000']))->toBeNull();
+    });
+});
+
+describe('themes in the editor', function () {
+    it('draws the same themes as the editor in the browser', function (array $state, ?array $expected) {
+        $stored = ThemeSchema::fromState($state);
+        $theme = ($stored === null) ? null : Theme::fromArray([...$stored, 'preset' => null]);
+
+        if ($expected === null) {
+            expect($theme)->toBeNull();
+
+            return;
+        }
+
+        expect($theme->toCssVariables())->toBe($expected['variables'])
+            ->and($theme->isDark())->toBe($expected['is_dark'])
+            ->and($theme->contrastIssues())->toBe(array_map(
+                fn (array $issue): string => __("conversational-forms::conversational-forms.themes.contrast.{$issue['check']}", ['ratio' => number_format($issue['ratio'], 1), 'minimum' => $issue['minimum']]),
+                $expected['issues'],
+            ));
+    })->with(fn (): array => collect(json_decode((string) file_get_contents(__DIR__ . '/../../Fixtures/themes/cases.json'), associative: true))
+        ->mapWithKeys(fn (array $case): array => [$case['note'] => [$case['state'], $case['expected']]])
+        ->all());
+
+    it('gives the browser what it needs to draw themes', function () {
+        expect(ThemeSchema::browserOptions())->toBe([
+            'presets' => Theme::PRESETS,
+            'fonts' => Fonts::FAMILIES,
+            'radii' => Theme::RADII,
+            'fontsUrl' => 'https://fonts.bunny.net/css',
+        ]);
+
+        config(['conversational-forms.fonts.url' => null]);
+
+        expect(ThemeSchema::browserOptions()['fontsUrl'])->toBeNull();
     });
 });

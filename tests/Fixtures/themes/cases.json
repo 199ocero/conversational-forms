@@ -1,0 +1,457 @@
+[
+    {
+        "note": "follows the panel",
+        "state": {
+            "preset": "panel",
+            "accent": "#000000"
+        },
+        "expected": null
+    },
+    {
+        "note": "no preset",
+        "state": {
+            "preset": null
+        },
+        "expected": null
+    },
+    {
+        "note": "custom colours",
+        "state": {
+            "preset": "custom",
+            "accent": "#e11d48",
+            "background": "#ffffff",
+            "text": "#111827",
+            "radius": "large"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#e11d48",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#ffffff",
+                "--cf-fg": "#111827",
+                "--cf-muted": "color-mix(in oklab, #111827 65%, #ffffff)",
+                "--cf-surface": "color-mix(in oklab, #ffffff 94%, #111827)",
+                "--cf-answer-color": "#111827",
+                "--cf-radius": "1rem"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "short and upper-case hex",
+        "state": {
+            "preset": "custom",
+            "accent": "#F0A",
+            "background": "#FFF",
+            "text": "#333"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#ff00aa",
+                "--cf-accent-contrast": "#0a0a0a",
+                "--cf-bg": "#ffffff",
+                "--cf-fg": "#333333",
+                "--cf-muted": "color-mix(in oklab, #333333 65%, #ffffff)",
+                "--cf-surface": "color-mix(in oklab, #ffffff 94%, #333333)",
+                "--cf-answer-color": "#333333",
+                "--cf-radius": "0.5rem"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "half-typed colour",
+        "state": {
+            "preset": "paper",
+            "accent": "#12",
+            "background": "#fff",
+            "text": "#000"
+        },
+        "expected": null
+    },
+    {
+        "note": "unknown font",
+        "state": {
+            "preset": "paper",
+            "accent": "#2563eb",
+            "background": "#fbfaf7",
+            "text": "#1f2937",
+            "font": "Comic Sans"
+        },
+        "expected": null
+    },
+    {
+        "note": "unknown radius",
+        "state": {
+            "preset": "paper",
+            "accent": "#2563eb",
+            "background": "#fbfaf7",
+            "text": "#1f2937",
+            "radius": "huge"
+        },
+        "expected": null
+    },
+    {
+        "note": "bad answer colour",
+        "state": {
+            "preset": "paper",
+            "accent": "#2563eb",
+            "background": "#fbfaf7",
+            "text": "#1f2937",
+            "answer": "blue"
+        },
+        "expected": null
+    },
+    {
+        "note": "poor contrast everywhere",
+        "state": {
+            "preset": "custom",
+            "accent": "#fafafa",
+            "background": "#ffffff",
+            "text": "#dddddd",
+            "answer": "#eeeeee"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#fafafa",
+                "--cf-accent-contrast": "#0a0a0a",
+                "--cf-bg": "#ffffff",
+                "--cf-fg": "#dddddd",
+                "--cf-muted": "color-mix(in oklab, #dddddd 65%, #ffffff)",
+                "--cf-surface": "color-mix(in oklab, #ffffff 94%, #dddddd)",
+                "--cf-answer-color": "#eeeeee",
+                "--cf-radius": "0.5rem"
+            },
+            "is_dark": false,
+            "issues": [
+                {
+                    "check": "text",
+                    "ratio": 1.36,
+                    "minimum": 4.5
+                },
+                {
+                    "check": "answer",
+                    "ratio": 1.16,
+                    "minimum": 4.5
+                },
+                {
+                    "check": "accent",
+                    "ratio": 1.04,
+                    "minimum": 3.0
+                }
+            ]
+        }
+    },
+    {
+        "note": "dark background",
+        "state": {
+            "preset": "custom",
+            "accent": "#38bdf8",
+            "background": "#0f172a",
+            "text": "#f1f5f9",
+            "font": "Space Grotesk"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#38bdf8",
+                "--cf-accent-contrast": "#0a0a0a",
+                "--cf-bg": "#0f172a",
+                "--cf-fg": "#f1f5f9",
+                "--cf-muted": "color-mix(in oklab, #f1f5f9 65%, #0f172a)",
+                "--cf-surface": "color-mix(in oklab, #0f172a 94%, #f1f5f9)",
+                "--cf-answer-color": "#f1f5f9",
+                "--cf-font-family": "'Space Grotesk', ui-sans-serif, system-ui, sans-serif",
+                "--cf-radius": "0.5rem"
+            },
+            "is_dark": true,
+            "issues": []
+        }
+    },
+    {
+        "note": "serif font",
+        "state": {
+            "preset": "custom",
+            "accent": "#2f6f3e",
+            "background": "#f1f5ef",
+            "text": "#1c2b1f",
+            "font": "Source Serif 4",
+            "radius": "none"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#2f6f3e",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#f1f5ef",
+                "--cf-fg": "#1c2b1f",
+                "--cf-muted": "color-mix(in oklab, #1c2b1f 65%, #f1f5ef)",
+                "--cf-surface": "color-mix(in oklab, #f1f5ef 94%, #1c2b1f)",
+                "--cf-answer-color": "#1c2b1f",
+                "--cf-font-family": "'Source Serif 4', ui-serif, Georgia, serif",
+                "--cf-radius": "0px"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "background image with overlay",
+        "state": {
+            "preset": "custom",
+            "accent": "#c2410c",
+            "background": "#fff7f1",
+            "text": "#3b1f1a",
+            "background_image": "https://example.com/beach.jpg",
+            "overlay": 45
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#c2410c",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#fff7f1",
+                "--cf-fg": "#3b1f1a",
+                "--cf-muted": "color-mix(in oklab, #3b1f1a 65%, #fff7f1)",
+                "--cf-surface": "color-mix(in oklab, #fff7f1 94%, #3b1f1a)",
+                "--cf-answer-color": "#3b1f1a",
+                "--cf-radius": "0.5rem",
+                "--cf-bg-image": "url(\"https://example.com/beach.jpg\")",
+                "--cf-bg-overlay": "rgb(255 247 241 / 0.45)"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "uploaded image as a list",
+        "state": {
+            "preset": "custom",
+            "accent": "#c2410c",
+            "background": "#fff7f1",
+            "text": "#3b1f1a",
+            "background_image": {
+                "abc": "https://example.com/upload.png"
+            },
+            "overlay": "200"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#c2410c",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#fff7f1",
+                "--cf-fg": "#3b1f1a",
+                "--cf-muted": "color-mix(in oklab, #3b1f1a 65%, #fff7f1)",
+                "--cf-surface": "color-mix(in oklab, #fff7f1 94%, #3b1f1a)",
+                "--cf-answer-color": "#3b1f1a",
+                "--cf-radius": "0.5rem",
+                "--cf-bg-image": "url(\"https://example.com/upload.png\")",
+                "--cf-bg-overlay": "rgb(255 247 241 / 0.9)"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "mid grey accent",
+        "state": {
+            "preset": "custom",
+            "accent": "#777777",
+            "background": "#ffffff",
+            "text": "#000000"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#777777",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#ffffff",
+                "--cf-fg": "#000000",
+                "--cf-muted": "color-mix(in oklab, #000000 65%, #ffffff)",
+                "--cf-surface": "color-mix(in oklab, #ffffff 94%, #000000)",
+                "--cf-answer-color": "#000000",
+                "--cf-radius": "0.5rem"
+            },
+            "is_dark": false,
+            "issues": [
+                {
+                    "check": "button",
+                    "ratio": 4.48,
+                    "minimum": 4.5
+                }
+            ]
+        }
+    },
+    {
+        "note": "preset paper",
+        "state": {
+            "preset": "paper",
+            "accent": "#2563eb",
+            "background": "#fbfaf7",
+            "text": "#1f2937",
+            "answer": null,
+            "font": "Inter",
+            "background_image": null,
+            "overlay": 0,
+            "radius": "medium"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#2563eb",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#fbfaf7",
+                "--cf-fg": "#1f2937",
+                "--cf-muted": "color-mix(in oklab, #1f2937 65%, #fbfaf7)",
+                "--cf-surface": "color-mix(in oklab, #fbfaf7 94%, #1f2937)",
+                "--cf-answer-color": "#1f2937",
+                "--cf-font-family": "'Inter', ui-sans-serif, system-ui, sans-serif",
+                "--cf-radius": "0.5rem"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "preset midnight",
+        "state": {
+            "preset": "midnight",
+            "accent": "#38bdf8",
+            "background": "#0f172a",
+            "text": "#f1f5f9",
+            "answer": null,
+            "font": "Inter",
+            "background_image": null,
+            "overlay": 0,
+            "radius": "medium"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#38bdf8",
+                "--cf-accent-contrast": "#0a0a0a",
+                "--cf-bg": "#0f172a",
+                "--cf-fg": "#f1f5f9",
+                "--cf-muted": "color-mix(in oklab, #f1f5f9 65%, #0f172a)",
+                "--cf-surface": "color-mix(in oklab, #0f172a 94%, #f1f5f9)",
+                "--cf-answer-color": "#f1f5f9",
+                "--cf-font-family": "'Inter', ui-sans-serif, system-ui, sans-serif",
+                "--cf-radius": "0.5rem"
+            },
+            "is_dark": true,
+            "issues": []
+        }
+    },
+    {
+        "note": "preset forest",
+        "state": {
+            "preset": "forest",
+            "accent": "#2f6f3e",
+            "background": "#f1f5ef",
+            "text": "#1c2b1f",
+            "answer": null,
+            "font": "Lora",
+            "background_image": null,
+            "overlay": 0,
+            "radius": "small"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#2f6f3e",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#f1f5ef",
+                "--cf-fg": "#1c2b1f",
+                "--cf-muted": "color-mix(in oklab, #1c2b1f 65%, #f1f5ef)",
+                "--cf-surface": "color-mix(in oklab, #f1f5ef 94%, #1c2b1f)",
+                "--cf-answer-color": "#1c2b1f",
+                "--cf-font-family": "'Lora', ui-serif, Georgia, serif",
+                "--cf-radius": "0.25rem"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "preset sunset",
+        "state": {
+            "preset": "sunset",
+            "accent": "#c2410c",
+            "background": "#fff7f1",
+            "text": "#3b1f1a",
+            "answer": "#9a3412",
+            "font": "DM Sans",
+            "background_image": null,
+            "overlay": 0,
+            "radius": "large"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#c2410c",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#fff7f1",
+                "--cf-fg": "#3b1f1a",
+                "--cf-muted": "color-mix(in oklab, #3b1f1a 65%, #fff7f1)",
+                "--cf-surface": "color-mix(in oklab, #fff7f1 94%, #3b1f1a)",
+                "--cf-answer-color": "#9a3412",
+                "--cf-font-family": "'DM Sans', ui-sans-serif, system-ui, sans-serif",
+                "--cf-radius": "1rem"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "preset mono",
+        "state": {
+            "preset": "mono",
+            "accent": "#0a0a0a",
+            "background": "#ffffff",
+            "text": "#0a0a0a",
+            "answer": null,
+            "font": "IBM Plex Sans",
+            "background_image": null,
+            "overlay": 0,
+            "radius": "none"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#0a0a0a",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#ffffff",
+                "--cf-fg": "#0a0a0a",
+                "--cf-muted": "color-mix(in oklab, #0a0a0a 65%, #ffffff)",
+                "--cf-surface": "color-mix(in oklab, #ffffff 94%, #0a0a0a)",
+                "--cf-answer-color": "#0a0a0a",
+                "--cf-font-family": "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif",
+                "--cf-radius": "0px"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    },
+    {
+        "note": "preset lavender",
+        "state": {
+            "preset": "lavender",
+            "accent": "#6d28d9",
+            "background": "#f5f3ff",
+            "text": "#2e1065",
+            "answer": null,
+            "font": "Nunito",
+            "background_image": null,
+            "overlay": 0,
+            "radius": "full"
+        },
+        "expected": {
+            "variables": {
+                "--cf-accent": "#6d28d9",
+                "--cf-accent-contrast": "#ffffff",
+                "--cf-bg": "#f5f3ff",
+                "--cf-fg": "#2e1065",
+                "--cf-muted": "color-mix(in oklab, #2e1065 65%, #f5f3ff)",
+                "--cf-surface": "color-mix(in oklab, #f5f3ff 94%, #2e1065)",
+                "--cf-answer-color": "#2e1065",
+                "--cf-font-family": "'Nunito', ui-sans-serif, system-ui, sans-serif",
+                "--cf-radius": "1.75rem"
+            },
+            "is_dark": false,
+            "issues": []
+        }
+    }
+]

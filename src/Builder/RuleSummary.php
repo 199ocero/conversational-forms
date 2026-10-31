@@ -13,8 +13,9 @@ final class RuleSummary
     /**
      * @param  array<string, mixed>  $state  A rule row from `DefinitionState`.
      * @param  array<string, string>  $steps  Step labels keyed by step key.
+     * @param  array<string, string>  $questions  Question labels keyed by question key, for conditions.
      */
-    public static function describe(array $state, array $steps = []): string
+    public static function describe(array $state, array $steps = [], array $questions = []): string
     {
         if (filled($state['raw'] ?? null)) {
             return self::text('summary_code');
@@ -22,7 +23,7 @@ final class RuleSummary
 
         $match = $state['match'] ?? 'all';
 
-        $conditions = array_values(array_filter(array_map(function (mixed $condition): ?string {
+        $conditions = array_values(array_filter(array_map(function (mixed $condition) use ($questions): ?string {
             $operator = Operator::tryFrom((string) ($condition['operator'] ?? ''));
 
             if (blank($condition['field'] ?? null) || ($operator === null)) {
@@ -35,7 +36,9 @@ final class RuleSummary
                 default => ' ' . ($condition['value'] ?? '…'),
             };
 
-            return "{$condition['field']} {$operator->getLabel()}{$value}";
+            $field = $questions[$condition['field']] ?? $condition['field'];
+
+            return "{$field} {$operator->getLabel()}{$value}";
         }, (array) ($state['conditions'] ?? []))));
 
         $when = (($match === 'always') || ($conditions === []))
@@ -49,9 +52,16 @@ final class RuleSummary
             default => null,
         };
 
+        // Calculations without a variable are dropped when the draft is saved, so they aren't described.
         $calculations = array_map(
-            fn (mixed $calculation): string => ($calculation['operation'] ?? 'add') . ' ' . ($calculation['value'] ?? '') . ' → @' . ltrim((string) ($calculation['variable'] ?? ''), '@'),
-            array_values((array) ($state['calculations'] ?? [])),
+            fn (array $calculation): string => __('conversational-forms::conversational-forms.builder.form.summary_calculation_' . ($calculation['operation'] ?? 'add'), [
+                'variable' => '@' . ltrim((string) $calculation['variable'], '@'),
+                'value' => filled($calculation['value'] ?? null) ? (string) $calculation['value'] : '…',
+            ]),
+            array_values(array_filter(
+                (array) ($state['calculations'] ?? []),
+                fn (mixed $calculation): bool => is_array($calculation) && filled($calculation['variable'] ?? null),
+            )),
         );
 
         return $when . ' → ' . (implode(', ', array_filter([...$calculations, $then])) ?: '…');

@@ -1,0 +1,122 @@
+[
+    {
+        "label": "What's your name?",
+        "key": "whats_your_name"
+    },
+    {
+        "label": "Email",
+        "key": "email"
+    },
+    {
+        "label": "name",
+        "key": "name"
+    },
+    {
+        "label": "Your e-mail address",
+        "key": "your_email_address"
+    },
+    {
+        "label": "Hi {name}, which plan?",
+        "key": "hi_which_plan"
+    },
+    {
+        "label": "<b>Bold</b> question",
+        "key": "bold_question"
+    },
+    {
+        "label": "FirstName",
+        "key": "first_name"
+    },
+    {
+        "label": "NPS score",
+        "key": "n_p_s_score"
+    },
+    {
+        "label": "How likely are you to recommend us to a friend or a colleague at work?",
+        "key": "how_likely_are_you_to_recommend_us_to_a"
+    },
+    {
+        "label": "123 go",
+        "key": "question_123_go"
+    },
+    {
+        "label": "   ",
+        "key": "question"
+    },
+    {
+        "label": "",
+        "key": "question"
+    },
+    {
+        "label": "Café au lait",
+        "key": "cafe_au_lait"
+    },
+    {
+        "label": "Straße",
+        "key": "strasse"
+    },
+    {
+        "label": "Ærø ø",
+        "key": "a_ero_o"
+    },
+    {
+        "label": "🎉 Party time",
+        "key": "party_time"
+    },
+    {
+        "label": "a < b",
+        "key": "a_b"
+    },
+    {
+        "label": "what_is_this",
+        "key": "what_is_this"
+    },
+    {
+        "label": "Multiple   spaces here",
+        "key": "multiple_spaces_here"
+    },
+    {
+        "label": "Ends with underscore_",
+        "key": "ends_with_underscore"
+    },
+    {
+        "label": "___",
+        "key": "question"
+    },
+    {
+        "label": "Über Größe",
+        "key": "uber_grosse"
+    },
+    {
+        "label": "tab\\tseparated",
+        "key": "tabtseparated"
+    },
+    {
+        "label": "ALLCAPS",
+        "key": "a_l_l_c_a_p_s"
+    },
+    {
+        "label": "mIxEd CaSe",
+        "key": "m_ix_ed_ca_se"
+    },
+    {
+        "label": "{name}",
+        "key": "question"
+    },
+    {
+        "label": "Rate us (1–10)",
+        "key": "rate_us110"
+    },
+    {
+        "label": "¿Qué tal?",
+        "key": "que_tal"
+    },
+    {
+        "label": "Zoë & Chloé",
+        "key": "zoe_chloe"
+    },
+    {
+        "label": "x",
+        "key": "x"
+    }
+]

@@ -1,5 +1,6 @@
 <?php
 
+use JaOcero\ConversationalForms\Builder\BuilderSchema;
 use JaOcero\ConversationalForms\Builder\DefinitionState;
 use JaOcero\ConversationalForms\Builder\LogicMap;
 use JaOcero\ConversationalForms\Builder\RuleSummary;
@@ -100,14 +101,66 @@ describe('DefinitionState', function () {
         ['Ça va, Zoë?', 'ca_va_zoe'],
     ]);
 
+    it('makes the same keys as the editor in the browser', function (string $label, string $key) {
+        expect(DefinitionState::keyFromLabel($label))->toBe($key);
+    })->with(fn (): array => array_map(
+        fn (array $case): array => [$case['label'], $case['key']],
+        json_decode((string) file_get_contents(__DIR__ . '/../../Fixtures/builder/keys.json'), associative: true),
+    ));
+
+    it('lists the keys of every step, including questions in groups', function () {
+        expect(DefinitionState::stepKeys([
+            'a' => ['type' => 'short_text', 'data' => ['key' => 'name']],
+            'b' => ['type' => 'group', 'data' => ['key' => 'contact', 'questions' => [
+                'c' => ['type' => 'email', 'data' => ['key' => 'email']],
+                'd' => ['type' => 'phone', 'data' => ['key' => '']],
+            ]]],
+            'e' => ['type' => 'statement', 'data' => ['key' => null]],
+        ]))->toBe(['name', 'contact', 'email']);
+    });
+
+    it('copies a step with keys that are free', function () {
+        $copy = DefinitionState::copyItem(
+            ['type' => 'group', 'data' => ['key' => 'contact_2', 'label' => 'Contact', 'questions' => [
+                'a' => ['type' => 'email', 'data' => ['key' => 'email', 'label' => 'Email']],
+                'b' => ['type' => 'phone', 'data' => ['key' => null]],
+            ]]],
+            ['contact', 'contact_2', 'email', 'email_2'],
+        );
+
+        expect($copy['data']['key'])->toBe('contact_3')
+            ->and($copy['data']['label'])->toBe('Contact')
+            ->and(array_column(array_column(array_values($copy['data']['questions']), 'data'), 'key'))->toBe(['email_3', null])
+            // The copied questions get new item keys, as Filament's repeaters expect.
+            ->and(array_keys($copy['data']['questions']))->not->toContain('a');
+    });
+
+    it('turns state paths into the editor\'s paths', function () {
+        expect(BuilderSchema::editorPath('data.steps'))->toBe('steps')
+            ->and(BuilderSchema::editorPath('data.steps.abc.data.questions'))->toBe('steps.abc.questions')
+            ->and(BuilderSchema::editorPath('data.endings'))->toBe('endings')
+            ->and(BuilderSchema::editorPath('form.steps', root: 'form'))->toBe('steps');
+    });
+
     it('describes rules in a sentence', function () {
         expect(RuleSummary::describe([
             'match' => 'all',
             'conditions' => [['field' => 'plan', 'operator' => 'is', 'value' => 'pro'], ['field' => 'seats', 'operator' => 'between', 'values' => [5, 9]]],
             'action' => 'jump_to', 'target' => 'company',
             'calculations' => [['operation' => 'add', 'variable' => 'score', 'value' => 2]],
-        ], ['company' => 'company']))->toBe('When plan is pro and seats is between 5, 9 → add 2 → @score, jump to company')
-            ->and(RuleSummary::describe(['match' => 'always', 'action' => 'end']))->toBe('Always → end');
+        ], ['company' => 'company']))->toBe('When plan is pro and seats is between 5, 9 → add 2 to @score, jump to company')
+            ->and(RuleSummary::describe(['match' => 'always', 'action' => 'end']))->toBe('Always → end')
+            ->and(RuleSummary::describe(['match' => 'always', 'action' => 'none', 'calculations' => [['operation' => 'set', 'variable' => '@score', 'value' => 0]]]))->toBe('Always → set @score to 0');
+    });
+
+    it('leaves out calculations without a variable, as saving does', function () {
+        expect(RuleSummary::describe([
+            'match' => 'all',
+            'conditions' => [['field' => 'plan', 'operator' => 'is', 'value' => 'starter']],
+            'action' => 'jump_to', 'target' => 'recommend',
+            'calculations' => [['operation' => 'add', 'variable' => null, 'value' => null]],
+        ], ['recommend' => '“How likely are you to recommend us?”'], ['plan' => '“Which plan are you on?”']))
+            ->toBe('When “Which plan are you on?” is starter → jump to “How likely are you to recommend us?”');
     });
 });
 

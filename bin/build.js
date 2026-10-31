@@ -93,6 +93,7 @@ const alpineComponents = [
     'signature-question',
     'logic-map',
     'media-question',
+    'builder-editor',
 ]
 
 await Promise.all([

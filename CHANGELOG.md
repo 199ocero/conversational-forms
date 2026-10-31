@@ -2,6 +2,15 @@
 
 All notable changes to `conversational-forms` will be documented in this file.
 
+## Unreleased
+
+- The builder is now a full-screen editor: an outline of the conversation (add, duplicate, delete and drag steps, including questions in groups), a live preview drawn in the browser as you type, and the selected item's settings. Edits stay in the browser until saved (with ⌘ / Ctrl + S and a warning before leaving with unsaved changes); a failed save selects the step that needs attention. The Design and Settings tabs are part of the editor, and the theme preview is the live preview itself, with contrast warnings.
+- Text is edited in place in the preview (questions, descriptions, choices, buttons, welcome and end screens), and choices are added and removed there too. A toolbar above the preview holds Required, Image, Logic and Settings; the rest of a step's options open in a panel on demand. Logic has its own view, listing every step's conditions and rules as sentences.
+- The draft saves itself a few seconds after the last change (`builder.autosave_seconds`, `null` to turn it off). Problems found while saving by itself are only marked in the editor.
+- Preview is now **Test run**: the draft's public page, with logic.
+- A new step's key follows its text until it's saved, and a duplicated step gets keys that aren't taken (`email_2`).
+- `QuestionType::previewView()` draws other packages' question types in the live preview.
+
 ## Unreleased (v0.8.0)
 
 - Questions: `AudioAnswer` and `VideoAnswer`, recorded in the browser with MediaRecorder (a timer, a player to listen back, record again) and uploaded like `FileUpload`, with a duration limit, server-checked size and type limits, and a file upload when recording isn't possible (permission denied, no device, a busy device, an unsupported browser).

@@ -115,6 +115,73 @@ final class DefinitionState
     }
 
     /**
+     * Every key used by the builder's steps, including questions in groups.
+     *
+     * @param  array<array-key, mixed>  $steps
+     * @return list<string>
+     */
+    public static function stepKeys(array $steps): array
+    {
+        $keys = [];
+
+        foreach ($steps as $item) {
+            $keys[] = $item['data']['key'] ?? null;
+
+            foreach ($item['data']['questions'] ?? [] as $question) {
+                $keys[] = $question['data']['key'] ?? null;
+            }
+        }
+
+        return array_values(array_unique(array_filter($keys, filled(...))));
+    }
+
+    /**
+     * A copy of a builder item (a step, or a question in a group) whose keys
+     * don't clash with `$takenKeys`: `email` becomes `email_2`, then `email_3`.
+     *
+     * @param  array{type?: string, data?: array<string, mixed>}  $item
+     * @param  list<string>  $takenKeys
+     * @return array{type?: string, data?: array<string, mixed>}
+     */
+    public static function copyItem(array $item, array $takenKeys): array
+    {
+        $copyKey = function (?string $key) use (&$takenKeys): ?string {
+            if (blank($key)) {
+                return $key;
+            }
+
+            $base = preg_replace('/_\d+$/', '', $key) ?: $key;
+            $number = 2;
+
+            while (in_array("{$base}_{$number}", $takenKeys, strict: true)) {
+                $number++;
+            }
+
+            return $takenKeys[] = "{$base}_{$number}";
+        };
+
+        if (array_key_exists('key', $item['data'] ?? [])) {
+            $item['data']['key'] = $copyKey($item['data']['key']);
+        }
+
+        if (is_array($item['data']['questions'] ?? null)) {
+            $questions = [];
+
+            foreach ($item['data']['questions'] as $question) {
+                if (array_key_exists('key', $question['data'] ?? [])) {
+                    $question['data']['key'] = $copyKey($question['data']['key']);
+                }
+
+                $questions[(string) Str::uuid()] = $question;
+            }
+
+            $item['data']['questions'] = $questions;
+        }
+
+        return $item;
+    }
+
+    /**
      * The answer type of every question in the builder, keyed by question key.
      *
      * @param  array<array-key, mixed>  $steps

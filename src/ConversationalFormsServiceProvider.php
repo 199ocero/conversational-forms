@@ -116,6 +116,7 @@ class ConversationalFormsServiceProvider extends PackageServiceProvider
             AlpineComponent::make('signature-question', __DIR__ . '/../resources/dist/components/signature-question.js'),
             AlpineComponent::make('logic-map', __DIR__ . '/../resources/dist/components/logic-map.js'),
             AlpineComponent::make('media-question', __DIR__ . '/../resources/dist/components/media-question.js'),
+            AlpineComponent::make('builder-editor', __DIR__ . '/../resources/dist/components/builder-editor.js'),
             Css::make('conversational-forms', __DIR__ . '/../resources/dist/conversational-forms.css')->loadedOnRequest(),
         ];
     }

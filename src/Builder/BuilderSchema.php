@@ -2,6 +2,7 @@
 
 namespace JaOcero\ConversationalForms\Builder;
 
+use Filament\Actions\Action;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\FileUpload;
@@ -16,9 +17,12 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Js;
 use Illuminate\Support\Str;
 use JaOcero\ConversationalForms\Definitions\ConversationDefinition;
 use JaOcero\ConversationalForms\Definitions\QuestionType;
@@ -41,71 +45,129 @@ final readonly class BuilderSchema
 
     public function __construct(private string $statePath = 'data') {}
 
+    /**
+     * The editor's path for a state path: `data.steps.{uuid}.data.questions`
+     * becomes `steps.{uuid}.questions`. The editor selects items by path.
+     */
+    public static function editorPath(string $statePath, string $root = 'data'): string
+    {
+        $segments = explode('.', $statePath);
+
+        if ($segments[0] === $root) {
+            array_shift($segments);
+        }
+
+        return implode('.', array_filter($segments, fn (string $segment): bool => $segment !== 'data'));
+    }
+
+    /**
+     * Attributes that show a part of the editor's settings only while the
+     * given item (or, with `$isWithin`, anything inside it) is selected. In
+     * the logic view, every step is shown at once instead.
+     *
+     * @return array<string, string>
+     */
+    public static function shownWhenSelected(string $path, bool $isWithin = false): array
+    {
+        $method = $isWithin ? 'showsWithin' : 'shows';
+
+        return [
+            'x-show' => '$store.cfEditor?.' . $method . '(' . Js::from($path) . ')',
+            'x-cloak' => '',
+        ];
+    }
+
+    /**
+     * Grid columns that follow the width of the editor's settings column
+     * (a container), not the window: one, then two, and `$columns` only
+     * where there's room.
+     *
+     * @return array<string, int>
+     */
+    public static function columns(int $columns): array
+    {
+        return match (true) {
+            $columns <= 1 => ['default' => 1],
+            $columns === 2 => ['default' => 1, '@xs' => 2],
+            default => ['default' => 1, '@xs' => 2, '@lg' => $columns],
+        };
+    }
+
+    /**
+     * Attributes that show part of a step's settings only in one of the
+     * editor's views: `content` (the preview, with settings on demand) or
+     * `logic` (every step's conditions and rules).
+     *
+     * @return array<string, string>
+     */
+    public static function shownInView(string $view): array
+    {
+        return [
+            'x-show' => "(\$store.cfEditor?.view ?? 'content') === " . Js::from($view),
+            'x-cloak' => '',
+        ];
+    }
+
     public function steps(): Builder
     {
-        return Builder::make('steps')
-            ->hiddenLabel()
+        return $this->editorItems(Builder::make('steps'))
             ->blocks([
                 ...array_map(fn (QuestionType $type): Block => $this->questionBlock($type, withLogic: true), $this->types()),
                 $this->groupBlock(),
                 $this->statementBlock(),
-            ])
-            ->blockPickerColumns(3)
-            ->blockPickerWidth('3xl')
-            ->collapsible()
-            ->cloneable()
-            ->addActionLabel($this->text('add_step'))
-            ->addBetweenActionLabel($this->text('insert_step'));
+            ]);
     }
 
-    /**
-     * @return array<Component>
-     */
-    public function welcomeAndEndings(): array
+    public function welcome(): Group
     {
-        return [
-            Section::make($this->text('welcome'))
-                ->description($this->text('welcome_description'))
-                ->statePath('welcome')
-                ->schema([
-                    Toggle::make('enabled')->label($this->text('show_welcome'))->live(),
-                    Grid::make(2)->schema([
-                        TextInput::make('title')->label($this->text('title')),
-                        TextInput::make('button_label')->label($this->text('button_label'))->placeholder(__('conversational-forms::conversational-forms.welcome_screen.start')),
-                        Textarea::make('description')->label($this->text('description'))->rows(2)->columnSpanFull(),
-                    ])->visible(fn (Get $get): bool => (bool) $get('enabled')),
+        return Group::make()
+            ->statePath('welcome')
+            ->extraAttributes(self::shownWhenSelected('welcome'))
+            ->schema([
+                // Shown, and its text edited, in the preview.
+                $this->editedInPreview([
+                    Toggle::make('enabled')->label($this->text('show_welcome')),
+                    TextInput::make('title')->label($this->text('title')),
+                    Textarea::make('description')->label($this->text('description')),
+                    TextInput::make('button_label')->label($this->text('button_label')),
                 ]),
-            Section::make($this->text('endings'))
-                ->description($this->text('endings_description'))
-                ->schema([
-                    Repeater::make('endings')
-                        ->hiddenLabel()
-                        ->schema([
-                            Grid::make(3)->schema([
-                                TextInput::make('key')->label($this->text('key'))->required()->regex(ConversationDefinition::KEY_PATTERN)->distinct(),
-                                Select::make('type')->label($this->text('ending_type'))->options([
-                                    'end_screen' => $this->text('end_screen'),
-                                    'redirect' => $this->text('redirect'),
-                                ])->default('end_screen')->selectablePlaceholder(false)->live(),
-                                TextInput::make('url')->label($this->text('redirect_url'))->helperText($this->text('redirect_url_help'))
-                                    ->required(fn (Get $get): bool => $get('type') === 'redirect')
-                                    ->visible(fn (Get $get): bool => $get('type') === 'redirect'),
-                            ]),
-                            Grid::make(2)->schema([
-                                TextInput::make('title')->label($this->text('title'))->helperText($this->text('piping_help')),
-                                Textarea::make('description')->label($this->text('description'))->rows(1),
-                                TextInput::make('button_label')->label($this->text('end_button_label')),
-                                TextInput::make('button_url')->label($this->text('end_button_url'))->url(),
-                            ])->visible(fn (Get $get): bool => $get('type') !== 'redirect'),
-                        ])
-                        ->itemLabel(fn (array $state): string => ($state['key'] ?? '') . (filled($state['title'] ?? null) ? " · {$state['title']}" : ''))
-                        ->collapsible()
-                        ->reorderable()
-                        ->minItems(1)
-                        ->defaultItems(1)
-                        ->addActionLabel($this->text('add_ending')),
+            ]);
+    }
+
+    public function endings(): Repeater
+    {
+        return Repeater::make('endings')
+            ->hiddenLabel()
+            ->view('conversational-forms::builder.editor.items')
+            // Logic lists the endings: adding or removing one re-renders the steps' rules too.
+            ->partiallyRenderAfterActionsCalled(false)
+            ->schema([
+                Select::make('type')->label($this->text('ending_type'))->options([
+                    'end_screen' => $this->text('end_screen'),
+                    'redirect' => $this->text('redirect'),
+                ])->default('end_screen')->selectablePlaceholder(false),
+                TextInput::make('url')->label($this->text('redirect_url'))->hintIcon(Heroicon::OutlinedQuestionMarkCircle, tooltip: $this->text('redirect_url_help'))
+                    ->required(fn (Get $get): bool => $get('type') === 'redirect')
+                    ->visibleJs(<<<'JS'
+                        $get('type') === 'redirect'
+                        JS),
+                $this->editedInPreview([
+                    TextInput::make('title')->label($this->text('title')),
+                    Textarea::make('description')->label($this->text('description')),
+                    TextInput::make('button_label')->label($this->text('end_button_label')),
                 ]),
-        ];
+                TextInput::make('button_url')->label($this->text('end_button_url'))->url()
+                    ->hintIcon(Heroicon::OutlinedQuestionMarkCircle, tooltip: $this->text('end_button_url_help'))
+                    ->visibleJs(<<<'JS'
+                        $get('type') !== 'redirect'
+                        JS),
+                TextInput::make('key')->label($this->text('key'))->hintIcon(Heroicon::OutlinedQuestionMarkCircle, tooltip: $this->text('ending_key_help'))
+                    // A new ending has a key straight away, so logic can choose it.
+                    ->default(fn ($livewire): string => $this->freeEndingKey($livewire))
+                    ->required()->regex(ConversationDefinition::KEY_PATTERN)->distinct(),
+            ])
+            ->minItems(1)
+            ->defaultItems(1);
     }
 
     /**
@@ -115,21 +177,25 @@ final readonly class BuilderSchema
     {
         return [
             Section::make($this->text('behaviour'))
+                ->contained(false)
                 ->statePath('settings')
-                ->columns(2)
                 ->schema([
                     Toggle::make('progress_bar')->label($this->text('progress_bar'))->default(true),
                     Toggle::make('navigation_buttons')->label($this->text('navigation_buttons'))->default(true),
-                    Toggle::make('auto_advance')->label($this->text('auto_advance'))->helperText($this->text('auto_advance_help'))->default(true)->live(),
+                    Toggle::make('auto_advance')->label($this->text('auto_advance'))->hintIcon(Heroicon::OutlinedQuestionMarkCircle, tooltip: $this->text('auto_advance_help'))->default(true),
                     TextInput::make('auto_advance_delay')->label($this->text('auto_advance_delay'))->integer()->minValue(0)->maxValue(3000)->suffix('ms')->placeholder('400')
-                        ->visible(fn (Get $get): bool => (bool) $get('auto_advance')),
+                        ->visibleJs(<<<'JS'
+                            $get('auto_advance')
+                            JS),
                 ]),
             Section::make($this->text('variables'))
+                ->contained(false)
                 ->description($this->text('variables_description'))
                 ->schema([
                     KeyValue::make('variables')->hiddenLabel()->keyLabel($this->text('variable'))->valueLabel($this->text('starting_value'))->addActionLabel($this->text('add_variable')),
                 ]),
             Section::make($this->text('hidden_fields'))
+                ->contained(false)
                 ->description($this->text('hidden_fields_description'))
                 ->schema([
                     Repeater::make('hidden_fields')
@@ -139,11 +205,57 @@ final readonly class BuilderSchema
                             TextInput::make('from_query')->label($this->text('from_query'))->placeholder($this->text('same_as_key')),
                             TextInput::make('max_length')->label($this->text('max_length'))->integer()->minValue(1)->placeholder('255'),
                         ])
-                        ->columns(3)
+                        ->columns(self::columns(2))
                         ->defaultItems(0)
                         ->addActionLabel($this->text('add_hidden_field')),
                 ]),
         ];
+    }
+
+    /**
+     * A builder drawn by the editor: its items' settings are shown one at a
+     * time, for the item selected in the outline, which also adds, copies,
+     * deletes and reorders them through the builder's actions.
+     */
+    private function editorItems(Builder $items): Builder
+    {
+        return $items
+            ->hiddenLabel()
+            ->view('conversational-forms::builder.editor.items')
+            // Other steps' logic lists the steps: adding, copying, deleting or reordering one re-renders them all.
+            ->partiallyRenderAfterActionsCalled(false)
+            ->cloneable()
+            ->cloneAction(fn (Action $action): Action => $action->action(function (array $arguments, Builder $component): void {
+                $this->cloneItem($component, (string) $arguments['item']);
+            }));
+    }
+
+    /**
+     * Copy an item right after itself, with keys that aren't taken yet.
+     */
+    private function cloneItem(Builder $component, string $uuid): void
+    {
+        $items = $component->getRawState() ?? [];
+
+        if (! array_key_exists($uuid, $items)) {
+            return;
+        }
+
+        $copy = DefinitionState::copyItem($items[$uuid], DefinitionState::stepKeys($this->stateAt($component->getLivewire(), 'steps')));
+        $newUuid = $component->generateUuid() ?? (string) Str::uuid();
+
+        $copied = [];
+
+        foreach ($items as $key => $item) {
+            $copied[$key] = $item;
+
+            if ((string) $key === $uuid) {
+                $copied[$newUuid] = $copy;
+            }
+        }
+
+        $component->rawState($copied);
+        $component->callAfterStateUpdated();
     }
 
     private function questionBlock(QuestionType $type, bool $withLogic): Block
@@ -154,77 +266,102 @@ final readonly class BuilderSchema
             ->label(fn (?array $state): string => $this->itemLabel($type->getLabel(), $state['label'] ?? null))
             ->icon($type->getIcon())
             ->schema([
-                ...$this->questionBasics(),
-                Section::make($this->text('settings'))
-                    ->statePath('settings')
-                    ->schema($settings)
-                    ->compact()
-                    ->collapsible()
-                    ->visible($settings !== []),
-                Section::make($this->text('quiz'))
-                    ->description($this->text('quiz_description'))
-                    ->statePath('correct')
-                    ->schema([
-                        Toggle::make('enabled')->label($this->text('quiz_enabled'))->live(),
-                        Grid::make(3)->schema([
-                            TextInput::make('answer')->label($this->text('correct_answer'))->helperText($this->text('correct_answer_help'))->required(),
-                            TextInput::make('points')->label($this->text('points'))->numeric()->placeholder('1'),
-                            TextInput::make('variable')->label($this->text('score_variable'))->placeholder('score')->regex('/^[A-Za-z]\w*$/'),
-                        ])->visible(fn (Get $get): bool => (bool) $get('enabled')),
-                    ])
-                    ->compact()
-                    ->collapsible()
-                    ->collapsed(fn (Get $get): bool => ! $get('correct.enabled'))
-                    ->visible(in_array($type->getName(), self::QUIZ_TYPES, strict: true)),
-                Section::make($this->text('media'))
-                    ->statePath('media')
-                    ->schema([
-                        Grid::make(2)->schema([
+                $this->inView('content', [
+                    $this->editedInPreview([
+                        $this->titleInput('label', $this->text('question'))->required(),
+                        Textarea::make('description')->label($this->text('description')),
+                    ]),
+                    Toggle::make('required')->label($this->text('required')),
+                    Group::make($settings)
+                        ->statePath('settings')
+                        ->visible($settings !== []),
+                    Section::make($this->text('media'))
+                        ->statePath('media')
+                        ->schema([
                             FileUpload::make('url')
-                                ->label($this->text('image'))
+                                ->hiddenLabel()
                                 ->image()
                                 ->disk(config('conversational-forms.images.disk', 'public'))
                                 ->directory(config('conversational-forms.images.directory'))
-                                ->visibility('public'),
-                            TextInput::make('alt')->label($this->text('image_alt'))->helperText($this->text('image_alt_help')),
-                        ]),
-                    ])
-                    ->compact()
-                    ->collapsible()
-                    ->collapsed(fn (Get $get): bool => blank($get('media.url'))),
-                $this->visibilitySection(),
-                ...($withLogic ? [$this->logicSection()] : []),
+                                ->visibility('public')
+                                // The preview needs the uploaded image's address from the server.
+                                ->live(),
+                            TextInput::make('alt')->label($this->text('image_alt'))->hintIcon(Heroicon::OutlinedQuestionMarkCircle, tooltip: $this->text('image_alt_help')),
+                        ])
+                        ->contained(false)
+                        ->extraAttributes(['data-cf-editor-image' => true]),
+                    Section::make($this->text('quiz'))
+                        ->description($this->text('quiz_description'))
+                        ->statePath('correct')
+                        ->schema([
+                            Toggle::make('enabled')->label($this->text('quiz_enabled')),
+                            Grid::make(self::columns(2))->schema([
+                                TextInput::make('answer')->label($this->text('correct_answer'))->hintIcon(Heroicon::OutlinedQuestionMarkCircle, tooltip: $this->text('correct_answer_help'))
+                                    ->required(fn (Get $get): bool => (bool) $get('enabled'))
+                                    ->columnSpanFull(),
+                                TextInput::make('points')->label($this->text('points'))->numeric()->placeholder('1'),
+                                TextInput::make('variable')->label($this->text('score_variable'))->placeholder('score')->regex('/^[A-Za-z]\w*$/'),
+                            ])->visibleJs(<<<'JS'
+                                $get('enabled')
+                                JS),
+                        ])
+                        ->contained(false)
+                        ->visible(in_array($type->getName(), self::QUIZ_TYPES, strict: true)),
+                    $this->keyInput(),
+                ]),
+                $this->inView('logic', [
+                    $this->visibilitySection(),
+                    ...($withLogic ? [$this->logicSection()] : []),
+                ]),
             ]);
     }
 
     /**
-     * @return array<Component>
+     * Text edited in place in the editor's preview. The fields stay (hidden),
+     * so the text is validated and saved like any other setting, and a new
+     * step's key still follows its text.
+     *
+     * @param  array<Component>  $components
      */
-    private function questionBasics(): array
+    private function editedInPreview(array $components): Group
     {
-        return [
-            Grid::make(['default' => 1, 'md' => 3])->schema([
-                TextInput::make('label')
-                    ->label($this->text('question'))
-                    ->helperText($this->text('piping_help'))
-                    ->required()
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state): void {
-                        if (blank($get('key'))) {
-                            $set('key', DefinitionState::keyFromLabel($state));
-                        }
-                    })
-                    ->columnSpan(['md' => 2]),
-                TextInput::make('key')
-                    ->label($this->text('key'))
-                    ->helperText($this->text('key_help'))
-                    ->required()
-                    ->regex(ConversationDefinition::KEY_PATTERN)
-                    ->live(onBlur: true),
-                Textarea::make('description')->label($this->text('description'))->rows(1)->columnSpan(['md' => 2]),
-                Toggle::make('required')->label($this->text('required'))->inline(false),
-            ]),
-        ];
+        return Group::make($components)->extraAttributes(['class' => 'cf-editor-edited-in-preview']);
+    }
+
+    /**
+     * Part of a step's settings, shown in one of the editor's views.
+     *
+     * @param  array<Component>  $components
+     */
+    private function inView(string $view, array $components): Group
+    {
+        return Group::make($components)->extraAttributes(self::shownInView($view));
+    }
+
+    /**
+     * The text of a step. While its key is new, the key follows it.
+     */
+    private function titleInput(string $name, string $label): TextInput
+    {
+        return TextInput::make($name)
+            ->label($label)
+            ->afterStateUpdatedJs(<<<'JS'
+                window.conversationalFormsEditor?.followKey($el, $state, $old, $get, $set)
+                JS)
+            ->afterStateUpdated(function (Get $get, Set $set, ?string $state): void {
+                if (blank($get('key'))) {
+                    $set('key', DefinitionState::keyFromLabel($state));
+                }
+            });
+    }
+
+    private function keyInput(): TextInput
+    {
+        return TextInput::make('key')
+            ->label($this->text('key'))
+            ->hintIcon(Heroicon::OutlinedQuestionMarkCircle, tooltip: $this->text('key_help'))
+            ->required()
+            ->regex(ConversationDefinition::KEY_PATTERN);
     }
 
     private function groupBlock(): Block
@@ -233,26 +370,20 @@ final readonly class BuilderSchema
             ->label(fn (?array $state): string => $this->itemLabel(__('conversational-forms::conversational-forms.builder.types.group'), $state['label'] ?? null))
             ->icon(Heroicon::OutlinedRectangleGroup)
             ->schema([
-                Grid::make(['default' => 1, 'md' => 3])->schema([
-                    TextInput::make('label')->label($this->text('group_title'))->live(onBlur: true)
-                        ->afterStateUpdated(function (Get $get, Set $set, ?string $state): void {
-                            if (blank($get('key'))) {
-                                $set('key', DefinitionState::keyFromLabel($state));
-                            }
-                        })
-                        ->columnSpan(['md' => 2]),
-                    TextInput::make('key')->label($this->text('key'))->required()->regex(ConversationDefinition::KEY_PATTERN),
-                    Textarea::make('description')->label($this->text('description'))->rows(1)->columnSpanFull(),
-                ]),
-                Builder::make('questions')
-                    ->label($this->text('group_questions'))
+                // The group's own settings; its questions are selected one by one.
+                Group::make([
+                    $this->inView('content', [
+                        $this->editedInPreview([
+                            $this->titleInput('label', $this->text('group_title')),
+                            Textarea::make('description')->label($this->text('description')),
+                        ]),
+                        $this->keyInput(),
+                    ]),
+                    $this->inView('logic', [$this->visibilitySection(), $this->logicSection()]),
+                ])->extraAttributes(fn (Group $component): array => self::shownWhenSelected(self::editorPath($component->getStatePath(), $this->statePath))),
+                $this->editorItems(Builder::make('questions'))
                     ->blocks(array_map(fn (QuestionType $type): Block => $this->questionBlock($type, withLogic: false), $this->types()))
-                    ->blockPickerColumns(3)
-                    ->collapsible()
-                    ->minItems(1)
-                    ->addActionLabel($this->text('add_question')),
-                $this->visibilitySection(),
-                $this->logicSection(),
+                    ->minItems(1),
             ]);
     }
 
@@ -262,28 +393,23 @@ final readonly class BuilderSchema
             ->label(fn (?array $state): string => $this->itemLabel(__('conversational-forms::conversational-forms.builder.types.statement'), $state['title'] ?? null))
             ->icon(Heroicon::OutlinedChatBubbleBottomCenterText)
             ->schema([
-                Grid::make(['default' => 1, 'md' => 3])->schema([
-                    TextInput::make('title')->label($this->text('title'))->required()->live(onBlur: true)
-                        ->afterStateUpdated(function (Get $get, Set $set, ?string $state): void {
-                            if (blank($get('key'))) {
-                                $set('key', DefinitionState::keyFromLabel($state));
-                            }
-                        })
-                        ->columnSpan(['md' => 2]),
-                    TextInput::make('key')->label($this->text('key'))->required()->regex(ConversationDefinition::KEY_PATTERN),
-                    Textarea::make('description')->label($this->text('description'))->rows(2)->columnSpan(['md' => 2]),
-                    TextInput::make('button_label')->label($this->text('button_label'))->placeholder(__('conversational-forms::conversational-forms.navigation.continue')),
+                $this->inView('content', [
+                    $this->editedInPreview([
+                        $this->titleInput('title', $this->text('title'))->required(),
+                        Textarea::make('description')->label($this->text('description')),
+                        TextInput::make('button_label')->label($this->text('button_label')),
+                    ]),
+                    $this->keyInput(),
                 ]),
-                $this->visibilitySection(),
-                $this->logicSection(),
+                $this->inView('logic', [$this->visibilitySection(), $this->logicSection()]),
             ]);
     }
 
     private function visibilitySection(): Section
     {
         return Section::make($this->text('visibility'))
-            ->description($this->text('visibility_description'))
             ->statePath('visibility')
+            ->contained(false)
             ->schema([
                 Textarea::make('raw')
                     ->label($this->text('written_in_code'))
@@ -292,22 +418,28 @@ final readonly class BuilderSchema
                     ->rows(6)
                     ->visible(fn (Get $get): bool => filled($get('raw'))),
                 Group::make([
-                    Select::make('match')->label($this->text('show_when'))->options([
+                    Select::make('match')->hiddenLabel()->options([
                         'all' => $this->text('match_all'),
                         'any' => $this->text('match_any'),
-                    ])->default('all')->selectablePlaceholder(false),
-                    $this->conditionsRepeater(defaultItems: 0),
+                    ])->default('all')->selectablePlaceholder(false)
+                        // Only a choice once there's more than one condition.
+                        ->visibleJs(<<<'JS'
+                            Object.keys($get('conditions') ?? {}).length > 1
+                            JS),
+                    Text::make($this->text('always_asked'))->color('gray')
+                        ->visibleJs(<<<'JS'
+                            Object.keys($get('conditions') ?? {}).length === 0
+                            JS),
+                    $this->conditionsRepeater(defaultItems: 0, isForRule: false)->hiddenLabel(),
                 ])->visible(fn (Get $get): bool => blank($get('raw'))),
             ])
-            ->compact()
-            ->collapsible()
-            ->collapsed(fn (Get $get): bool => blank($get('visibility.conditions')) && blank($get('visibility.raw')));
+            ->contained(false);
     }
 
     private function logicSection(): Section
     {
-        return Section::make($this->text('logic'))
-            ->description($this->text('logic_description'))
+        return Section::make($this->text('after_this_step'))
+            ->contained(false)
             ->schema([
                 Repeater::make('logic')
                     ->hiddenLabel()
@@ -319,25 +451,26 @@ final readonly class BuilderSchema
                             ->rows(6)
                             ->visible(fn (Get $get): bool => filled($get('raw'))),
                         Group::make([
-                            Select::make('match')->label($this->text('when'))->options([
+                            Select::make('match')->hiddenLabel()->options([
                                 'always' => $this->text('match_always'),
                                 'all' => $this->text('match_all'),
                                 'any' => $this->text('match_any'),
                             ])->default('all')->selectablePlaceholder(false)->live(),
-                            $this->conditionsRepeater(defaultItems: 1)->visible(fn (Get $get): bool => $get('match') !== 'always'),
-                            Grid::make(2)->schema([
-                                Select::make('action')->label($this->text('then'))->options([
+                            $this->conditionsRepeater(defaultItems: 1, isForRule: true)->hiddenLabel()->visible(fn (Get $get): bool => $get('match') !== 'always'),
+                            Grid::make(self::columns(2))->schema([
+                                Select::make('action')->hiddenLabel()->prefix($this->text('then'))->options([
                                     'jump_to' => $this->text('action_jump_to'),
                                     'end' => $this->text('action_end'),
                                     'end_with' => $this->text('action_end_with'),
                                     'none' => $this->text('action_none'),
                                 ])->default('jump_to')->selectablePlaceholder(false)->live(),
-                                Select::make('target')->label($this->text('target_step'))
+                                // Changes go to the server at once, so the rule's summary above stays current.
+                                Select::make('target')->hiddenLabel()->placeholder($this->text('target_step'))->live()
                                     ->options(fn (Get $get, $livewire): array => $this->laterSteps($livewire, (string) $get('../../key')))
                                     ->required(fn (Get $get): bool => $get('action') === 'jump_to')
                                     ->visible(fn (Get $get): bool => $get('action') === 'jump_to'),
-                                Select::make('ending')->label($this->text('target_ending'))
-                                    ->options(fn ($livewire): array => $this->endings($livewire))
+                                Select::make('ending')->hiddenLabel()->placeholder($this->text('target_ending'))->live()
+                                    ->options(fn ($livewire): array => $this->endingOptions($livewire))
                                     ->required(fn (Get $get): bool => $get('action') === 'end_with')
                                     ->visible(fn (Get $get): bool => $get('action') === 'end_with'),
                             ]),
@@ -346,32 +479,42 @@ final readonly class BuilderSchema
                                 ->schema([
                                     Select::make('operation')->hiddenLabel()->options(collect(CalculationOperator::cases())->mapWithKeys(fn (CalculationOperator $operator): array => [
                                         $operator->value => $this->text("calculation_{$operator->value}"),
-                                    ])->all())->default('add')->selectablePlaceholder(false),
-                                    TextInput::make('variable')->hiddenLabel()->placeholder($this->text('variable'))->required()
+                                    ])->all())->default('add')->selectablePlaceholder(false)->live(),
+                                    TextInput::make('variable')->hiddenLabel()->placeholder($this->text('variable'))->required()->live(onBlur: true)
                                         ->datalist(fn ($livewire): array => array_keys($this->stateAt($livewire, 'variables'))),
-                                    TextInput::make('value')->hiddenLabel()->placeholder($this->text('value')),
+                                    TextInput::make('value')->hiddenLabel()->placeholder($this->text('value'))->live(onBlur: true),
                                 ])
-                                ->columns(3)
+                                ->partiallyRenderAfterActionsCalled(false)
+                                ->columns(self::columns(3))
                                 ->defaultItems(0)
-                                ->addActionLabel($this->text('add_calculation')),
+                                ->addActionLabel($this->text('add_calculation'))
+                                ->addAction(fn (Action $action): Action => $action->link()->icon(Heroicon::Plus))
+                                ->addActionAlignment(Alignment::Start),
                         ])->visible(fn (Get $get): bool => blank($get('raw'))),
                     ])
-                    ->itemLabel(fn (array $state, $livewire): string => RuleSummary::describe($state, $this->stepLabels($livewire)))
+                    // Each rule reads as a sentence; it opens to be changed.
+                    ->itemLabel(fn (array $state, $livewire): string => RuleSummary::describe($state, $this->stepLabels($livewire), $this->questionLabels($livewire)))
                     ->collapsible()
+                    ->collapsed()
                     ->reorderable()
                     ->defaultItems(0)
-                    ->addActionLabel($this->text('add_rule')),
-            ])
-            ->compact()
-            ->collapsible()
-            ->collapsed(fn (Get $get): bool => blank($get('logic')));
+                    ->addActionLabel($this->text('add_rule'))
+                    ->addAction(fn (Action $action): Action => $action->link()->icon(Heroicon::Plus))
+                    ->addActionAlignment(Alignment::Start),
+                Text::make($this->text('otherwise_next'))->color('gray'),
+            ]);
     }
 
     /**
      * @param  int  $defaultItems  New rules start with a condition; visibility starts without.
+     * @param  bool  $isForRule  A rule (after its step is answered) rather than "show only when" (before it's asked).
      */
-    private function conditionsRepeater(int $defaultItems): Repeater
+    private function conditionsRepeater(int $defaultItems, bool $isForRule): Repeater
     {
+        // The key of the step (or question in a group) these conditions belong to: from a
+        // condition, up through `conditions` and the rule row to `logic`, or to `visibility`.
+        $stepKey = fn (Get $get): string => (string) $get($isForRule ? '../../../../key' : '../../../key');
+
         $choiceOptions = fn (Get $get, $livewire): array => $this->choiceOptions($livewire, (string) $get('field'));
         $valueInput = fn (Get $get, $livewire): string => $this->valueInput($livewire, (string) $get('field'), Operator::tryFrom((string) $get('operator')));
 
@@ -379,7 +522,9 @@ final readonly class BuilderSchema
             ->label($this->text('conditions'))
             ->schema([
                 Select::make('field')->hiddenLabel()->placeholder($this->text('field'))
-                    ->options(fn ($livewire): array => $this->fieldOptions($livewire))
+                    ->options(fn (Get $get, $livewire): array => $this->fieldOptions($livewire, $stepKey($get), includesStep: $isForRule))
+                    // A new rule usually checks the answer just given.
+                    ->default(fn (Get $get, $livewire): ?string => $isForRule ? $this->questionKeyOf($livewire, $stepKey($get)) : null)
                     ->required()
                     ->live()
                     ->afterStateUpdated(fn (Set $set): mixed => $set('operator', null)),
@@ -389,26 +534,33 @@ final readonly class BuilderSchema
                         ->all())
                     ->required()
                     ->live(),
-                Select::make('value')->hiddenLabel()->placeholder($this->text('value'))
+                Select::make('value')->hiddenLabel()->placeholder($this->text('value'))->live()
                     ->options(fn (Get $get, $livewire): array => ($this->answerTypeOf($livewire, (string) $get('field')) === AnswerType::Boolean)
                         ? ['1' => $this->text('yes'), '0' => $this->text('no')]
                         : $choiceOptions($get, $livewire))
                     ->visible(fn (Get $get, $livewire): bool => $valueInput($get, $livewire) === 'select'),
-                TextInput::make('value')->hiddenLabel()->placeholder($this->text('value'))
+                TextInput::make('value')->hiddenLabel()->placeholder($this->text('value'))->live(onBlur: true)
                     ->type(fn (Get $get, $livewire): string => match ($this->answerTypeOf($livewire, (string) $get('field'))) {
                         AnswerType::Date => 'date',
                         AnswerType::Number => 'number',
                         default => 'text',
                     })
                     ->visible(fn (Get $get, $livewire): bool => $valueInput($get, $livewire) === 'text'),
-                TagsInput::make('values')->hiddenLabel()
+                TagsInput::make('values')->hiddenLabel()->live()
                     ->placeholder(fn (Get $get): string => ($get('operator') === Operator::Between->value) ? $this->text('between_placeholder') : $this->text('values_placeholder'))
                     ->suggestions(fn (Get $get, $livewire): array => array_keys($choiceOptions($get, $livewire)))
                     ->visible(fn (Get $get, $livewire): bool => $valueInput($get, $livewire) === 'list'),
             ])
-            ->columns(3)
+            ->columns(self::columns(3))
+            ->reorderable(false)
+            // Adding or removing a condition re-renders the whole rule, so its summary stays current.
+            ->partiallyRenderAfterActionsCalled(false)
+            // One line per condition, its delete button at the end (see builder.css).
+            ->extraAttributes(['class' => 'cf-editor-conditions'])
             ->defaultItems($defaultItems)
-            ->addActionLabel($this->text('add_condition'));
+            ->addActionLabel($this->text('add_condition'))
+            ->addAction(fn (Action $action): Action => $action->link()->icon(Heroicon::Plus))
+            ->addActionAlignment(Alignment::Start);
     }
 
     /**
@@ -433,21 +585,40 @@ final readonly class BuilderSchema
     /**
      * @return array<string, array<string, string>>
      */
-    private function fieldOptions(mixed $livewire): array
+    /**
+     * What conditions can check: the questions answered by the time they're
+     * checked, then hidden fields and variables. A rule runs after its step,
+     * so it can check that step's answers and earlier ones; "show only when"
+     * runs before its step, so only earlier ones (and, in a group, the
+     * group's earlier questions).
+     *
+     * @return array<string, array<string, string>>
+     */
+    private function fieldOptions(mixed $livewire, string $stepKey, bool $includesStep): array
     {
-        $questions = [];
+        $current = [];
+        $earlier = [];
+        $position = $this->positions($livewire)[$stepKey] ?? null;
 
-        foreach (DefinitionState::questionItems($this->stateAt($livewire, 'steps')) as $item) {
-            $key = $item['data']['key'] ?? null;
+        foreach ($this->questionPositions($livewire) as $key => [$step, $inGroup, $label]) {
+            $isEarlier = ($position === null)
+                || ($step < $position[0])
+                // A question in a group can also check the group's earlier questions, on the same screen.
+                || (($step === $position[0]) && ($position[1] !== null) && ($inGroup !== null) && ($inGroup < $position[1]));
 
-            if (filled($key)) {
-                $questions[$key] = $this->itemLabel($key, $item['data']['label'] ?? null);
-            }
+            match (true) {
+                $isEarlier => $earlier[$key] = $label,
+                // A rule runs after its step, so it can check that step's own answers.
+                $includesStep && ($step === $position[0]) => $current[$key] = $label,
+                default => null,
+            };
         }
+
+        $hiddenFields = [];
 
         foreach ($this->stateAt($livewire, 'hidden_fields') as $field) {
             if (filled($field['key'] ?? null)) {
-                $questions[$field['key']] = "{$field['key']} · " . $this->text('hidden_field');
+                $hiddenFields[$field['key']] = (string) $field['key'];
             }
         }
 
@@ -457,10 +628,69 @@ final readonly class BuilderSchema
             $variables["@{$variable}"] = "@{$variable}";
         }
 
+        // A group's step is a screen of several questions.
+        $isScreen = ($position !== null) && ($position[1] === null) && (! array_key_exists($stepKey, $current));
+
         return array_filter([
-            $this->text('questions') => $questions,
+            $this->text($isScreen ? 'this_screen' : 'this_question') => $current,
+            $this->text('earlier_answers') => $earlier,
+            $this->text('hidden_fields') => $hiddenFields,
             $this->text('variables') => $variables,
         ]);
+    }
+
+    /**
+     * Where each step and each question in a group sits: `[step index, index
+     * in its group or null]`, keyed by key.
+     *
+     * @return array<string, array{int, int|null}>
+     */
+    private function positions(mixed $livewire): array
+    {
+        $positions = [];
+
+        foreach (array_values($this->stateAt($livewire, 'steps')) as $index => $item) {
+            if (filled($item['data']['key'] ?? null)) {
+                $positions[(string) $item['data']['key']] = [$index, null];
+            }
+
+            foreach (array_values($item['data']['questions'] ?? []) as $inGroup => $question) {
+                if (filled($question['data']['key'] ?? null)) {
+                    $positions[(string) $question['data']['key']] = [$index, $inGroup];
+                }
+            }
+        }
+
+        return $positions;
+    }
+
+    /**
+     * Every question, in order, with its position and its label.
+     *
+     * @return array<string, array{int, int|null, string}>
+     */
+    private function questionPositions(mixed $livewire): array
+    {
+        $positions = $this->positions($livewire);
+        $questions = [];
+
+        foreach (DefinitionState::questionItems($this->stateAt($livewire, 'steps')) as $item) {
+            $key = (string) ($item['data']['key'] ?? '');
+
+            if (($key !== '') && isset($positions[$key])) {
+                $questions[$key] = [...$positions[$key], $this->readable($key, $item['data']['label'] ?? null)];
+            }
+        }
+
+        return $questions;
+    }
+
+    /**
+     * The step's key when the step is a question (not a statement or group).
+     */
+    private function questionKeyOf(mixed $livewire, string $stepKey): ?string
+    {
+        return array_key_exists($stepKey, $this->questionPositions($livewire)) ? $stepKey : null;
     }
 
     private function answerTypeOf(mixed $livewire, string $field): AnswerType
@@ -520,7 +750,7 @@ final readonly class BuilderSchema
             }
 
             if ($isAfter) {
-                $steps[$key] = $this->itemLabel($key, $item['data']['label'] ?? $item['data']['title'] ?? null);
+                $steps[$key] = $this->readable($key, $item['data']['label'] ?? $item['data']['title'] ?? null);
             }
 
             $isAfter = $isAfter || ($key === $current);
@@ -538,7 +768,7 @@ final readonly class BuilderSchema
 
         foreach ($this->stateAt($livewire, 'steps') as $item) {
             if (filled($item['data']['key'] ?? null)) {
-                $labels[$item['data']['key']] = (string) $item['data']['key'];
+                $labels[$item['data']['key']] = $this->quoted($item['data']['label'] ?? $item['data']['title'] ?? null, (string) $item['data']['key']);
             }
         }
 
@@ -546,19 +776,60 @@ final readonly class BuilderSchema
     }
 
     /**
+     * Questions by key, as people read them in rules.
+     *
      * @return array<string, string>
      */
-    private function endings(mixed $livewire): array
+    private function questionLabels(mixed $livewire): array
+    {
+        $labels = [];
+
+        foreach (DefinitionState::questionItems($this->stateAt($livewire, 'steps')) as $item) {
+            if (filled($item['data']['key'] ?? null)) {
+                $labels[$item['data']['key']] = $this->quoted($item['data']['label'] ?? null, (string) $item['data']['key']);
+            }
+        }
+
+        return $labels;
+    }
+
+    private function quoted(?string $text, string $fallback): string
+    {
+        $text = trim(strip_tags((string) $text));
+
+        return ($text === '') ? $fallback : '“' . str($text)->limit(40) . '”';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function endingOptions(mixed $livewire): array
     {
         $endings = [];
 
         foreach ($this->stateAt($livewire, 'endings') as $ending) {
             if (filled($ending['key'] ?? null)) {
-                $endings[$ending['key']] = $this->itemLabel($ending['key'], $ending['title'] ?? null);
+                $endings[$ending['key']] = $this->readable($ending['key'], $ending['title'] ?? null);
             }
         }
 
         return $endings;
+    }
+
+    /**
+     * `ending_2`, `ending_3`…: the first that no ending uses yet.
+     */
+    private function freeEndingKey(mixed $livewire): string
+    {
+        // The new ending is already in the list, still without a key.
+        $keys = array_values(array_filter(array_column($this->stateAt($livewire, 'endings'), 'key'), filled(...)));
+        $number = count($keys) + 1;
+
+        while (in_array("ending_{$number}", $keys, strict: true)) {
+            $number++;
+        }
+
+        return "ending_{$number}";
     }
 
     /**
@@ -577,6 +848,16 @@ final readonly class BuilderSchema
     private function types(): array
     {
         return array_values(app(QuestionTypeRegistry::class)->all());
+    }
+
+    /**
+     * A step or ending as people know it in pickers: its text, or its key until it has one.
+     */
+    private function readable(string $key, ?string $text): string
+    {
+        $text = trim(strip_tags((string) $text));
+
+        return ($text === '') ? $key : (string) str($text)->limit(60);
     }
 
     private function itemLabel(string $prefix, ?string $text): string

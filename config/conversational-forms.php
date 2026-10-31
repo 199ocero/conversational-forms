@@ -127,4 +127,18 @@ return [
         'visibility' => 'private',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Builder
+    |--------------------------------------------------------------------------
+    |
+    | The builder saves the draft by itself once nothing has changed for this
+    | many seconds. Set it to `null` to save only with the Save button.
+    |
+    */
+
+    'builder' => [
+        'autosave_seconds' => 3,
+    ],
+
 ];
